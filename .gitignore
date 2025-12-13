@@ -1,0 +1,36 @@
+# Laravel backend
+recursos_humanos-backend/vendor/
+recursos_humanos-backend/node_modules/
+recursos_humanos-backend/public/storage
+recursos_humanos-backend/storage/
+recursos_humanos-backend/bootstrap/cache/
+recursos_humanos-backend/.env
+recursos_humanos-backend/.env.*
+recursos_humanos-backend/.phpunit.result.cache
+recursos_humanos-backend/storage/*.key
+recursos_humanos-backend/storage/logs/
+
+# Expo / React Native frontend
+rrhh-mobile/node_modules/
+rrhh-mobile/.expo/
+rrhh-mobile/.expo-shared/
+rrhh-mobile/.turbo/
+rrhh-mobile/dist/
+rrhh-mobile/android/
+rrhh-mobile/ios/
+rrhh-mobile/.env
+
+# Common OS / tooling
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tmp
+*.swp
+
+# Git artifacts
+.git_corrupt_20251213/
