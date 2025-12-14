@@ -6,6 +6,7 @@ import { useColorScheme } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import tamaguiConfig from "../../tamagui.config";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { ConfirmProvider } from "@/providers/ConfirmProvider";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,9 @@ export const AppProviders = ({ children }: PropsWithChildren): JSX.Element => {
         <QueryClientProvider client={queryClient}>
           <TamaguiProvider config={tamaguiConfig} defaultTheme={memoizedTheme}>
             <Theme name={memoizedTheme}>
-              <AuthProvider>{children}</AuthProvider>
+              <AuthProvider>
+                <ConfirmProvider>{children}</ConfirmProvider>
+              </AuthProvider>
             </Theme>
           </TamaguiProvider>
         </QueryClientProvider>

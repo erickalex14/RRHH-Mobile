@@ -43,15 +43,18 @@ const AnimatedIcon = ({ focused, Icon }: TabIconProps): JSX.Element => {
 
 export default function TabsLayout(): JSX.Element {
   const theme = useTheme();
+  const surface = theme?.surface?.val ?? "#0f172a";
+  const border = theme?.borderColor?.val ?? "rgba(148,163,184,0.3)";
+  const color = theme?.color?.val ?? "#f8fafc";
   const tabBarStyle = useMemo(
     () => ({
-      backgroundColor: theme.surface.val,
-      borderTopColor: theme.borderColor.val,
+      backgroundColor: surface,
+      borderTopColor: border,
       height: 70,
       paddingBottom: 10,
       paddingTop: 8
     }),
-    [theme.borderColor.val, theme.surface.val]
+    [border, surface]
   );
 
   return (
@@ -59,10 +62,9 @@ export default function TabsLayout(): JSX.Element {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarActiveTintColor: theme.color.val,
-        tabBarInactiveTintColor: theme.color.val,
-        tabBarStyle,
-        animation: "shift"
+        tabBarActiveTintColor: color,
+        tabBarInactiveTintColor: color,
+        tabBarStyle
       }}
     >
       <Tabs.Screen

@@ -51,7 +51,7 @@ export default function JornadasScreen(): JSX.Element {
                         {formatDateLabel(item.work_date)}
                       </Text>
                       <Paragraph color="$text" opacity={0.7}>
-                        {formatHour(item.start_time)} · {formatHour(item.end_time) === "--:--" ? "En curso" : formatHour(item.end_time)}
+                        {formatHour(item.start_time)} � {formatHour(item.end_time) === "--:--" ? "En curso" : formatHour(item.end_time)}
                       </Paragraph>
                     </YStack>
                     <Text color="$text" opacity={0.6}>

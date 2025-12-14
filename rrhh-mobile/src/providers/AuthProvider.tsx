@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }: PropsWithChildren): JSX.Element => {
 
   if (status === "checking") {
     return (
-      <YStack flex={1} bg="$brandBg" alignItems="center" justifyContent="center">
+      <YStack flex={1} backgroundColor="$brandBg" alignItems="center" justifyContent="center">
         <Spinner size="large" color="$brandPrimary" />
         <Text color="$text" mt="$3">
           Inicializando sesión...
@@ -28,3 +28,4 @@ export const AuthProvider = ({ children }: PropsWithChildren): JSX.Element => {
 
   return <>{children}</>;
 };
+

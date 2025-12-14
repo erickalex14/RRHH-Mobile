@@ -1,4 +1,4 @@
-import { XStack, Text } from "tamagui";
+﻿import { XStack, Text } from "tamagui";
 import { ReactNode } from "react";
 
 interface StatusBadgeProps {
@@ -9,7 +9,7 @@ interface StatusBadgeProps {
 
 export const StatusBadge = ({ label, color = "#2563eb", icon }: StatusBadgeProps): JSX.Element => (
   <XStack
-    bg={color}
+    backgroundColor={color}
     px="$3"
     py="$1"
     borderRadius="$4"
@@ -22,3 +22,4 @@ export const StatusBadge = ({ label, color = "#2563eb", icon }: StatusBadgeProps
     </Text>
   </XStack>
 );
+

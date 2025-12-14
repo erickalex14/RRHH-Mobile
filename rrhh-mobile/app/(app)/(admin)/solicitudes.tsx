@@ -1,0 +1,836 @@
+import { useCallback, useMemo, useState } from "react";
+import { Linking, Platform } from "react-native";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+  DateTimePickerEvent
+} from "@react-native-community/datetimepicker";
+import { Stack } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { addDays, format, parseISO } from "date-fns";
+import { Screen } from "@/components/ui/Screen";
+import { AnimatedButton } from "@/components/ui/AnimatedButton";
+import { AnimatedInput } from "@/components/ui/AnimatedInput";
+import { InteractiveCard } from "@/components/ui/InteractiveCard";
+import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
+import { ListSkeleton } from "@/components/ui/ListSkeleton";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { adminService } from "@/services/adminService";
+import { useConfirm } from "@/hooks/useConfirm";
+import { Branch, Department, EarlyDepartureRequest, Role, User } from "@/types/api";
+import {
+  Adapt,
+  AnimatePresence,
+  Paragraph,
+  ScrollView,
+  Select,
+  Separator,
+  Sheet,
+  Text,
+  XStack,
+  YStack
+} from "tamagui";
+
+type StatusFilter = "all" | "pending" | "approved" | "rejected";
+type DateField = "dateFrom" | "dateTo";
+
+type FilterState = {
+  branchId: string;
+  departmentId: string;
+  roleId: string;
+  employeeId: string;
+  status: StatusFilter;
+  dateFrom: string;
+  dateTo: string;
+};
+
+type MetaDataResponse = {
+  branches: Branch[];
+  departments: Department[];
+  roles: Role[];
+  employees: User[];
+};
+
+const STATUS_LABELS: Record<EarlyDepartureRequest["status"], string> = {
+  pending: "Pendiente",
+  approved: "Aprobada",
+  rejected: "Rechazada"
+};
+
+const STATUS_COLORS: Record<EarlyDepartureRequest["status"], string> = {
+  pending: "#f59e0b",
+  approved: "#22c55e",
+  rejected: "#ef4444"
+};
+
+const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
+  { label: "Todas", value: "all" },
+  { label: "Pendientes", value: "pending" },
+  { label: "Aprobadas", value: "approved" },
+  { label: "Rechazadas", value: "rejected" }
+];
+
+const DEFAULT_FILTERS: FilterState = {
+  branchId: "all",
+  departmentId: "all",
+  roleId: "all",
+  employeeId: "all",
+  status: "all",
+  dateFrom: "",
+  dateTo: ""
+};
+
+const safeParseISO = (value?: string | null): Date | null => {
+  if (!value) return null;
+  try {
+    return parseISO(value);
+  } catch (error) {
+    return null;
+  }
+};
+
+const safeParseDateTimeParts = (dateValue?: string | null, timeValue?: string | null): Date | null => {
+  if (!dateValue) return null;
+  const isoString = `${dateValue}${timeValue ? `T${timeValue}` : "T00:00"}`;
+  return safeParseISO(isoString);
+};
+
+const formatDateTimeValue = (value?: string | null, pattern = "dd/MM/yyyy HH:mm"): string => {
+  const parsed = safeParseISO(value);
+  return parsed ? format(parsed, pattern) : "Sin registro";
+};
+
+const formatRequestDateTime = (request: EarlyDepartureRequest): string => {
+  const parsed = safeParseDateTimeParts(request.request_date, request.request_time);
+  return parsed ? format(parsed, "dd/MM/yyyy HH:mm") : "Sin registro";
+};
+
+const formatDateFilterLabel = (value: string, placeholder: string): string => {
+  if (!value) return placeholder;
+  const parsed = safeParseISO(value);
+  return parsed ? format(parsed, "dd/MM/yyyy") : placeholder;
+};
+
+const getEmployeeName = (request: EarlyDepartureRequest, contextUser?: User | null): string => {
+  const detailFirst = request.employee_detail?.first_name ?? request.employee_detail?.user?.first_name ?? "";
+  const detailLast = request.employee_detail?.last_name ?? request.employee_detail?.user?.last_name ?? "";
+  const detailName = `${detailFirst} ${detailLast}`.trim();
+  if (detailName) return detailName;
+  const user = contextUser ?? request.user ?? null;
+  if (user) {
+    const name = `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim();
+    if (name) return name;
+  }
+  return "Colaborador";
+};
+
+export default function AdminSolicitudesScreen(): JSX.Element {
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [isFilterBarOpen, setIsFilterBarOpen] = useState(true);
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<EarlyDepartureRequest | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [datePicker, setDatePicker] = useState<{ field: DateField | null; visible: boolean }>({
+    field: null,
+    visible: false
+  });
+
+  const handleFeedback = useCallback((payload: { type: "success" | "error"; message: string }) => {
+    setFeedback(payload);
+    setTimeout(() => setFeedback(null), 2600);
+  }, []);
+
+  const confirm = useConfirm();
+
+  const invalidateRequests = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["admin", "requests", "list"] });
+  }, [queryClient]);
+
+  const { data: metaData, isLoading: isMetaLoading, isError: isMetaError } = useQuery<MetaDataResponse>({
+    queryKey: ["admin", "requests", "meta"],
+    queryFn: async () => {
+      const [branchesRes, departmentsRes, rolesRes, usersRes] = await Promise.all([
+        adminService.getBranches(),
+        adminService.getDepartments(),
+        adminService.getRoles(),
+        adminService.getUsers()
+      ]);
+      return {
+        branches: branchesRes.data ?? [],
+        departments: departmentsRes.data ?? [],
+        roles: rolesRes.data ?? [],
+        employees: usersRes.data ?? []
+      };
+    }
+  });
+
+  const {
+    data: requestData,
+    isLoading: isLoadingRequests,
+    isRefetching,
+    isError: isRequestError,
+    refetch: refetchRequests
+  } = useQuery({
+    queryKey: ["admin", "requests", "list"],
+    queryFn: adminService.getEarlyRequests
+  });
+
+  const branches = metaData?.branches ?? [];
+  const departments = metaData?.departments ?? [];
+  const roles = metaData?.roles ?? [];
+  const employees = metaData?.employees ?? [];
+  const requests = requestData?.data ?? [];
+
+  const employeeMap = useMemo(() => {
+    const map = new Map<number, User>();
+    employees.forEach((employee) => map.set(employee.user_id, employee));
+    return map;
+  }, [employees]);
+
+  const resolveContext = useCallback(
+    (request: EarlyDepartureRequest) => {
+      const fallbackUser = employeeMap.get(request.user_id) ?? null;
+      const user = request.user ?? fallbackUser;
+      const detail = request.employee_detail ?? user?.employeeDetail ?? null;
+      const department = detail?.department ?? null;
+      const branch = department?.branch ?? null;
+      const role = detail?.role ?? null;
+      return { user, detail, department, branch, role };
+    },
+    [employeeMap]
+  );
+
+  const filteredDepartments = useMemo(() => {
+    if (filters.branchId === "all") return departments;
+    return departments.filter((department) => String(department.branch_id) === filters.branchId);
+  }, [departments, filters.branchId]);
+
+  const filteredEmployees = useMemo(() => {
+    return employees.filter((employee) => {
+      const detail = employee.employeeDetail;
+      const matchesBranch = filters.branchId === "all" ? true : String(detail?.department?.branch_id ?? "") === filters.branchId;
+      const matchesDepartment = filters.departmentId === "all" ? true : String(detail?.department_id ?? "") === filters.departmentId;
+      const matchesRole = filters.roleId === "all" ? true : String(detail?.role_id ?? detail?.role?.role_id ?? "") === filters.roleId;
+      return matchesBranch && matchesDepartment && matchesRole;
+    });
+  }, [employees, filters.branchId, filters.departmentId, filters.roleId]);
+
+  const branchOptions = useMemo(
+    () => [{ label: "Todas", value: "all" }, ...branches.map((branch) => ({
+      label: branch.name ?? "Sin nombre",
+      value: String(branch.branch_id)
+    }))],
+    [branches]
+  );
+
+  const departmentOptions = useMemo(
+    () => [{ label: "Todos", value: "all" }, ...filteredDepartments.map((department) => ({
+      label: department.name ?? "Sin nombre",
+      value: String(department.department_id)
+    }))],
+    [filteredDepartments]
+  );
+
+  const roleOptions = useMemo(
+    () => [{ label: "Todos", value: "all" }, ...roles.map((role) => ({
+      label: role.name ?? "Sin nombre",
+      value: String(role.role_id)
+    }))],
+    [roles]
+  );
+
+  const employeeOptions = useMemo(
+    () => [{ label: "Todos", value: "all" }, ...filteredEmployees.map((employee) => ({
+      label: `${employee.first_name ?? ""} ${employee.last_name ?? ""}`.trim() || "Sin nombre",
+      value: String(employee.user_id)
+    }))],
+    [filteredEmployees]
+  );
+
+  const filterSummary = useMemo(() => {
+    const descriptors: string[] = [];
+    if (filters.branchId !== "all") {
+      const branchLabel = branchOptions.find((option) => option.value === filters.branchId)?.label;
+      descriptors.push(`Sucursal: ${branchLabel ?? filters.branchId}`);
+    }
+    if (filters.departmentId !== "all") {
+      const departmentLabel = departmentOptions.find((option) => option.value === filters.departmentId)?.label;
+      descriptors.push(`Departamento: ${departmentLabel ?? filters.departmentId}`);
+    }
+    if (filters.roleId !== "all") {
+      const roleLabel = roleOptions.find((option) => option.value === filters.roleId)?.label;
+      descriptors.push(`Rol: ${roleLabel ?? filters.roleId}`);
+    }
+    if (filters.employeeId !== "all") {
+      const employeeLabel = employeeOptions.find((option) => option.value === filters.employeeId)?.label;
+      descriptors.push(`Empleado: ${employeeLabel ?? filters.employeeId}`);
+    }
+    if (filters.status !== "all") {
+      const statusLabel = STATUS_OPTIONS.find((option) => option.value === filters.status)?.label;
+      descriptors.push(`Estado: ${statusLabel ?? filters.status}`);
+    }
+    if (filters.dateFrom || filters.dateTo) {
+      descriptors.push(`Rango: ${filters.dateFrom || "--"} → ${filters.dateTo || "--"}`);
+    }
+    return descriptors.length ? `Filtros activos: ${descriptors.join(" · ")}` : "Sin filtros activos";
+  }, [branchOptions, departmentOptions, employeeOptions, filters, roleOptions]);
+
+  const filteredRequests = useMemo(() => {
+    return requests.filter((request) => {
+      const { branch, department, role } = resolveContext(request);
+      const branchId = branch?.branch_id ? String(branch.branch_id) : null;
+      const departmentId = department?.department_id ? String(department.department_id) : null;
+      const roleId = (role?.role_id ?? request.employee_detail?.role_id) ? String(role?.role_id ?? request.employee_detail?.role_id) : null;
+      const matchesBranch = filters.branchId === "all" || branchId === filters.branchId;
+      if (!matchesBranch) return false;
+      const matchesDepartment = filters.departmentId === "all" || departmentId === filters.departmentId;
+      if (!matchesDepartment) return false;
+      const matchesRole = filters.roleId === "all" || roleId === filters.roleId;
+      if (!matchesRole) return false;
+      const matchesEmployee = filters.employeeId === "all" || String(request.user_id) === filters.employeeId;
+      if (!matchesEmployee) return false;
+      const matchesStatus = filters.status === "all" || request.status === filters.status;
+      if (!matchesStatus) return false;
+      const requestDate = safeParseISO(request.request_date);
+      const fromDate = safeParseISO(filters.dateFrom);
+      const toDate = safeParseISO(filters.dateTo);
+      if (fromDate && (!requestDate || requestDate < fromDate)) return false;
+      if (toDate && (!requestDate || requestDate > toDate)) return false;
+      return true;
+    });
+  }, [filters, requests, resolveContext]);
+
+  const requestsInsights = useMemo(() => {
+    const total = requests.length;
+    const pending = requests.filter((request) => request.status === "pending").length;
+    const filteredCount = filteredRequests.length;
+    const now = new Date();
+    const urgent = filteredRequests.filter((request) => {
+      if (request.status !== "pending") {
+        return false;
+      }
+      const parsed = safeParseDateTimeParts(request.request_date, request.request_time);
+      if (!parsed) {
+        return false;
+      }
+      return parsed >= now && parsed <= addDays(now, 1);
+    }).length;
+    return { total, pending, filteredCount, urgent };
+  }, [filteredRequests, requests]);
+
+  const handleBranchChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, branchId: value, departmentId: "all", employeeId: "all" }));
+  }, []);
+
+  const handleDepartmentChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, departmentId: value, employeeId: "all" }));
+  }, []);
+
+  const handleRoleChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, roleId: value, employeeId: "all" }));
+  }, []);
+
+  const handleEmployeeChange = useCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, employeeId: value }));
+  }, []);
+
+  const handleStatusChange = useCallback((value: StatusFilter) => {
+    setFilters((prev) => ({ ...prev, status: value }));
+  }, []);
+
+  const handleDateChange = useCallback((field: DateField, date: Date) => {
+    setFilters((prev) => ({ ...prev, [field]: format(date, "yyyy-MM-dd") }));
+    if (Platform.OS === "ios") {
+      setDatePicker({ field: null, visible: false });
+    }
+  }, []);
+
+  const openDatePicker = useCallback((field: DateField) => {
+    const baseValue = safeParseISO(filters[field]) ?? new Date();
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        mode: "date",
+        value: baseValue,
+        onChange: (_event: DateTimePickerEvent, selectedDate?: Date) => {
+          if (selectedDate) {
+            handleDateChange(field, selectedDate);
+          }
+        }
+      });
+      return;
+    }
+    setDatePicker({ field, visible: true });
+  }, [filters, handleDateChange]);
+
+  const closeIOSPicker = useCallback(() => {
+    setDatePicker({ field: null, visible: false });
+  }, []);
+
+  const renderIOSPicker = (): JSX.Element | null => {
+    if (Platform.OS !== "ios" || !datePicker.visible || !datePicker.field) return null;
+    const activeField = datePicker.field;
+    return (
+      <YStack gap="$2" backgroundColor="$color2" p="$3" borderRadius="$5">
+        <Text fontWeight="600" color="$text">
+          Selecciona {activeField === "dateFrom" ? "fecha inicial" : "fecha final"}
+        </Text>
+        <DateTimePicker
+          value={safeParseISO(filters[activeField]) ?? new Date()}
+          mode="date"
+          display="spinner"
+          onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
+            if (event.type === "dismissed") return;
+            if (selectedDate) {
+              handleDateChange(activeField, selectedDate);
+            }
+          }}
+        />
+        <AnimatedButton onPress={closeIOSPicker}>Cerrar</AnimatedButton>
+      </YStack>
+    );
+  };
+
+  const resetFilters = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+  }, []);
+
+  const openDetails = useCallback((request: EarlyDepartureRequest) => {
+    setSelectedRequest(request);
+    setRejectReason("");
+    setDetailSheetOpen(true);
+  }, []);
+
+  const closeDetails = useCallback(() => {
+    setDetailSheetOpen(false);
+    setSelectedRequest(null);
+    setRejectReason("");
+  }, []);
+
+  const approveMutation = useMutation({
+    mutationFn: adminService.approveEarlyRequest,
+    onSuccess: () => {
+      handleFeedback({ type: "success", message: "Solicitud aprobada" });
+      invalidateRequests();
+      closeDetails();
+    },
+    onError: () => handleFeedback({ type: "error", message: "Error al aprobar la solicitud" })
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: adminService.rejectEarlyRequest,
+    onSuccess: () => {
+      handleFeedback({ type: "success", message: "Solicitud rechazada" });
+      invalidateRequests();
+      closeDetails();
+    },
+    onError: () => handleFeedback({ type: "error", message: "Error al rechazar la solicitud" })
+  });
+
+  const confirmApprove = useCallback(async () => {
+    if (!selectedRequest) return;
+    const { user } = resolveContext(selectedRequest);
+    const employeeName = getEmployeeName(selectedRequest, user);
+    const accepted = await confirm({
+      title: "Aprobar solicitud",
+      message: `Confirmas la salida anticipada de ${employeeName}?`,
+      confirmLabel: "Aprobar"
+    });
+    if (!accepted) {
+      return;
+    }
+    approveMutation.mutate(selectedRequest.request_id);
+  }, [approveMutation, confirm, resolveContext, selectedRequest]);
+
+  const handleRejectAction = useCallback(async () => {
+    if (!selectedRequest) return;
+    const trimmed = rejectReason.trim();
+    if (!trimmed) {
+      handleFeedback({ type: "error", message: "Debes ingresar el motivo del rechazo" });
+      return;
+    }
+    const { user } = resolveContext(selectedRequest);
+    const employeeName = getEmployeeName(selectedRequest, user);
+    const accepted = await confirm({
+      title: "Rechazar solicitud",
+      message: `Vas a rechazar la salida anticipada de ${employeeName}.`,
+      confirmLabel: "Rechazar",
+      destructive: true
+    });
+    if (!accepted) {
+      return;
+    }
+    rejectMutation.mutate({
+      id: selectedRequest.request_id,
+      reason: trimmed
+    });
+  }, [confirm, handleFeedback, rejectMutation, rejectReason, resolveContext, selectedRequest]);
+
+  const isMutating = approveMutation.isPending || rejectMutation.isPending;
+
+  const renderSelect = (
+    value: string,
+    options: { label: string; value: string }[],
+    placeholder: string,
+    onValueChange: (value: string) => void,
+    disabled?: boolean
+  ): JSX.Element => (
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <Select.Trigger borderColor="$borderColor">
+        <Select.Value placeholder={placeholder} />
+      </Select.Trigger>
+      <Adapt when="sm" platform="touch">
+        <Sheet modal dismissOnSnapToBottom>
+          <Sheet.Frame>
+            <Sheet.ScrollView>
+              <Adapt.Contents />
+            </Sheet.ScrollView>
+          </Sheet.Frame>
+          <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+        </Sheet>
+      </Adapt>
+      <Select.Content>
+        <Select.ScrollUpButton />
+        <Select.Viewport>
+          {options.map((option) => (
+            <Select.Item key={option.value} value={option.value}>
+              <Select.ItemText>{option.label}</Select.ItemText>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+        <Select.ScrollDownButton />
+      </Select.Content>
+    </Select>
+  );
+
+  return (
+    <Screen>
+      <Stack.Screen options={{ headerShown: false }} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 72 }}>
+        <YStack gap="$4">
+          <YStack gap="$2">
+            <Text fontFamily="$heading" fontSize="$7" color="$text">
+              Solicitudes anticipadas
+            </Text>
+            <Paragraph color="$muted">
+              Revisa salidas, analiza contexto y aprueba o rechaza con confianza.
+            </Paragraph>
+          </YStack>
+
+          <RoleSwitcher target="employee" />
+
+          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
+            <XStack justifyContent="space-between" alignItems="center">
+              <Text fontFamily="$heading" fontSize="$5" color="$text">
+                Filtros avanzados
+              </Text>
+              <AnimatedButton backgroundColor="$color4" color="$text" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
+                {isFilterBarOpen ? "Ocultar" : "Mostrar"}
+              </AnimatedButton>
+            </XStack>
+            {isFilterBarOpen ? (
+              <YStack gap="$3">
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$text">
+                    Sucursal
+                  </Text>
+                  {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
+                </YStack>
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$text">
+                    Departamento
+                  </Text>
+                  {renderSelect(filters.departmentId, departmentOptions, "Todos", handleDepartmentChange, isMetaLoading)}
+                </YStack>
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$text">
+                    Rol
+                  </Text>
+                  {renderSelect(filters.roleId, roleOptions, "Todos", handleRoleChange, isMetaLoading)}
+                </YStack>
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$text">
+                    Empleado
+                  </Text>
+                  {renderSelect(filters.employeeId, employeeOptions, "Todos", handleEmployeeChange, isMetaLoading)}
+                </YStack>
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$text">
+                    Estado
+                  </Text>
+                  {renderSelect(filters.status, STATUS_OPTIONS, "Todos", (value) => handleStatusChange(value as StatusFilter))}
+                </YStack>
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$text">
+                    Rango de fechas
+                  </Text>
+                  <XStack gap="$2">
+                    <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => openDatePicker("dateFrom")}>
+                      {formatDateFilterLabel(filters.dateFrom, "Desde")}
+                    </AnimatedButton>
+                    <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => openDatePicker("dateTo")}>
+                      {formatDateFilterLabel(filters.dateTo, "Hasta")}
+                    </AnimatedButton>
+                  </XStack>
+                  {renderIOSPicker()}
+                  <AnimatedButton backgroundColor="$color4" color="$text" onPress={() => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" }))}>
+                    Quitar rango
+                  </AnimatedButton>
+                </YStack>
+                <AnimatedButton backgroundColor="$color4" color="$text" onPress={resetFilters}>
+                  Limpiar filtros
+                </AnimatedButton>
+              </YStack>
+            ) : null}
+          </YStack>
+
+          <YStack gap="$2">
+            <Text fontFamily="$heading" fontSize="$5" color="$text">
+              Estado general
+            </Text>
+            <Paragraph color="$muted">{filterSummary}</Paragraph>
+            <XStack gap="$3" flexWrap="wrap">
+              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
+                <Text fontSize="$3" color="$muted">Solicitudes totales</Text>
+                <Text fontFamily="$heading" fontSize="$6" color="$text">
+                  {requestsInsights.total}
+                </Text>
+                <Paragraph color="$muted">Coinciden con filtros: {requestsInsights.filteredCount}</Paragraph>
+              </InteractiveCard>
+              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
+                <Text fontSize="$3" color="$muted">Pendientes</Text>
+                <Text fontFamily="$heading" fontSize="$6" color="$text">
+                  {requestsInsights.pending}
+                </Text>
+              </InteractiveCard>
+              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
+                <Text fontSize="$3" color="$muted">Urgentes (próx. 24h)</Text>
+                <Text fontFamily="$heading" fontSize="$6" color="$text">
+                  {requestsInsights.urgent}
+                </Text>
+              </InteractiveCard>
+            </XStack>
+          </YStack>
+
+          {isMetaError ? (
+            <AnimatedNotice
+              variant="error"
+              title="No pudimos cargar catálogos"
+              message="Verifica la conexión para mostrar sucursales, departamentos y empleados."
+              actionLabel="Reintentar"
+              onAction={() => void queryClient.invalidateQueries({ queryKey: ["admin", "requests", "meta"] })}
+            />
+          ) : null}
+
+          <XStack gap="$3">
+            <AnimatedButton
+              flex={1}
+              backgroundColor="$color4"
+              color="$text"
+              disabled={isLoadingRequests || isRefetching}
+              onPress={() => void refetchRequests()}
+            >
+              {isRefetching ? "Sincronizando..." : "Actualizar"}
+            </AnimatedButton>
+          </XStack>
+
+          {isLoadingRequests || isRefetching ? (
+            <ListSkeleton items={4} height={200} />
+          ) : isRequestError ? (
+            <AnimatedNotice
+              variant="error"
+              title="Error al cargar"
+              message="No pudimos obtener las solicitudes. Intenta nuevamente."
+              actionLabel="Reintentar"
+              onAction={() => void refetchRequests()}
+            />
+          ) : filteredRequests.length === 0 ? (
+            <AnimatedNotice
+              variant="info"
+              title="Sin coincidencias"
+              message="No encontramos solicitudes que cumplan los filtros aplicados."
+              actionLabel="Restablecer filtros"
+              onAction={resetFilters}
+            />
+          ) : (
+            <Animated.FlatList<EarlyDepartureRequest>
+              data={filteredRequests}
+              keyExtractor={(item) => String(item.request_id)}
+              scrollEnabled={false}
+              ItemSeparatorComponent={() => <YStack height={16} />}
+              renderItem={({ item, index }) => {
+                const { user, branch, department, role } = resolveContext(item);
+                const employeeName = getEmployeeName(item, user);
+                const branchName = branch?.name ?? "Sin sucursal";
+                const departmentName = department?.name ?? "Sin departamento";
+                const roleName = role?.name ?? "Sin rol";
+                return (
+                  <Animated.View entering={FadeInDown.delay(index * 80)}>
+                    <InteractiveCard onPress={() => openDetails(item)}>
+                      <YStack gap="$2">
+                        <XStack justifyContent="space-between" alignItems="center">
+                          <Text fontSize="$5" fontWeight="600" color="$text">
+                            {employeeName}
+                          </Text>
+                          <StatusBadge
+                            label={STATUS_LABELS[item.status]}
+                            color={STATUS_COLORS[item.status]}
+                          />
+                        </XStack>
+                        <Paragraph color="$muted">Rol: {roleName}</Paragraph>
+                        <Paragraph color="$muted">
+                          Departamento: {departmentName} · Sucursal: {branchName}
+                        </Paragraph>
+                        <Paragraph color="$muted">Solicitada para: {formatRequestDateTime(item)}</Paragraph>
+                        <Paragraph color="$muted">Motivo: {item.description}</Paragraph>
+                        <Separator backgroundColor="$color4" />
+                        <AnimatedButton onPress={() => openDetails(item)}>
+                          Ver detalle
+                        </AnimatedButton>
+                      </YStack>
+                    </InteractiveCard>
+                  </Animated.View>
+                );
+              }}
+            />
+          )}
+
+          <Sheet
+            modal
+            open={detailSheetOpen}
+            onOpenChange={(open) => (open ? setDetailSheetOpen(open) : closeDetails())}
+            snapPoints={[80]}
+          >
+            <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+            <Sheet.Frame padding="$4" backgroundColor="$color2">
+              <Sheet.ScrollView>
+                <YStack gap="$3">
+                  {selectedRequest ? (
+                    (() => {
+                      const context = resolveContext(selectedRequest);
+                      const employeeName = getEmployeeName(selectedRequest, context.user);
+                      const branchName = context.branch?.name ?? "Sin sucursal";
+                      const departmentName = context.department?.name ?? "Sin departamento";
+                      const roleName = context.role?.name ?? "Sin rol";
+                      return (
+                        <>
+                          <XStack justifyContent="space-between" alignItems="center">
+                            <YStack gap="$1">
+                              <Text fontFamily="$heading" fontSize="$5" color="$text">
+                                {employeeName}
+                              </Text>
+                              <Paragraph color="$muted">
+                                {departmentName} · {branchName}
+                              </Paragraph>
+                            </YStack>
+                            <StatusBadge
+                              label={STATUS_LABELS[selectedRequest.status]}
+                              color={STATUS_COLORS[selectedRequest.status]}
+                            />
+                          </XStack>
+                          <Paragraph color="$muted">Motivo del colaborador:</Paragraph>
+                          <Text color="$text">{selectedRequest.description}</Text>
+                          <Paragraph color="$muted">Salida solicitada para:</Paragraph>
+                          <Text color="$text">{formatRequestDateTime(selectedRequest)}</Text>
+                          <Paragraph color="$muted">Hora solicitada: {selectedRequest.request_time ?? "--:--"}</Paragraph>
+                          {selectedRequest.document_path ? (
+                            <AnimatedButton
+                              backgroundColor="$color4"
+                              color="$text"
+                              onPress={async () => {
+                                if (selectedRequest.document_path) {
+                                  await Linking.openURL(selectedRequest.document_path);
+                                }
+                              }}
+                            >
+                              Abrir respaldo
+                            </AnimatedButton>
+                          ) : null}
+                          <Separator backgroundColor="$color4" />
+                          <YStack gap="$1">
+                            <Text fontWeight="600" color="$text">
+                              Contexto organizacional
+                            </Text>
+                            <Paragraph color="$muted">Rol asignado: {roleName}</Paragraph>
+                            <Paragraph color="$muted">Departamento: {departmentName}</Paragraph>
+                            <Paragraph color="$muted">Sucursal: {branchName}</Paragraph>
+                          </YStack>
+                          <Separator backgroundColor="$color4" />
+                          <YStack gap="$1">
+                            <Text fontWeight="600" color="$text">
+                              Historial
+                            </Text>
+                            <Paragraph color="$muted">
+                              Creada: {formatDateTimeValue(selectedRequest.created_at)}
+                            </Paragraph>
+                            <Paragraph color="$muted">
+                              Última actualización: {formatDateTimeValue(selectedRequest.updated_at)}
+                            </Paragraph>
+                            {selectedRequest.approved_by ? (
+                              <Paragraph color="$muted">
+                                Gestionada por usuario #{selectedRequest.approved_by}
+                              </Paragraph>
+                            ) : null}
+                          </YStack>
+                          {selectedRequest.status === "pending" ? (
+                            <YStack gap="$3">
+                              <AnimatedInput
+                                label="Motivo del rechazo"
+                                placeholder="Obligatorio si rechazas"
+                                value={rejectReason}
+                                onChangeText={setRejectReason}
+                              />
+                              <XStack gap="$3">
+                                <AnimatedButton
+                                  flex={1}
+                                  backgroundColor="$success"
+                                  color="#0f172a"
+                                  disabled={isMutating}
+                                  onPress={confirmApprove}
+                                >
+                                  Aprobar
+                                </AnimatedButton>
+                                <AnimatedButton
+                                  flex={1}
+                                  backgroundColor="$danger"
+                                  color="#fff"
+                                  disabled={isMutating}
+                                  onPress={handleRejectAction}
+                                >
+                                  Rechazar
+                                </AnimatedButton>
+                              </XStack>
+                            </YStack>
+                          ) : null}
+                        </>
+                      );
+                    })()
+                  ) : (
+                    <Paragraph color="$muted">Selecciona una solicitud para ver los detalles.</Paragraph>
+                  )}
+                  <AnimatedButton backgroundColor="$color4" color="$text" onPress={closeDetails}>
+                    Cerrar
+                  </AnimatedButton>
+                </YStack>
+              </Sheet.ScrollView>
+            </Sheet.Frame>
+          </Sheet>
+
+          <AnimatePresence>
+            {feedback ? (
+              <AnimatedNotice
+                variant={feedback.type}
+                message={feedback.message}
+                actionLabel="Cerrar"
+                onAction={() => setFeedback(null)}
+              />
+            ) : null}
+          </AnimatePresence>
+        </YStack>
+      </ScrollView>
+    </Screen>
+  );
+}
+

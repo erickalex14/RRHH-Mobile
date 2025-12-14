@@ -1,6 +1,7 @@
 import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
 import { employeeService } from "@/services/employeeService";
 import { useAuthStore } from "@/store/auth";
 import { formatDateLabel, formatHour } from "@/utils/datetime";
@@ -79,10 +80,12 @@ export default function HomeScreen(): JSX.Element {
           </Paragraph>
         </Animated.View>
 
+        <RoleSwitcher target="admin" />
+
         <AnimatePresence exitBeforeEnter>
           <YStack
             key={stage}
-            bg="$surface"
+            backgroundColor="$surface"
             borderRadius="$4"
             px="$4"
             py="$5"
@@ -143,7 +146,7 @@ export default function HomeScreen(): JSX.Element {
               <AnimatedButton
                 flex={1}
                 disabled={!currentSession?.start_time || Boolean(currentSession?.lunch_start) || lunchStartMutation.isPending}
-                bg="$brandSecondary"
+                backgroundColor="$brandSecondary"
                 onPress={() => lunchStartMutation.mutate()}
               >
                 {lunchStartMutation.isPending ? <Spinner color="$text" /> : "Iniciar almuerzo"}
@@ -162,7 +165,7 @@ export default function HomeScreen(): JSX.Element {
               <AnimatedButton
                 flex={1}
                 disabled={!currentSession?.start_time || Boolean(currentSession?.end_time) || endMutation.isPending}
-                bg="$success"
+                backgroundColor="$success"
                 onPress={() => endMutation.mutate()}
               >
                 {endMutation.isPending ? <Spinner color="$text" /> : "Registrar salida"}
@@ -181,3 +184,4 @@ export default function HomeScreen(): JSX.Element {
     </Screen>
   );
 }
+

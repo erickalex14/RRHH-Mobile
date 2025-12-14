@@ -1,8 +1,9 @@
 import axios from "axios";
+import { Alert } from "react-native";
 import { create } from "zustand";
 import { authService, LoginPayload } from "@/services/authService";
 import { deleteToken, getToken, saveToken } from "@/services/storage";
-import { setAuthToken } from "@/services/http";
+import { setAuthToken, setUnauthorizedHandler } from "@/services/http";
 import { User } from "@/types/api";
 import { employeeService, ProfileUpdatePayload } from "@/services/employeeService";
 
@@ -19,7 +20,10 @@ interface AuthState {
   clearError: () => void;
   refreshProfile: () => Promise<void>;
   updateProfile: (payload: ProfileUpdatePayload) => Promise<User>;
+  handleUnauthorized: () => Promise<void>;
 }
+
+let isHandlingUnauthorized = false;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -71,6 +75,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: null, token: null, status: "idle", error: null });
     }
   },
+  handleUnauthorized: async () => {
+    if (isHandlingUnauthorized) {
+      return;
+    }
+
+    isHandlingUnauthorized = true;
+    const currentStatus = get().status;
+
+    try {
+      await deleteToken();
+      setAuthToken(null);
+      set({ user: null, token: null, status: "idle", error: null });
+
+      if (currentStatus === "authenticated") {
+        Alert.alert("Sesión expirada", "Tu sesión caducó. Ingresa nuevamente para continuar.");
+      }
+    } finally {
+      setTimeout(() => {
+        isHandlingUnauthorized = false;
+      }, 400);
+    }
+  },
   refreshProfile: async () => {
     try {
       const profile = await employeeService.getProfile();
@@ -90,3 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   }
 }));
+
+setUnauthorizedHandler(async () => {
+  await useAuthStore.getState().handleUnauthorized();
+});

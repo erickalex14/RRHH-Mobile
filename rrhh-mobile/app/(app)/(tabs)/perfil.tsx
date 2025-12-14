@@ -86,7 +86,7 @@ export default function PerfilScreen(): JSX.Element {
           <AnimatedButton onPress={handleSave} disabled={saving}>
             {saving ? <Spinner color="$text" /> : "Guardar cambios"}
           </AnimatedButton>
-          <AnimatedButton bg="$danger" onPress={handleLogout}>
+          <AnimatedButton backgroundColor="$danger" onPress={handleLogout}>
             Cerrar sesión
           </AnimatedButton>
         </YStack>
@@ -94,3 +94,4 @@ export default function PerfilScreen(): JSX.Element {
     </Screen>
   );
 }
+

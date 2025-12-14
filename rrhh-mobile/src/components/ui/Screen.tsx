@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+﻿import { PropsWithChildren } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { YStack, useThemeName } from "tamagui";
 
@@ -13,9 +13,10 @@ export const Screen = ({ children }: PropsWithChildren): JSX.Element => {
         backgroundColor: themeName?.includes("light") ? "#f8fafc" : "#020617"
       }}
     >
-      <YStack flex={1} bg={backgroundToken} px="$4" py="$5" gap="$4">
+      <YStack flex={1} backgroundColor={backgroundToken} px="$4" py="$5" gap="$4">
         {children}
       </YStack>
     </SafeAreaView>
   );
 };
+

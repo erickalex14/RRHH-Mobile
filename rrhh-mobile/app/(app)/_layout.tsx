@@ -1,4 +1,4 @@
-import { Stack, Redirect } from "expo-router";
+﻿import { Stack, Redirect } from "expo-router";
 import { Spinner, YStack } from "tamagui";
 import { useAuthStore } from "@/store/auth";
 
@@ -7,7 +7,7 @@ export default function AppLayout(): JSX.Element {
 
   if (status === "checking") {
     return (
-      <YStack flex={1} alignItems="center" justifyContent="center" bg="$brandBg">
+      <YStack flex={1} alignItems="center" justifyContent="center" backgroundColor="$brandBg">
         <Spinner size="large" color="$brandPrimary" />
       </YStack>
     );
@@ -20,6 +20,8 @@ export default function AppLayout(): JSX.Element {
   return (
     <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(admin)" options={{ headerShown: false }} />
     </Stack>
   );
 }
+

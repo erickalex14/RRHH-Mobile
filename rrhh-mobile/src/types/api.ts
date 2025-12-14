@@ -80,9 +80,12 @@ export interface EmployeeDetail {
   birth_date: string;
   created_at?: string;
   updated_at?: string;
+  first_name?: string;
+  last_name?: string;
   role?: Role;
   department?: Department & { branch?: Branch & { company?: Company } };
   schedule?: Schedule;
+  user?: User;
 }
 
 export interface User {
@@ -110,6 +113,8 @@ export interface WorkSession {
   longitude?: string | null;
   created_at?: string;
   updated_at?: string;
+  employee_detail?: EmployeeDetail | null;
+  user?: User | null;
 }
 
 export interface Document {
@@ -117,11 +122,14 @@ export interface Document {
   user_id: number;
   file_name: string;
   doc_type: string;
+  description?: string | null;
   file_path: string;
   file_size: number | string;
   uploaded_by?: number | null;
   created_at?: string;
   updated_at?: string;
+  file_url?: string;
+  user?: User;
 }
 
 export type EarlyDepartureStatus = "pending" | "approved" | "rejected";
@@ -137,6 +145,8 @@ export interface EarlyDepartureRequest {
   approved_by?: number | null;
   created_at?: string;
   updated_at?: string;
+  employee_detail?: EmployeeDetail | null;
+  user?: User | null;
 }
 
 export interface ApiResponse<T> {

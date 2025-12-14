@@ -27,11 +27,12 @@ const AnimatedCard = Animated.createAnimatedComponent(YStack);
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
-  const { status, error, login, clearError } = useAuthStore((state) => ({
+  const { status, error, login, clearError, isAdmin } = useAuthStore((state) => ({
     status: state.status,
     error: state.error,
     login: state.login,
-    clearError: state.clearError
+    clearError: state.clearError,
+    isAdmin: state.user?.employeeDetail?.role?.admin ?? false
   }));
 
   const [email, setEmail] = useState("");
@@ -57,11 +58,14 @@ export default function LoginScreen(): JSX.Element {
     if (status === "authenticated") {
       setCardVisible(false);
       const timer = setTimeout(() => {
-        router.replace("/(app)/(tabs)/home");
+        const destination = isAdmin
+          ? "/(app)/(admin)/dashboard"
+          : "/(app)/(tabs)/home";
+        router.replace(destination);
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [router, status]);
+  }, [isAdmin, router, status]);
 
   const heroStyle = useAnimatedStyle(() => ({
     opacity: heroProgress.value,
@@ -136,7 +140,7 @@ export default function LoginScreen(): JSX.Element {
             alignItems="center"
             gap="$2"
             borderRadius="$4"
-            bg="$muted"
+            backgroundColor="$muted"
             opacity={0.9}
           >
             <Text color="$text" fontFamily="$body" fontSize="$3">
@@ -149,7 +153,7 @@ export default function LoginScreen(): JSX.Element {
           {cardVisible && (
             <AnimatedCard
               key="login-card"
-              bg="$surface"
+              backgroundColor="$surface"
               borderRadius="$4"
               px="$4"
               py="$5"
@@ -172,7 +176,7 @@ export default function LoginScreen(): JSX.Element {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   placeholder="correo@empresa.com"
-                  bg="$brandBg"
+                  backgroundColor="$brandBg"
                   color="$text"
                   borderRadius="$3"
                   size="$5"
@@ -182,7 +186,7 @@ export default function LoginScreen(): JSX.Element {
                 <Input
                   secureTextEntry
                   placeholder="••••••••"
-                  bg="$brandBg"
+                  backgroundColor="$brandBg"
                   color="$text"
                   borderRadius="$3"
                   size="$5"
@@ -190,7 +194,7 @@ export default function LoginScreen(): JSX.Element {
                   onChangeText={handleInputChange(setPassword)}
                 />
               </YStack>
-              <Separator bg="$border" />
+              <Separator backgroundColor="$border" />
               <AnimatedButton
                 mt="$1"
                 disabled={isLoading}
@@ -215,3 +219,4 @@ export default function LoginScreen(): JSX.Element {
     </Screen>
   );
 }
+
