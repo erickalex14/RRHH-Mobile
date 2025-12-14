@@ -90,7 +90,6 @@ export default function HomeScreen(): JSX.Element {
             px="$4"
             py="$5"
             gap="$3"
-            animation="bouncy"
             enterStyle={{ opacity: 0, scale: 0.95 }}
             exitStyle={{ opacity: 0, scale: 1.02 }}
           >

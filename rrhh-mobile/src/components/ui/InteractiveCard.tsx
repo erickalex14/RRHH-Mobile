@@ -11,9 +11,7 @@ import { springConfig } from "@/theme/motion";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-interface InteractiveCardProps extends PropsWithChildren<YStackProps> {
-  onPress?: () => void;
-}
+type InteractiveCardProps = YStackProps & PropsWithChildren<{ onPress?: () => void }>;
 
 export const InteractiveCard = ({ children, onPress, ...stackProps }: InteractiveCardProps) => {
   const scale = useSharedValue(1);

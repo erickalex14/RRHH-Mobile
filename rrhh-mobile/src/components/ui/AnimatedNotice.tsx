@@ -6,12 +6,13 @@ import { AnimatedButton } from "@/components/ui/AnimatedButton";
 const palette = {
   info: { bg: "rgba(59,130,246,0.2)", text: "#bfdbfe" },
   success: { bg: "rgba(34,197,94,0.2)", text: "#bbf7d0" },
+  warning: { bg: "rgba(250,204,21,0.2)", text: "#facc15" },
   error: { bg: "rgba(248,113,113,0.2)", text: "#fecaca" }
 } as const;
 
 export interface AnimatedNoticeProps {
   title?: string;
-  message: string;
+  message?: string;
   variant?: keyof typeof palette;
   actionLabel?: string;
   onAction?: () => void;
@@ -40,9 +41,11 @@ export const AnimatedNotice = memo(({ title, message, variant = "info", actionLa
             {title}
           </Text>
         ) : null}
-        <Paragraph color={colors.text} fontSize="$3">
-          {message}
-        </Paragraph>
+        {message ? (
+          <Paragraph color={colors.text} fontSize="$3">
+            {message}
+          </Paragraph>
+        ) : null}
         {actionLabel && onAction ? (
           <XStack justifyContent="flex-end">
             <AnimatedButton

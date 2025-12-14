@@ -1,4 +1,4 @@
-const { withTamagui } = require("@tamagui/metro-config");
+const { withTamagui } = require("@tamagui/metro-plugin");
 const { getDefaultConfig } = require("expo/metro-config");
 
 module.exports = (async () => {

@@ -250,6 +250,11 @@ export default function AdminDocumentosScreen(): JSX.Element {
     [filteredEmployees]
   );
 
+  const documentTypeOptions = useMemo(
+    () => [{ label: "Todos", value: "all" }, ...DOCUMENT_TYPE_OPTIONS.map(([value, label]) => ({ label, value }))],
+    []
+  );
+
   const activeFilterSummary = useMemo(() => {
     const descriptors: string[] = [];
     if (filters.branchId !== "all") {
@@ -544,11 +549,6 @@ export default function AdminDocumentosScreen(): JSX.Element {
     </Select>
   );
 
-  const documentTypeOptions = useMemo(
-    () => [{ label: "Todos", value: "all" }, ...DOCUMENT_TYPE_OPTIONS.map(([value, label]) => ({ label, value }))],
-    []
-  );
-
   const employeeSelectOptions = useMemo(
     () => employees.map((employee) => ({
       label: `${employee.first_name ?? ""} ${employee.last_name ?? ""}`.trim() || "Sin nombre",
@@ -556,33 +556,6 @@ export default function AdminDocumentosScreen(): JSX.Element {
     })),
     [employees]
   );
-
-  const activeFilterSummary = useMemo(() => {
-    const descriptors: string[] = [];
-    if (filters.branchId !== "all") {
-      const branchLabel = branchOptions.find((option) => option.value === filters.branchId)?.label;
-      descriptors.push(`Sucursal: ${branchLabel ?? filters.branchId}`);
-    }
-    if (filters.departmentId !== "all") {
-      const departmentLabel = departmentOptions.find((option) => option.value === filters.departmentId)?.label;
-      descriptors.push(`Departamento: ${departmentLabel ?? filters.departmentId}`);
-    }
-    if (filters.roleId !== "all") {
-      const roleLabel = roleOptions.find((option) => option.value === filters.roleId)?.label;
-      descriptors.push(`Rol: ${roleLabel ?? filters.roleId}`);
-    }
-    if (filters.employeeId !== "all") {
-      descriptors.push("Empleado filtrado");
-    }
-    if (filters.docType !== "all") {
-      const typeLabel = documentTypeOptions.find((option) => option.value === filters.docType)?.label;
-      descriptors.push(`Tipo: ${typeLabel ?? filters.docType}`);
-    }
-    if (filters.search.trim()) {
-      descriptors.push(`Búsqueda: "${filters.search.trim()}"`);
-    }
-    return descriptors.length ? `Filtros activos: ${descriptors.join(" · ")}` : "Sin filtros activos";
-  }, [branchOptions, departmentOptions, documentTypeOptions, filters, roleOptions]);
 
   const renderDocumentTypeSelect = (
     value: DocumentType | "all",
@@ -806,7 +779,12 @@ export default function AdminDocumentosScreen(): JSX.Element {
             />
           )}
 
-          <Sheet modal open={sheetOpen} onOpenChange={(open) => (open ? setSheetOpen(open) : closeSheet())} snapPoints={[80]}>
+          <Sheet
+            modal
+            open={sheetOpen}
+            onOpenChange={(open: boolean) => (open ? setSheetOpen(open) : closeSheet())}
+            snapPoints={[80]}
+          >
             <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
             <Sheet.Frame padding="$4" backgroundColor="$color2">
               <Sheet.ScrollView>

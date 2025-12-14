@@ -190,11 +190,13 @@ export default function AdminRolesScreen(): JSX.Element {
                     Habilita privilegios especiales para este rol.
                   </Paragraph>
                 </YStack>
-                <Switch
-                  size="$3"
-                  checked={form.admin}
-                  onCheckedChange={(value) => setForm((prev) => ({ ...prev, admin: Boolean(value) }))}
-                >
+                  <Switch
+                    size="$3"
+                    checked={form.admin}
+                    onCheckedChange={(value: boolean) =>
+                      setForm((prev) => ({ ...prev, admin: Boolean(value) }))
+                    }
+                  >
                   <Switch.Thumb animation="quick" />
                 </Switch>
               </XStack>

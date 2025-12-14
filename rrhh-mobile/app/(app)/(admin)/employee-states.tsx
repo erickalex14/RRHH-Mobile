@@ -201,7 +201,7 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
               <Switch
                 size="$3"
                 checked={form.active}
-                onCheckedChange={(value) => setForm((prev) => ({ ...prev, active: Boolean(value) }))}
+                  onCheckedChange={(value: boolean) => setForm((prev) => ({ ...prev, active: Boolean(value) }))}
               >
                 <Switch.Thumb animation="quick" />
               </Switch>

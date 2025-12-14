@@ -159,7 +159,6 @@ export default function LoginScreen(): JSX.Element {
               py="$5"
               gap="$4"
               elevation={4}
-              animation="slow"
               enterStyle={{ opacity: 0, y: 24 }}
               exitStyle={{ opacity: 0, y: -12 }}
               shadowColor="rgba(15,23,42,0.35)"

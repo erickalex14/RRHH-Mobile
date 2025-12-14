@@ -1,4 +1,4 @@
-﻿import { memo, useCallback, useEffect } from "react";
+﻿import { memo, useCallback, useEffect, type ComponentProps } from "react";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -7,16 +7,20 @@ import Animated, {
   withSequence,
   withTiming
 } from "react-native-reanimated";
-import { Button, ButtonProps } from "tamagui";
+import type { GestureResponderEvent } from "react-native";
+import { Button } from "tamagui";
 import { motion, timingConfig } from "@/theme/motion";
 
 const AnimatedTamaguiButton = Animated.createAnimatedComponent(Button);
 
+type BaseButtonProps = ComponentProps<typeof Button>;
 type Status = "default" | "success" | "danger";
 
-export interface AnimatedButtonProps extends ButtonProps {
+export type AnimatedButtonProps = BaseButtonProps & {
   status?: Status;
-}
+  onPressIn?: (event: GestureResponderEvent) => void;
+  onPressOut?: (event: GestureResponderEvent) => void;
+};
 
 const statusPalette: Record<Status, string> = {
   default: "$brandPrimary",
@@ -49,7 +53,9 @@ export const AnimatedButton = memo(({ children, status = "default", onPressIn, o
     [pressProgress, shouldReduceMotion]
   );
 
-  const handlePressIn: ButtonProps["onPressIn"] = useCallback(
+  type PressHandler = (event: GestureResponderEvent) => void;
+
+  const handlePressIn = useCallback<PressHandler>(
     (event) => {
       if (!shouldReduceMotion) {
         animatePress(1);
@@ -59,7 +65,7 @@ export const AnimatedButton = memo(({ children, status = "default", onPressIn, o
     [animatePress, onPressIn, shouldReduceMotion]
   );
 
-  const handlePressOut: ButtonProps["onPressOut"] = useCallback(
+  const handlePressOut = useCallback<PressHandler>(
     (event) => {
       if (!shouldReduceMotion) {
         animatePress(0);

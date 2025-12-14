@@ -517,7 +517,11 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
       </ScrollView>
 
       {Platform.OS === "ios" && pickerState?.open ? (
-        <Sheet modal open onOpenChange={(open) => setPickerState((prev) => (prev ? { ...prev, open } : prev))}>
+        <Sheet
+          modal
+          open
+          onOpenChange={(open: boolean) => setPickerState((prev) => (prev ? { ...prev, open } : prev))}
+        >
           <Sheet.Frame>
             <YStack gap="$3" p="$4">
               <Text fontFamily="$heading" fontSize="$5" color="$text">

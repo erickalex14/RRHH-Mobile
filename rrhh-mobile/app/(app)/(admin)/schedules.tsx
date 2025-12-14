@@ -389,11 +389,13 @@ export default function AdminSchedulesScreen(): JSX.Element {
                   Usa el switch para habilitar o pausar el horario.
                 </Paragraph>
               </YStack>
-              <Switch
-                size="$3"
-                checked={form.active}
-                onCheckedChange={(value) => setForm((prev) => ({ ...prev, active: Boolean(value) }))}
-              >
+                <Switch
+                  size="$3"
+                  checked={form.active}
+                  onCheckedChange={(value: boolean) =>
+                    setForm((prev) => ({ ...prev, active: Boolean(value) }))
+                  }
+                >
                 <Switch.Thumb animation="quick" />
               </Switch>
             </XStack>

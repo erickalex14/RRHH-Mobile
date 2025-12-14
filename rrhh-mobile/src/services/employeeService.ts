@@ -7,7 +7,7 @@ import {
   User,
   WorkSession
 } from "@/types/api";
-import { DocumentType } from "@/types/documents";
+import type { DocumentType } from "@/types/documents";
 
 export interface AttendanceResponse extends ApiResponse<WorkSession[]> {}
 
@@ -115,3 +115,5 @@ export const employeeService = {
     return data;
   }
 };
+
+export type { DocumentType } from "@/types/documents";

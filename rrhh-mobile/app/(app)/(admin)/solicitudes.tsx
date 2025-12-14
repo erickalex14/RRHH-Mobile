@@ -700,7 +700,7 @@ export default function AdminSolicitudesScreen(): JSX.Element {
           <Sheet
             modal
             open={detailSheetOpen}
-            onOpenChange={(open) => (open ? setDetailSheetOpen(open) : closeDetails())}
+            onOpenChange={(open: boolean) => (open ? setDetailSheetOpen(open) : closeDetails())}
             snapPoints={[80]}
           >
             <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />

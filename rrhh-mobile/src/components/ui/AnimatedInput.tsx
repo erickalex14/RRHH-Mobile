@@ -1,5 +1,5 @@
-﻿import { forwardRef, useCallback } from "react";
-import { Input, InputProps, Label, YStack } from "tamagui";
+﻿import { forwardRef, useCallback, type ComponentProps } from "react";
+import { Input, Label, YStack } from "tamagui";
 import Animated, {
   Easing,
   interpolateColor,
@@ -8,21 +8,33 @@ import Animated, {
   useSharedValue,
   withTiming
 } from "react-native-reanimated";
-import { TextInput } from "react-native";
+import { TextInput, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
 import { motion, timingConfig } from "@/theme/motion";
 
-export interface AnimatedInputProps extends InputProps {
+type BaseInputProps = ComponentProps<typeof Input>;
+
+export interface AnimatedInputProps extends BaseInputProps {
   label?: string;
   helperText?: string;
+  status?: "success" | "error" | "warning";
 }
 
+const statusColors = {
+  success: "#22c55e",
+  error: "#ef4444",
+  warning: "#eab308"
+} as const;
+
+type InputFocusEvent = NativeSyntheticEvent<TextInputFocusEventData>;
+
 export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(
-  ({ label, helperText, onFocus, onBlur, ...props }, ref) => {
+  ({ label, helperText, status, onFocus, onBlur, ...props }, ref) => {
     const focusValue = useSharedValue(0);
     const shouldReduceMotion = useReducedMotion();
+    const statusColor = status ? statusColors[status] : null;
 
-    const handleFocus = useCallback<Required<InputProps>["onFocus"]>(
-      (event) => {
+    const handleFocus = useCallback(
+      (event: InputFocusEvent) => {
         focusValue.value = shouldReduceMotion
           ? 1
           : withTiming(1, { ...timingConfig(motion.duration.quick), easing: Easing.inOut(Easing.cubic) });
@@ -31,8 +43,8 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(
       [focusValue, onFocus, shouldReduceMotion]
     );
 
-    const handleBlur = useCallback<Required<InputProps>["onBlur"]>(
-      (event) => {
+    const handleBlur = useCallback(
+      (event: InputFocusEvent) => {
         focusValue.value = shouldReduceMotion
           ? 0
           : withTiming(0, { ...timingConfig(motion.duration.quick), easing: Easing.inOut(Easing.cubic) });
@@ -42,7 +54,8 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(
     );
 
     const containerStyle = useAnimatedStyle(() => {
-      const borderColor = interpolateColor(focusValue.value, [0, 1], ["#1f2937", "#2563eb"]);
+      const animatedBorder = interpolateColor(focusValue.value, [0, 1], ["#1f2937", "#2563eb"]);
+      const borderColor = statusColor ?? animatedBorder;
       if (shouldReduceMotion) {
         return { borderColor };
       }
@@ -51,7 +64,7 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(
         shadowOpacity: focusValue.value ? 0.4 : 0,
         transform: [{ scale: focusValue.value ? 1.01 : 1 }]
       };
-    }, [shouldReduceMotion]);
+    }, [shouldReduceMotion, statusColor]);
 
     return (
       <YStack gap="$1">

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { ViewStyle } from "react-native";
+import { StyleProp, ViewStyle } from "react-native";
 import Animated, { useSharedValue, withRepeat, withTiming, useAnimatedStyle } from "react-native-reanimated";
 
 interface SkeletonProps {
-  width?: number | string;
-  height?: number;
+  width?: ViewStyle["width"];
+  height?: ViewStyle["height"];
   borderRadius?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Skeleton = ({ width = "100%", height = 16, borderRadius = 12, style }: SkeletonProps): JSX.Element => {
@@ -18,18 +18,12 @@ export const Skeleton = ({ width = "100%", height = 16, borderRadius = 12, style
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  return (
-    <Animated.View
-      style={[
-        {
-          width,
-          height,
-          borderRadius,
-          backgroundColor: "#1f2937"
-        },
-        style,
-        animatedStyle
-      ]}
-    />
-  );
+  const baseStyle: ViewStyle = {
+    width,
+    height,
+    borderRadius,
+    backgroundColor: "#1f2937"
+  };
+
+  return <Animated.View style={[baseStyle, style, animatedStyle]} />;
 };

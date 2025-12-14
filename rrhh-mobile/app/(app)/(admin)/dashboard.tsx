@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, type Href } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useQuery } from "@tanstack/react-query";
 import { Screen } from "@/components/ui/Screen";
@@ -11,6 +11,13 @@ import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { adminService } from "@/services/adminService";
 import { EarlyDepartureRequest } from "@/types/api";
 import { Paragraph, ScrollView, Separator, Text, XStack, YStack } from "tamagui";
+
+type SummaryCard = {
+  label: string;
+  value: number;
+  hint: string;
+  target: Href<string>;
+};
 
 export default function AdminDashboardScreen(): JSX.Element {
   const router = useRouter();
@@ -53,61 +60,61 @@ export default function AdminDashboardScreen(): JSX.Element {
     }
   });
 
-  const summaryCards = useMemo(
+  const summaryCards = useMemo<SummaryCard[]>(
     () => [
       {
         label: "Colaboradores",
         value: data?.users.length ?? 0,
         hint: "Gestión de usuarios",
-        target: "/(app)/(admin)/users"
+        target: "/(app)/(admin)/users" as Href<string>
       },
       {
         label: "Documentos",
         value: data?.documents.length ?? 0,
         hint: "Archivos firmados",
-        target: "/(app)/(admin)/documentos"
+        target: "/(app)/(admin)/documentos" as Href<string>
       },
       {
         label: "Solicitudes",
         value: data?.requests.length ?? 0,
         hint: "Pendientes",
-        target: "/(app)/(admin)/solicitudes"
+        target: "/(app)/(admin)/solicitudes" as Href<string>
       },
       {
         label: "Sucursales",
         value: data?.branches.length ?? 0,
         hint: "Activas",
-        target: "/(app)/(admin)/branches"
+        target: "/(app)/(admin)/branches" as Href<string>
       },
       {
         label: "Departamentos",
         value: data?.departments.length ?? 0,
         hint: "Disponibles",
-        target: "/(app)/(admin)/departments"
+        target: "/(app)/(admin)/departments" as Href<string>
       },
       {
         label: "Roles",
         value: data?.roles.length ?? 0,
         hint: "Catálogo",
-        target: "/(app)/(admin)/roles"
+        target: "/(app)/(admin)/roles" as Href<string>
       },
       {
         label: "Estados",
         value: data?.employeeStates.length ?? 0,
         hint: "Situación laboral",
-        target: "/(app)/(admin)/employee-states"
+        target: "/(app)/(admin)/employee-states" as Href<string>
       },
       {
         label: "Horarios",
         value: data?.schedules.length ?? 0,
         hint: "Turnos configurados",
-        target: "/(app)/(admin)/schedules"
+        target: "/(app)/(admin)/schedules" as Href<string>
       },
       {
         label: "Companias",
         value: data?.companies.length ?? 0,
         hint: "Unidades registradas",
-        target: "/(app)/(admin)/crud"
+        target: "/(app)/(admin)/crud" as Href<string>
       }
     ],
     [data]

@@ -4,25 +4,59 @@
     "module": "ESNext",
     "jsx": "react-jsx",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowJs": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["expo", "react", "react-native", "node"],
+    "types": [
+      "expo",
+      "react",
+      "react-native",
+      "node"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/components/*": ["src/components/*"],
-      "@/hooks/*": ["src/hooks/*"],
-      "@/services/*": ["src/services/*"],
-      "@/store/*": ["src/store/*"],
-      "@/providers/*": ["src/providers/*"],
-      "@/config/*": ["src/config/*"],
-      "@/types/*": ["src/types/*"],
-      "@/theme/*": ["src/theme/*"],
-      "@/utils/*": ["src/utils/*"]
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/services/*": [
+        "src/services/*"
+      ],
+      "@/store/*": [
+        "src/store/*"
+      ],
+      "@/providers/*": [
+        "src/providers/*"
+      ],
+      "@/config/*": [
+        "src/config/*"
+      ],
+      "@/types/*": [
+        "src/types/*"
+      ],
+      "@/theme/*": [
+        "src/theme/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ]
     }
   },
-  "include": ["app", "src", "tamagui.config.ts", "app.config.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "app",
+    "src",
+    "tamagui.config.ts",
+    "app.config.ts",
+    "tamagui.types.d.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "extends": "expo/tsconfig.base"
 }

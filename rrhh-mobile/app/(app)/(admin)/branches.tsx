@@ -350,7 +350,7 @@ export default function AdminBranchesScreen(): JSX.Element {
                   <Switch
                     size="$3"
                     checked={form.matrix}
-                    onCheckedChange={(value) =>
+                    onCheckedChange={(value: boolean) =>
                       setForm((prev) => ({ ...prev, matrix: Boolean(value) }))
                     }
                   >

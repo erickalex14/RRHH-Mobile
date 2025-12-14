@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {
-    "@react-native-community/datetimepicker": "^7.7.0",
+    "@react-native-community/datetimepicker": "8.0.1",
     "@tamagui/animations-react-native": "^1.140.3",
     "@tamagui/config": "^1.113.3",
     "@tamagui/font-inter": "^1.113.3",
@@ -30,23 +30,28 @@
     "expo-secure-store": "~13.0.2",
     "expo-status-bar": "~1.12.1",
     "react": "18.2.0",
-    "react-native": "0.74.3",
-    "react-native-gesture-handler": "~2.14.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.5",
+    "react-native-gesture-handler": "~2.16.1",
     "react-native-reanimated": "~3.10.1",
-    "react-native-safe-area-context": "4.10.1",
+    "react-native-safe-area-context": "4.10.5",
     "react-native-screens": "~3.31.1",
+    "react-native-web": "~0.19.10",
     "tamagui": "^1.113.3",
+    "undefined": "\\",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.24.9",
     "@react-native-community/eslint-config": "^3.2.0",
+    "@tamagui/babel-plugin": "^1.140.3",
+    "@tamagui/metro-plugin": "^1.140.3",
     "@tamagui/types": "^1.113.3",
     "@types/node": "^20.11.5",
-    "@types/react": "18.3.3",
+    "@types/react": "~18.2.79",
     "@types/react-native": "0.73.0",
     "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
-    "typescript": "^5.4.5"
+    "typescript": "~5.3.3"
   }
 }

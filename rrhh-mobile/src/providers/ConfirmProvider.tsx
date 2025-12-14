@@ -14,8 +14,9 @@ interface ConfirmContextValue {
   confirm: (options: ConfirmDialogOptions) => Promise<boolean>;
 }
 
-const defaultOptions: Required<Omit<ConfirmDialogOptions, "message">> = {
+const defaultOptions: Required<ConfirmDialogOptions> = {
   title: "Confirmar acción",
+  message: "¿Deseas continuar?",
   confirmLabel: "Confirmar",
   cancelLabel: "Cancelar",
   destructive: false
@@ -79,7 +80,6 @@ export const ConfirmProvider = ({ children }: PropsWithChildren): JSX.Element =>
         <Dialog.Portal>
           <Dialog.Overlay
             key="overlay"
-            animation="quick"
             opacity={0.5}
             enterStyle={{ opacity: 0 }}
             exitStyle={{ opacity: 0 }}
@@ -88,7 +88,6 @@ export const ConfirmProvider = ({ children }: PropsWithChildren): JSX.Element =>
             key="content"
             elevate
             bordered
-            animation="quick"
             enterStyle={{ opacity: 0, scale: 0.95 }}
             exitStyle={{ opacity: 0, scale: 0.95 }}
             backgroundColor="$color2"

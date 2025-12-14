@@ -2,7 +2,30 @@ import { createTamagui, createTokens } from "tamagui";
 import { shorthands } from "@tamagui/shorthands";
 import { themes, tokens as baseTokens } from "@tamagui/themes";
 import { createInterFont } from "@tamagui/font-inter";
-import { animations } from "@tamagui/animations-react-native";
+import { createAnimations } from "@tamagui/animations-react-native";
+
+type TamaguiAnimations = NonNullable<Parameters<typeof createTamagui>[0]["animations"]>;
+
+const animations = createAnimations({
+  bouncy: {
+    type: "spring",
+    damping: 10,
+    mass: 0.9,
+    stiffness: 150
+  },
+  lazy: {
+    type: "spring",
+    damping: 20,
+    mass: 1,
+    stiffness: 60
+  },
+  quick: {
+    type: "spring",
+    damping: 20,
+    mass: 1.2,
+    stiffness: 250
+  }
+}) as TamaguiAnimations;
 
 const tokens = createTokens({
   ...baseTokens,
@@ -58,7 +81,12 @@ const tokens = createTokens({
 
 const headingFont = createInterFont({
   family: "Inter",
-  weight: "700",
+  weight: {
+    4: "600",
+    5: "700",
+    6: "700",
+    7: "800"
+  },
   size: {
     4: 16,
     5: 20,
@@ -69,13 +97,29 @@ const headingFont = createInterFont({
 
 const bodyFont = createInterFont({
   family: "Inter",
-  weight: "400",
+  weight: {
+    3: "400",
+    4: "400",
+    5: "500"
+  },
   size: {
     3: 14,
     4: 16,
     5: 18
   }
 });
+
+const media = {
+  xs: { maxWidth: 420 },
+  sm: { maxWidth: 768 },
+  md: { maxWidth: 1024 },
+  lg: { maxWidth: 1280 },
+  xl: { maxWidth: 1536 },
+  short: { maxHeight: 820 },
+  tall: { minHeight: 820 },
+  hoverNone: { hover: "none" as const },
+  pointerCoarse: { pointer: "coarse" as const }
+} as const;
 
 const darkTheme = {
   ...themes.dark,
@@ -98,6 +142,7 @@ const lightTheme = {
 const config = createTamagui({
   defaultTheme: "dark",
   tokens,
+  media,
   themes: {
     ...themes,
     dark: darkTheme,
