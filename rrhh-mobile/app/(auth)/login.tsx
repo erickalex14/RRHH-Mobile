@@ -3,6 +3,7 @@ import { Stack, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { useAuthStore } from "@/store/auth";
+import { useShallow } from "zustand/react/shallow";
 import {
   AnimatePresence,
   Input,
@@ -27,13 +28,15 @@ const AnimatedCard = Animated.createAnimatedComponent(YStack);
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
-  const { status, error, login, clearError, isAdmin } = useAuthStore((state) => ({
-    status: state.status,
-    error: state.error,
-    login: state.login,
-    clearError: state.clearError,
-    isAdmin: state.user?.employeeDetail?.role?.admin ?? false
-  }));
+  const { status, error, login, clearError } = useAuthStore(
+    useShallow((state) => ({
+      status: state.status,
+      error: state.error,
+      login: state.login,
+      clearError: state.clearError
+    }))
+  );
+  const isAdmin = useAuthStore((state) => state.user?.employeeDetail?.role?.admin ?? false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
