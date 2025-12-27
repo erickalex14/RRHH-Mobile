@@ -50,6 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ status: "loading", error: null });
     try {
       const response = await authService.login(payload);
+      console.log("Login response user:", JSON.stringify(response.user, null, 2));
       await saveToken(response.access_token);
       setAuthToken(response.access_token);
       set({ user: response.user, token: response.access_token, status: "authenticated" });

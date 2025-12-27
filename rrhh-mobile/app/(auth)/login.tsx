@@ -4,6 +4,7 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { useAuthStore } from "@/store/auth";
 import { useShallow } from "zustand/react/shallow";
+import { isUserAdmin } from "@/utils/auth";
 import {
   AnimatePresence,
   Input,
@@ -28,15 +29,15 @@ const AnimatedCard = Animated.createAnimatedComponent(YStack);
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
-  const { status, error, login, clearError } = useAuthStore(
+  const { status, error, login, clearError, user } = useAuthStore(
     useShallow((state) => ({
       status: state.status,
       error: state.error,
       login: state.login,
-      clearError: state.clearError
+      clearError: state.clearError,
+      user: state.user
     }))
   );
-  const isAdmin = useAuthStore((state) => state.user?.employeeDetail?.role?.admin ?? false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,8 +59,10 @@ export default function LoginScreen(): JSX.Element {
   }, [heroProgress]);
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && user) {
       setCardVisible(false);
+      const isAdmin = isUserAdmin(user);
+      console.log("User authenticated, isAdmin:", isAdmin, "user:", JSON.stringify(user, null, 2));
       const timer = setTimeout(() => {
         const destination = isAdmin
           ? "/(app)/(admin)/dashboard"
@@ -68,7 +71,7 @@ export default function LoginScreen(): JSX.Element {
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [isAdmin, router, status]);
+  }, [user, router, status]);
 
   const heroStyle = useAnimatedStyle(() => ({
     opacity: heroProgress.value,

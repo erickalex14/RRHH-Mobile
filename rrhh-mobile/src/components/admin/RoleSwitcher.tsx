@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
 import Animated, { FadeInDown, useReducedMotion } from "react-native-reanimated";
-import { Paragraph, Text, XStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { useAuthStore } from "@/store/auth";
+import { RefreshCw } from "@tamagui/lucide-icons";
+import { isUserAdmin } from "@/utils/auth";
 
 interface RoleSwitcherProps {
   target: "employee" | "admin";
@@ -11,59 +13,63 @@ interface RoleSwitcherProps {
 
 export const RoleSwitcher = ({ target }: RoleSwitcherProps): JSX.Element | null => {
   const router = useRouter();
-  const isAdmin = useAuthStore((state) => state.user?.employeeDetail?.role?.admin ?? false);
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = isUserAdmin(user);
   const shouldReduceMotion = useReducedMotion();
-
-  if (!isAdmin) {
-    return null;
-  }
 
   const copy = useMemo(
     () =>
       target === "employee"
         ? {
-            title: "Modo administrativo",
-            hint: "Necesitas revisar la app como colaborador?",
+            title: "Panel Administrativo",
+            hint: "¿Necesitas ver tu vista de empleado?",
             cta: "Ir a modo empleado",
             href: "/(app)/(tabs)/home"
           }
         : {
-            title: "Modo colaborador",
-            hint: "Vuelve al panel de gestión para aprobar solicitudes.",
-            cta: "Regresar a Admin",
+            title: "Modo Colaborador",
+            hint: "Accede al panel de gestión y administración.",
+            cta: "Ir a panel Admin",
             href: "/(app)/(admin)/dashboard"
           },
     [target]
   );
 
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
     <Animated.View entering={shouldReduceMotion ? undefined : FadeInDown.duration(300)}>
-      <XStack
+      <YStack
         backgroundColor="$surface"
         borderRadius="$4"
         px="$4"
         py="$3"
-        alignItems="center"
-        justifyContent="space-between"
-        gap="$3"
+        gap="$2"
+        borderWidth={1}
+        borderColor="$brandPrimary"
       >
-        <XStack flex={1} gap="$2" alignItems="center">
+        <XStack alignItems="center" gap="$2">
+          <RefreshCw size={18} color="$brandPrimary" />
           <Text fontFamily="$heading" fontSize="$4" color="$text">
             {copy.title}
           </Text>
-          <Paragraph size="$2" color="$muted" flexShrink={1}>
-            {copy.hint}
-          </Paragraph>
         </XStack>
-        <AnimatedButton
-          size="$3"
-          backgroundColor="$brandPrimary"
-          color="$text"
-          onPress={() => router.push(copy.href as never)}
-        >
-          {copy.cta}
-        </AnimatedButton>
-      </XStack>
+        <XStack alignItems="center" justifyContent="space-between" gap="$3">
+          <Text fontSize="$2" color="$muted" flex={1}>
+            {copy.hint}
+          </Text>
+          <AnimatedButton
+            size="$3"
+            backgroundColor="$brandPrimary"
+            color="$text"
+            onPress={() => router.replace(copy.href as never)}
+          >
+            {copy.cta}
+          </AnimatedButton>
+        </XStack>
+      </YStack>
     </Animated.View>
   );
 };

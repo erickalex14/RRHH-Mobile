@@ -10,15 +10,13 @@ import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SimpleSelect } from "@/components/ui/SimpleSelect";
 import { adminService } from "@/services/adminService";
 import { Branch, Department, EmployeeState, Role, User } from "@/types/api";
 import {
-  Adapt,
   Paragraph,
   ScrollView,
-  Select,
   Separator,
-  Sheet,
   Text,
   XStack,
   YStack
@@ -208,121 +206,41 @@ export default function AdminUsersScreen(): JSX.Element {
       <XStack gap="$3" flexWrap="wrap">
         <YStack flex={1} minWidth={160} gap="$1">
           <Text fontWeight="600" color="$text">Estado</Text>
-          <Select value={stateFilter} onValueChange={(value) => setStateFilter(value as FilterOption)}>
-            <Select.Trigger borderColor="$borderColor">
-              <Select.Value placeholder="Selecciona" />
-            </Select.Trigger>
-            <Adapt when="sm" platform="touch">
-              <Sheet modal dismissOnSnapToBottom>
-                <Sheet.Frame>
-                  <Sheet.ScrollView>
-                    <Adapt.Contents />
-                  </Sheet.ScrollView>
-                </Sheet.Frame>
-                <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-              </Sheet>
-            </Adapt>
-            <Select.Content>
-              <Select.ScrollUpButton />
-              <Select.Viewport>
-                {stateOptions.map((option) => (
-                  <Select.Item key={option.value} value={option.value}>
-                    <Select.ItemText>{option.label}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Viewport>
-              <Select.ScrollDownButton />
-            </Select.Content>
-          </Select>
+          <SimpleSelect
+            options={stateOptions}
+            value={stateFilter}
+            onValueChange={(value) => setStateFilter(value as FilterOption)}
+            placeholder="Selecciona estado"
+          />
         </YStack>
         <YStack flex={1} minWidth={160} gap="$1">
           <Text fontWeight="600" color="$text">Rol</Text>
-          <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as FilterOption)}>
-            <Select.Trigger borderColor="$borderColor">
-              <Select.Value placeholder="Selecciona" />
-            </Select.Trigger>
-            <Adapt when="sm" platform="touch">
-              <Sheet modal dismissOnSnapToBottom>
-                <Sheet.Frame>
-                  <Sheet.ScrollView>
-                    <Adapt.Contents />
-                  </Sheet.ScrollView>
-                </Sheet.Frame>
-                <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-              </Sheet>
-            </Adapt>
-            <Select.Content>
-              <Select.ScrollUpButton />
-              <Select.Viewport>
-                {roleOptions.map((option) => (
-                  <Select.Item key={option.value} value={option.value}>
-                    <Select.ItemText>{option.label}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Viewport>
-              <Select.ScrollDownButton />
-            </Select.Content>
-          </Select>
+          <SimpleSelect
+            options={roleOptions}
+            value={roleFilter}
+            onValueChange={(value) => setRoleFilter(value as FilterOption)}
+            placeholder="Selecciona rol"
+          />
         </YStack>
       </XStack>
       <XStack gap="$3" flexWrap="wrap">
         <YStack flex={1} minWidth={160} gap="$1">
           <Text fontWeight="600" color="$text">Sucursal</Text>
-          <Select value={branchFilter} onValueChange={(value) => setBranchFilter(value as FilterOption)}>
-            <Select.Trigger borderColor="$borderColor">
-              <Select.Value placeholder="Selecciona" />
-            </Select.Trigger>
-            <Adapt when="sm" platform="touch">
-              <Sheet modal dismissOnSnapToBottom>
-                <Sheet.Frame>
-                  <Sheet.ScrollView>
-                    <Adapt.Contents />
-                  </Sheet.ScrollView>
-                </Sheet.Frame>
-                <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-              </Sheet>
-            </Adapt>
-            <Select.Content>
-              <Select.ScrollUpButton />
-              <Select.Viewport>
-                {branchOptions.map((option) => (
-                  <Select.Item key={option.value} value={option.value}>
-                    <Select.ItemText>{option.label}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Viewport>
-              <Select.ScrollDownButton />
-            </Select.Content>
-          </Select>
+          <SimpleSelect
+            options={branchOptions}
+            value={branchFilter}
+            onValueChange={(value) => setBranchFilter(value as FilterOption)}
+            placeholder="Selecciona sucursal"
+          />
         </YStack>
         <YStack flex={1} minWidth={160} gap="$1">
           <Text fontWeight="600" color="$text">Departamento</Text>
-          <Select value={departmentFilter} onValueChange={(value) => setDepartmentFilter(value as FilterOption)}>
-            <Select.Trigger borderColor="$borderColor">
-              <Select.Value placeholder="Selecciona" />
-            </Select.Trigger>
-            <Adapt when="sm" platform="touch">
-              <Sheet modal dismissOnSnapToBottom>
-                <Sheet.Frame>
-                  <Sheet.ScrollView>
-                    <Adapt.Contents />
-                  </Sheet.ScrollView>
-                </Sheet.Frame>
-                <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-              </Sheet>
-            </Adapt>
-            <Select.Content>
-              <Select.ScrollUpButton />
-              <Select.Viewport>
-                {departmentOptions.map((option) => (
-                  <Select.Item key={option.value} value={option.value}>
-                    <Select.ItemText>{option.label}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Viewport>
-              <Select.ScrollDownButton />
-            </Select.Content>
-          </Select>
+          <SimpleSelect
+            options={departmentOptions}
+            value={departmentFilter}
+            onValueChange={(value) => setDepartmentFilter(value as FilterOption)}
+            placeholder="Selecciona departamento"
+          />
         </YStack>
       </XStack>
     </YStack>

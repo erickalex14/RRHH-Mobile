@@ -2,6 +2,7 @@ import { Redirect, Stack, useRouter } from "expo-router";
 import { Paragraph, Spinner, Text, YStack } from "tamagui";
 import { useAuthStore } from "@/store/auth";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
+import { isUserAdmin } from "@/utils/auth";
 
 export default function AdminLayout(): JSX.Element {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function AdminLayout(): JSX.Element {
     return <Redirect href="/(auth)/login" />;
   }
 
-  const isAdmin = user?.employeeDetail?.role?.admin;
+  const isAdmin = isUserAdmin(user);
 
   if (!isAdmin) {
     return (
