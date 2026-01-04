@@ -1,5 +1,4 @@
 import { Screen } from "@/components/ui/Screen";
-import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
 import { employeeService } from "@/services/employeeService";
@@ -15,9 +14,11 @@ import {
   Spinner,
   Text,
   XStack,
-  YStack
+  YStack,
+  Button
 } from "tamagui";
-import Animated, { FadeInDown, FadeOutUp, Layout } from "react-native-reanimated";
+import { LogIn, LogOut, Coffee, Briefcase } from "@tamagui/lucide-icons";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 const stageLabel: Record<string, string> = {
   idle: "Pendiente de registro",
@@ -67,6 +68,38 @@ export default function HomeScreen(): JSX.Element {
 
   const anyLoading = attendanceQuery.isFetching;
 
+  // Condiciones lógicas (Booleanos simples)
+  const isEntradaDisabled = Boolean(currentSession?.start_time) || startMutation.isPending;
+  const isAlmuerzoDisabled = !currentSession?.start_time || Boolean(currentSession?.lunch_start) || Boolean(currentSession?.end_time) || lunchStartMutation.isPending;
+  const isFinAlmuerzoDisabled = !currentSession?.lunch_start || Boolean(currentSession?.lunch_end) || Boolean(currentSession?.end_time) || lunchEndMutation.isPending;
+  const isSalidaDisabled = !currentSession?.start_time || Boolean(currentSession?.end_time) || endMutation.isPending;
+
+  // ESTA ES LA MAGIA:
+  // Función que decide si ejecutar la acción o no.
+  // Si está "bloqueado", simplemente no hace nada (return), pero el botón sigue viéndose azul.
+  const handlePress = (action: () => void, isDisabled: boolean) => {
+    if (isDisabled) return; 
+    action();
+  };
+
+  // Estilo común OBLIGATORIO para todos
+  const commonButtonProps = {
+    width: "48%",         // Ocupar casi la mitad
+    height: "$8",         // Altura fija grande
+    backgroundColor: "#2563EB", // AZUL SIEMPRE
+    borderRadius: "$6",
+    justifyContent: "center",
+    alignItems: "center",
+    pressStyle: { scale: 0.95 },
+    animation: "bouncy",
+    disabled: false,      // <--- TRUCO: NUNCA LE DECIMOS QUE ESTÁ DESHABILITADO
+    iconAfter: false,
+    borderWidth: 0,
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "$4"
+  } as const;
+
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
@@ -102,25 +135,19 @@ export default function HomeScreen(): JSX.Element {
             />
             <XStack justifyContent="space-between">
               <YStack>
-                <Text color="$text" opacity={0.6}>
-                  Entrada
-                </Text>
+                <Text color="$text" opacity={0.6}>Entrada</Text>
                 <Text color="$text" fontSize="$6">
                   {formatHour(currentSession?.start_time)}
                 </Text>
               </YStack>
               <YStack alignItems="center">
-                <Text color="$text" opacity={0.6}>
-                  Almuerzo
-                </Text>
+                <Text color="$text" opacity={0.6}>Almuerzo</Text>
                 <Text color="$text" fontSize="$6">
                   {formatHour(currentSession?.lunch_start)} / {formatHour(currentSession?.lunch_end)}
                 </Text>
               </YStack>
               <YStack alignItems="flex-end">
-                <Text color="$text" opacity={0.6}>
-                  Salida
-                </Text>
+                <Text color="$text" opacity={0.6}>Salida</Text>
                 <Text color="$text" fontSize="$6">
                   {formatHour(currentSession?.end_time)}
                 </Text>
@@ -129,58 +156,67 @@ export default function HomeScreen(): JSX.Element {
           </YStack>
         </AnimatePresence>
 
-        <YStack gap="$3">
-          <SizableText size="$4" color="$text" opacity={0.75}>
+        {/* CONTENEDOR DE BOTONES */}
+        <YStack gap="$3" width="100%" paddingHorizontal="$2">
+          <SizableText size="$4" color="$text" opacity={0.75} marginBottom="$2">
             Control de jornada
           </SizableText>
-          <Animated.View layout={Layout.springify()}>
-            <XStack gap="$3" flexWrap="wrap">
-              <AnimatedButton
-                flex={1}
-                disabled={Boolean(currentSession?.start_time) || startMutation.isPending}
-                onPress={() => startMutation.mutate()}
-              >
-                {startMutation.isPending ? <Spinner color="$text" /> : "Registrar entrada"}
-              </AnimatedButton>
-              <AnimatedButton
-                flex={1}
-                disabled={!currentSession?.start_time || Boolean(currentSession?.lunch_start) || lunchStartMutation.isPending}
-                backgroundColor="$brandSecondary"
-                onPress={() => lunchStartMutation.mutate()}
-              >
-                {lunchStartMutation.isPending ? <Spinner color="$text" /> : "Iniciar almuerzo"}
-              </AnimatedButton>
-            </XStack>
-          </Animated.View>
-          <Animated.View layout={Layout.springify()}>
-            <XStack gap="$3" flexWrap="wrap">
-              <AnimatedButton
-                flex={1}
-                disabled={!currentSession?.lunch_start || Boolean(currentSession?.lunch_end) || lunchEndMutation.isPending}
-                onPress={() => lunchEndMutation.mutate()}
-              >
-                {lunchEndMutation.isPending ? <Spinner color="$text" /> : "Terminar almuerzo"}
-              </AnimatedButton>
-              <AnimatedButton
-                flex={1}
-                disabled={!currentSession?.start_time || Boolean(currentSession?.end_time) || endMutation.isPending}
-                backgroundColor="$success"
-                onPress={() => endMutation.mutate()}
-              >
-                {endMutation.isPending ? <Spinner color="$text" /> : "Registrar salida"}
-              </AnimatedButton>
-            </XStack>
-          </Animated.View>
+          
+          {/* FILA 1 */}
+          <XStack width="100%" justifyContent="space-between" marginBottom="$3">
+            {/* BOTÓN 1: ENTRADA */}
+            <Button
+              {...commonButtonProps}
+              opacity={isEntradaDisabled ? 0.5 : 1} // Solo cambiamos la transparencia manual
+              onPress={() => handlePress(() => startMutation.mutate(), isEntradaDisabled)}
+              icon={startMutation.isPending ? <Spinner color="white" /> : <LogIn size={24} color="white" />}
+            >
+              Entrada
+            </Button>
+
+            {/* BOTÓN 2: ALMUERZO */}
+            <Button
+              {...commonButtonProps}
+              opacity={isAlmuerzoDisabled ? 0.5 : 1}
+              onPress={() => handlePress(() => lunchStartMutation.mutate(), isAlmuerzoDisabled)}
+              icon={lunchStartMutation.isPending ? <Spinner color="white" /> : <Coffee size={24} color="white" />}
+            >
+              Almuerzo
+            </Button>
+          </XStack>
+
+          {/* FILA 2 */}
+          <XStack width="100%" justifyContent="space-between">
+            {/* BOTÓN 3: FIN ALMUERZO */}
+            <Button
+              {...commonButtonProps}
+              opacity={isFinAlmuerzoDisabled ? 0.5 : 1}
+              onPress={() => handlePress(() => lunchEndMutation.mutate(), isFinAlmuerzoDisabled)}
+              icon={lunchEndMutation.isPending ? <Spinner color="white" /> : <Briefcase size={24} color="white" />}
+            >
+              Fin Almuerzo
+            </Button>
+
+            {/* BOTÓN 4: SALIDA */}
+            <Button
+              {...commonButtonProps}
+              opacity={isSalidaDisabled ? 0.5 : 1}
+              onPress={() => handlePress(() => endMutation.mutate(), isSalidaDisabled)}
+              icon={endMutation.isPending ? <Spinner color="white" /> : <LogOut size={24} color="white" />}
+            >
+              Salida
+            </Button>
+          </XStack>
+
         </YStack>
 
         {anyLoading ? (
-          <XStack mt="$4" alignItems="center" gap="$2">
-            <Spinner color="$text" />
-            <Text color="$text">Sincronizando con el servidor...</Text>
+          <XStack mt="$4" alignItems="center" gap="$2" justifyContent="center">
+            <Spinner size="small" color="$text" />
+            <Text color="$text" fontSize="$2" opacity={0.7}>Sincronizando...</Text>
           </XStack>
         ) : null}
       </YStack>
     </Screen>
   );
 }
-
