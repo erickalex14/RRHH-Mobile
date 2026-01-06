@@ -79,18 +79,19 @@ const normalizeIncomingTime = (value?: string | null): string => {
   return trimmed;
 };
 
-const toDateValue = (value: string): Date => {
-  const now = new Date();
-  const [hours, minutes] = value.split(":").map((chunk) => Number(chunk));
-  now.setHours(Number.isFinite(hours) ? hours : 9, Number.isFinite(minutes) ? minutes : 0, 0, 0);
-  return now;
-};
 
 const formatTimeFromDate = (date: Date): string => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
 const ensurePayloadTime = (value: string): string => {
   if (!value) return value;
   return value.length === 5 ? `${value}:00` : value;
+};
+
+const toDateValue = (value: string): Date => {
+  const now = new Date();
+  const [hours, minutes] = value.split(":").map((chunk) => Number(chunk));
+  now.setHours(Number.isFinite(hours) ? hours : 9, Number.isFinite(minutes) ? minutes : 0, 0, 0);
+  return now;
 };
 
 const toMinutes = (value: string): number | null => {

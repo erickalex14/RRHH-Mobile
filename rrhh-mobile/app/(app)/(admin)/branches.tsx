@@ -69,8 +69,8 @@ export default function AdminBranchesScreen(): JSX.Element {
     queryFn: adminService.getCompanies
   });
 
-  const companies: Company[] = companiesData?.data ?? [];
   const branches: Branch[] = branchesData?.data ?? [];
+  const companies: Company[] = companiesData?.data ?? [];
 
   useEffect(() => {
     if (companies.length > 0 && form.company_id === null) {
