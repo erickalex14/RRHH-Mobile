@@ -1,4 +1,5 @@
 import { Screen } from "@/components/ui/Screen";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
 import { employeeService } from "@/services/employeeService";
@@ -84,17 +85,23 @@ export default function HomeScreen(): JSX.Element {
 
   // Estilo común OBLIGATORIO para todos
   const commonButtonProps = {
-    width: "48%",         // Ocupar casi la mitad
-    height: "$8",         // Altura fija grande
-    backgroundColor: "#2563EB", // AZUL SIEMPRE
+    width: "48%",
+    height: "$8",
+    backgroundColor: "#1d4ed8",
     borderRadius: "$6",
     justifyContent: "center",
     alignItems: "center",
     pressStyle: { scale: 0.95 },
     animation: "bouncy",
-    disabled: false,      // <--- TRUCO: NUNCA LE DECIMOS QUE ESTÁ DESHABILITADO
+    disabled: false,
     iconAfter: false,
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    shadowColor: "rgba(37,99,235,0.35)",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    elevation: 4,
     color: "white",
     fontWeight: "bold",
     fontSize: "$4"
@@ -103,9 +110,9 @@ export default function HomeScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <YStack gap="$4" flex={1}>
+      <YStack gap="$5" flex={1}>
         <Animated.View entering={FadeInDown.duration(400)}>
-          <Text fontSize="$6" color="$text">
+          <Text fontSize="$6" color="$text" fontFamily="$heading">
             Hola, {user?.first_name}
           </Text>
           <Paragraph color="$text" opacity={0.7}>
@@ -116,24 +123,18 @@ export default function HomeScreen(): JSX.Element {
         <RoleSwitcher target="admin" />
 
         <AnimatePresence exitBeforeEnter>
-          <YStack
-            key={stage}
-            backgroundColor="$surface"
-            borderRadius="$4"
-            px="$4"
-            py="$5"
-            gap="$3"
-            enterStyle={{ opacity: 0, scale: 0.95 }}
-            exitStyle={{ opacity: 0, scale: 1.02 }}
-          >
-            <Text fontFamily="$heading" fontSize="$6" color="$text">
-              {stageLabel[stage]}
-            </Text>
-            <StatusBadge
-              label={formatDateLabel(currentSession?.work_date ?? new Date().toISOString())}
-              color="#2563eb"
-            />
-            <XStack justifyContent="space-between">
+          <GlassCard key={stage} enterStyle={{ opacity: 0, scale: 0.95 }} exitStyle={{ opacity: 0, scale: 1.02 }}>
+            <XStack justifyContent="space-between" alignItems="center">
+              <Text fontFamily="$heading" fontSize="$6" color="$text">
+                {stageLabel[stage]}
+              </Text>
+              <StatusBadge
+                label={formatDateLabel(currentSession?.work_date ?? new Date().toISOString())}
+                color="#2563eb"
+              />
+            </XStack>
+
+            <XStack justifyContent="space-between" mt="$2">
               <YStack>
                 <Text color="$text" opacity={0.6}>Entrada</Text>
                 <Text color="$text" fontSize="$6">
@@ -153,69 +154,66 @@ export default function HomeScreen(): JSX.Element {
                 </Text>
               </YStack>
             </XStack>
-          </YStack>
+          </GlassCard>
         </AnimatePresence>
 
-        {/* CONTENEDOR DE BOTONES */}
-        <YStack gap="$3" width="100%" paddingHorizontal="$2">
-          <SizableText size="$4" color="$text" opacity={0.75} marginBottom="$2">
-            Control de jornada
-          </SizableText>
-          
-          {/* FILA 1 */}
-          <XStack width="100%" justifyContent="space-between" marginBottom="$3">
-            {/* BOTÓN 1: ENTRADA */}
-            <Button
-              {...commonButtonProps}
-              opacity={isEntradaDisabled ? 0.5 : 1} // Solo cambiamos la transparencia manual
-              onPress={() => handlePress(() => startMutation.mutate(), isEntradaDisabled)}
-              icon={startMutation.isPending ? <Spinner color="white" /> : <LogIn size={24} color="white" />}
-            >
-              Entrada
-            </Button>
-
-            {/* BOTÓN 2: ALMUERZO */}
-            <Button
-              {...commonButtonProps}
-              opacity={isAlmuerzoDisabled ? 0.5 : 1}
-              onPress={() => handlePress(() => lunchStartMutation.mutate(), isAlmuerzoDisabled)}
-              icon={lunchStartMutation.isPending ? <Spinner color="white" /> : <Coffee size={24} color="white" />}
-            >
-              Almuerzo
-            </Button>
+        <GlassCard gap="$4">
+          <XStack alignItems="center" justifyContent="space-between">
+            <SizableText size="$4" color="$text" opacity={0.85}>
+              Control de jornada
+            </SizableText>
+            {anyLoading ? (
+              <XStack alignItems="center" gap="$2">
+                <Spinner size="small" color="$text" />
+                <Text color="$text" opacity={0.7}>
+                  Sincronizando
+                </Text>
+              </XStack>
+            ) : null}
           </XStack>
 
-          {/* FILA 2 */}
-          <XStack width="100%" justifyContent="space-between">
-            {/* BOTÓN 3: FIN ALMUERZO */}
-            <Button
-              {...commonButtonProps}
-              opacity={isFinAlmuerzoDisabled ? 0.5 : 1}
-              onPress={() => handlePress(() => lunchEndMutation.mutate(), isFinAlmuerzoDisabled)}
-              icon={lunchEndMutation.isPending ? <Spinner color="white" /> : <Briefcase size={24} color="white" />}
-            >
-              Fin Almuerzo
-            </Button>
+          <YStack gap="$3" width="100%">
+            <XStack width="100%" justifyContent="space-between">
+              <Button
+                {...commonButtonProps}
+                opacity={isEntradaDisabled ? 0.5 : 1}
+                onPress={() => handlePress(() => startMutation.mutate(), isEntradaDisabled)}
+                icon={startMutation.isPending ? <Spinner color="white" /> : <LogIn size={24} color="white" />}
+              >
+                Entrada
+              </Button>
 
-            {/* BOTÓN 4: SALIDA */}
-            <Button
-              {...commonButtonProps}
-              opacity={isSalidaDisabled ? 0.5 : 1}
-              onPress={() => handlePress(() => endMutation.mutate(), isSalidaDisabled)}
-              icon={endMutation.isPending ? <Spinner color="white" /> : <LogOut size={24} color="white" />}
-            >
-              Salida
-            </Button>
-          </XStack>
+              <Button
+                {...commonButtonProps}
+                opacity={isAlmuerzoDisabled ? 0.5 : 1}
+                onPress={() => handlePress(() => lunchStartMutation.mutate(), isAlmuerzoDisabled)}
+                icon={lunchStartMutation.isPending ? <Spinner color="white" /> : <Coffee size={24} color="white" />}
+              >
+                Almuerzo
+              </Button>
+            </XStack>
 
-        </YStack>
+            <XStack width="100%" justifyContent="space-between">
+              <Button
+                {...commonButtonProps}
+                opacity={isFinAlmuerzoDisabled ? 0.5 : 1}
+                onPress={() => handlePress(() => lunchEndMutation.mutate(), isFinAlmuerzoDisabled)}
+                icon={lunchEndMutation.isPending ? <Spinner color="white" /> : <Briefcase size={24} color="white" />}
+              >
+                Fin Almuerzo
+              </Button>
 
-        {anyLoading ? (
-          <XStack mt="$4" alignItems="center" gap="$2" justifyContent="center">
-            <Spinner size="small" color="$text" />
-            <Text color="$text" fontSize="$2" opacity={0.7}>Sincronizando...</Text>
-          </XStack>
-        ) : null}
+              <Button
+                {...commonButtonProps}
+                opacity={isSalidaDisabled ? 0.5 : 1}
+                onPress={() => handlePress(() => endMutation.mutate(), isSalidaDisabled)}
+                icon={endMutation.isPending ? <Spinner color="white" /> : <LogOut size={24} color="white" />}
+              >
+                Salida
+              </Button>
+            </XStack>
+          </YStack>
+        </GlassCard>
       </YStack>
     </Screen>
   );

@@ -3,17 +3,23 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useQuery } from "@tanstack/react-query";
 import { Screen } from "@/components/ui/Screen";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SimpleSelect } from "@/components/ui/SimpleSelect";
 import { adminService } from "@/services/adminService";
 import { Branch, Department, EmployeeState, Role, User } from "@/types/api";
+import { LinearGradient } from "expo-linear-gradient";
+import { Search, Plus, RefreshCw } from "@tamagui/lucide-icons";
 import {
+  Button,
+  H2,
+  Input,
   Paragraph,
   ScrollView,
   Separator,
@@ -195,54 +201,72 @@ export default function AdminUsersScreen(): JSX.Element {
   };
 
   const renderFilters = (): JSX.Element => (
-    <YStack gap="$3">
-      <AnimatedInput
-        label="Buscar"
-        placeholder="Nombre o correo"
-        autoCapitalize="none"
-        value={search}
-        onChangeText={setSearch}
-      />
-      <XStack gap="$3" flexWrap="wrap">
-        <YStack flex={1} minWidth={160} gap="$1">
-          <Text fontWeight="600" color="$text">Estado</Text>
-          <SimpleSelect
-            options={stateOptions}
-            value={stateFilter}
-            onValueChange={(value) => setStateFilter(value as FilterOption)}
-            placeholder="Selecciona estado"
-          />
-        </YStack>
-        <YStack flex={1} minWidth={160} gap="$1">
-          <Text fontWeight="600" color="$text">Rol</Text>
-          <SimpleSelect
-            options={roleOptions}
-            value={roleFilter}
-            onValueChange={(value) => setRoleFilter(value as FilterOption)}
-            placeholder="Selecciona rol"
-          />
-        </YStack>
-      </XStack>
-      <XStack gap="$3" flexWrap="wrap">
-        <YStack flex={1} minWidth={160} gap="$1">
-          <Text fontWeight="600" color="$text">Sucursal</Text>
-          <SimpleSelect
-            options={branchOptions}
-            value={branchFilter}
-            onValueChange={(value) => setBranchFilter(value as FilterOption)}
-            placeholder="Selecciona sucursal"
-          />
-        </YStack>
-        <YStack flex={1} minWidth={160} gap="$1">
-          <Text fontWeight="600" color="$text">Departamento</Text>
-          <SimpleSelect
-            options={departmentOptions}
-            value={departmentFilter}
-            onValueChange={(value) => setDepartmentFilter(value as FilterOption)}
-            placeholder="Selecciona departamento"
-          />
-        </YStack>
-      </XStack>
+    <YStack gap="$4">
+      {/* Search Bar stylized like Dashboard */}
+      <GlassCard 
+        p="$0"
+        overflow="hidden"
+        borderRadius="$6" 
+        height={50} 
+      >
+        <XStack flex={1} alignItems="center" px="$4" gap="$2">
+            <Search size={20} color="#9ca3af" />
+            <Input 
+              flex={1} 
+              borderWidth={0} 
+              backgroundColor="transparent" 
+              placeholder="Buscar por nombre o correo..." 
+              placeholderTextColor="$gray10"
+              color="white"
+              value={search}
+              onChangeText={setSearch}
+            />
+        </XStack>
+      </GlassCard>
+
+      {/* Filters Grid */}
+      <GlassCard gap="$4" borderRadius="$6" p="$4">
+        <XStack gap="$3" flexWrap="wrap">
+          <YStack flex={1} minWidth={160} gap="$1">
+            <Text fontWeight="600" color="$gray11" fontSize="$3">Estado</Text>
+            <SimpleSelect
+              options={stateOptions}
+              value={stateFilter}
+              onValueChange={(value) => setStateFilter(value as FilterOption)}
+              placeholder="Selecciona estado"
+            />
+          </YStack>
+          <YStack flex={1} minWidth={160} gap="$1">
+            <Text fontWeight="600" color="$gray11" fontSize="$3">Rol</Text>
+            <SimpleSelect
+              options={roleOptions}
+              value={roleFilter}
+              onValueChange={(value) => setRoleFilter(value as FilterOption)}
+              placeholder="Selecciona rol"
+            />
+          </YStack>
+        </XStack>
+        <XStack gap="$3" flexWrap="wrap">
+          <YStack flex={1} minWidth={160} gap="$1">
+            <Text fontWeight="600" color="$gray11" fontSize="$3">Sucursal</Text>
+            <SimpleSelect
+              options={branchOptions}
+              value={branchFilter}
+              onValueChange={(value) => setBranchFilter(value as FilterOption)}
+              placeholder="Selecciona sucursal"
+            />
+          </YStack>
+          <YStack flex={1} minWidth={160} gap="$1">
+            <Text fontWeight="600" color="$gray11" fontSize="$3">Departamento</Text>
+            <SimpleSelect
+              options={departmentOptions}
+              value={departmentFilter}
+              onValueChange={(value) => setDepartmentFilter(value as FilterOption)}
+              placeholder="Selecciona departamento"
+            />
+          </YStack>
+        </XStack>
+      </GlassCard>
     </YStack>
   );
 
@@ -266,62 +290,100 @@ export default function AdminUsersScreen(): JSX.Element {
       return <AnimatedNotice variant="info" message="No hay usuarios con los filtros aplicados." />;
     }
     return (
-      <Animated.FlatList<User>
-        data={filteredUsers}
-        keyExtractor={(item) => String(item.user_id)}
-        scrollEnabled={false}
-        ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-        renderItem={({ item, index }) => {
-          const statePresentation = getStatePresentation(item);
-          return (
-            <Animated.View entering={FadeInDown.delay(index * 85)}>
-              <InteractiveCard
-                onPress={() => {
-                  if (isReadonlyContext) return;
-                  router.push(`/(app)/(admin)/users/${item.user_id}`);
-                }}
-              >
-                <YStack gap="$2">
-                  <XStack justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="$2">
-                    <Text fontWeight="600" fontSize="$4" color="$text">
-                      {[item.first_name, item.last_name].filter(Boolean).join(" ") || "Sin nombre"}
-                    </Text>
-                    <StatusBadge label={statePresentation.label} color={statePresentation.color} />
-                  </XStack>
-                  <Paragraph color="$muted">{item.email}</Paragraph>
-                  <Paragraph color="$muted">
-                    Rol: {item.employeeDetail?.role?.name ?? "Sin rol"}
-                  </Paragraph>
-                  <Paragraph color="$muted">
-                    Departamento: {item.employeeDetail?.department?.name ?? "Sin departamento"}
-                  </Paragraph>
-                  <Paragraph color="$muted">
-                    Sucursal: {item.employeeDetail?.department?.branch?.name ?? "Sin sucursal"}
-                  </Paragraph>
-                </YStack>
-              </InteractiveCard>
-            </Animated.View>
-          );
-        }}
-      />
+      <YStack gap="$3">
+        {filteredUsers.map((item, index) => {
+           const statePresentation = getStatePresentation(item);
+           return (
+              <Animated.View key={item.user_id} entering={FadeInDown.delay(index * 50).springify()}>
+                <GlassCard 
+                  p="$0" 
+                  overflow="hidden"
+                  pressStyle={{ scale: 0.98, opacity: 0.9 }}
+                  onPress={() => {
+                    if (!isReadonlyContext) {
+                        router.push(`/(app)/(admin)/users/${item.user_id}`);
+                    }
+                  }}
+                >
+                  <YStack p="$4" gap="$2">
+                    <XStack justifyContent="space-between" alignItems="center">
+                      <YStack>
+                          <Text fontWeight="700" fontSize="$5" color="white">
+                            {[item.first_name, item.last_name].filter(Boolean).join(" ") || "Sin nombre"}
+                          </Text>
+                          <Text fontSize="$3" color="$gray10">{item.email}</Text>
+                      </YStack>
+                      <StatusBadge label={statePresentation.label} color={statePresentation.color} />
+                    </XStack>
+                    
+                    <Separator borderColor="rgba(255,255,255,0.1)" my="$2" />
+                    
+                    <XStack gap="$4" flexWrap="wrap">
+                        <YStack gap="$1">
+                            <Text fontSize="$2" color="$gray11">ROL</Text>
+                            <Text fontSize="$3" color="white">{item.employeeDetail?.role?.name ?? "N/A"}</Text>
+                        </YStack>
+                        <YStack gap="$1">
+                            <Text fontSize="$2" color="$gray11">DEPARTAMENTO</Text>
+                            <Text fontSize="$3" color="white">{item.employeeDetail?.department?.name ?? "N/A"}</Text>
+                        </YStack>
+                        <YStack gap="$1">
+                            <Text fontSize="$2" color="$gray11">SUCURSAL</Text>
+                            <Text fontSize="$3" color="white">{item.employeeDetail?.department?.branch?.name ?? "N/A"}</Text>
+                        </YStack>
+                    </XStack>
+                  </YStack>
+                  <LinearGradient
+                    colors={["transparent", "#3b82f6"]}
+                    start={[0, 0]}
+                    end={[1, 1]}
+                    style={{ position: 'absolute', right: 0, bottom: 0, width: 100, height: 100, opacity: 0.1, borderRadius: 50 }}
+                  />
+                </GlassCard>
+              </Animated.View>
+           );
+        })}
+      </YStack>
     );
   };
 
   return (
     <Screen>
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={{ position: 'absolute', width: '100%', height: '100%', zIndex: -1 }}
+      />
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 64 }}>
-        <YStack gap="$5">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Usuarios
-            </Text>
-            <Paragraph color="$muted">
-              Explora colaboradores, filtra por estado o rol y encuentra rápidamente a cualquier persona.
-            </Paragraph>
-          </YStack>
-
-          <RoleSwitcher target="employee" />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+           {/* Header */}
+          <XStack justifyContent="space-between" alignItems="center" mb="$2">
+             <YStack>
+                <H2 fontWeight="800" fontSize={28} color="white">Usuarios</H2>
+                <Paragraph color="$gray10">Gestión de colaboradores</Paragraph>
+             </YStack>
+             
+             {!isReadonlyContext && (
+                <XStack gap="$2">
+                     <Button 
+                        size="$3" 
+                        circular 
+                        icon={<RefreshCw color="white" />} 
+                        backgroundColor="rgba(255,255,255,0.1)" 
+                        onPress={() => refetch()} 
+                     />
+                     <Button 
+                        size="$3" 
+                        circular 
+                        icon={Plus} 
+                        backgroundColor="$blue10" 
+                        color="white"
+                        onPress={() => router.push("/(app)/(admin)/users/create")}
+                     />
+                </XStack>
+             )}
+          </XStack>
 
           {isReadonlyContext ? (
             <AnimatedNotice
@@ -335,24 +397,10 @@ export default function AdminUsersScreen(): JSX.Element {
 
           {renderFilters()}
 
-          <AnimatedButton
-            backgroundColor="$color4"
-            color="$text"
-            disabled={isLoading || isFetching}
-            onPress={() => refetch()}
-          >
-            {isFetching ? "Actualizando..." : "Actualizar"}
-          </AnimatedButton>
-
-          {!isReadonlyContext ? (
-            <AnimatedButton onPress={() => router.push("/(app)/(admin)/users/create")}>
-              Crear usuario
-            </AnimatedButton>
-          ) : null}
-
           {renderList()}
         </YStack>
       </ScrollView>
+      <AdminNavbar />
     </Screen>
   );
 }

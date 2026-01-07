@@ -15,6 +15,8 @@ import {
 } from "tamagui";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { Screen } from "@/components/ui/Screen";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { employeeService, DocumentType } from "@/services/employeeService";
 import { useConfirm } from "@/hooks/useConfirm";
 import { 
@@ -227,25 +229,19 @@ export default function DocumentosScreen(): JSX.Element {
         </YStack>
 
         {/* BOTÓN DE SUBIDA (Igual de grande) */}
-        <Button
+        <AnimatedButton
           size="$6"
           height="$8"
           marginTop="$2"
-          backgroundColor="#2563EB"
-          icon={uploadMutation.isPending ? <Spinner color="white"/> : <UploadCloud size={32}/>}
+          icon={uploadMutation.isPending ? <Spinner color="$text" /> : <UploadCloud size={32} />}
           onPress={handlePick}
           disabled={uploadMutation.isPending}
-          pressStyle={{ scale: 0.97, opacity: 0.9 }}
-          animation="bouncy"
           borderRadius="$6"
           borderWidth={1}
           borderColor="rgba(255,255,255,0.2)"
-          elevation="$4"
         >
-          <Text color="white" fontWeight="bold" fontSize="$5">
-            {uploadMutation.isPending ? "Subiendo..." : "Subir Documento PDF"}
-          </Text>
-        </Button>
+          {uploadMutation.isPending ? "Subiendo..." : "Subir Documento PDF"}
+        </AnimatedButton>
 
         <Separator borderColor="rgba(255,255,255,0.1)" marginVertical="$2" />
 
@@ -276,49 +272,40 @@ export default function DocumentosScreen(): JSX.Element {
                     entering={FadeInDown.delay(index * 100).springify()}
                     exiting={FadeOutUp}
                     layout={Layout.springify()}
-                    style={{
-                      backgroundColor: "#1e293b",
-                      padding: 16,
-                      borderRadius: 16,
-                      marginBottom: 12,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.05)"
-                    }}
+                    style={{ marginBottom: 12 }}
                   >
-                    <XStack gap="$3" alignItems="center" flex={1}>
-                      <YStack backgroundColor="#334155" padding="$3" borderRadius="$4">
-                        <DocIcon size={28} color="#60a5fa" />
-                      </YStack>
-                      <YStack flex={1}>
-                        <Text color="$text" fontWeight="bold" fontSize="$4" numberOfLines={1}>
-                          {doc.file_name}
-                        </Text>
-                        <XStack gap="$2" opacity={0.6} marginTop={4}>
-                          <Text color="$text" fontSize="$3" textTransform="uppercase">
-                            {typeConfig[doc.doc_type as DocumentType]?.label || "DOC"}
+                    <GlassCard glow={false} px="$4" py="$4" borderRadius="$5">
+                      <XStack gap="$3" alignItems="center" flex={1}>
+                        <YStack backgroundColor="rgba(255,255,255,0.06)" padding="$3" borderRadius="$4">
+                          <DocIcon size={28} color="#60a5fa" />
+                        </YStack>
+                        <YStack flex={1}>
+                          <Text color="$text" fontWeight="bold" fontSize="$4" numberOfLines={1}>
+                            {doc.file_name}
                           </Text>
-                          <Text color="$text" fontSize="$3">•</Text>
-                          <Text color="$text" fontSize="$3">
-                            {(Number(doc.file_size ?? 0) / 1024 / 1024).toFixed(2)} MB
-                          </Text>
-                        </XStack>
-                      </YStack>
-                    </XStack>
+                          <XStack gap="$2" opacity={0.65} marginTop={4}>
+                            <Text color="$text" fontSize="$3" textTransform="uppercase">
+                              {typeConfig[doc.doc_type as DocumentType]?.label || "DOC"}
+                            </Text>
+                            <Text color="$text" fontSize="$3">•</Text>
+                            <Text color="$text" fontSize="$3">
+                              {(Number(doc.file_size ?? 0) / 1024 / 1024).toFixed(2)} MB
+                            </Text>
+                          </XStack>
+                        </YStack>
+                      </XStack>
 
-                    {/* Botón de eliminar grande */}
-                    <Button
-                      size="$5" 
-                      circular
-                      backgroundColor="rgba(239, 68, 68, 0.15)"
-                      onPress={() => handleDelete(doc.document_id)}
-                      disabled={isDeleting}
-                      pressStyle={{ backgroundColor: "rgba(239, 68, 68, 0.3)" }}
-                    >
-                      {isDeleting ? <Spinner size="small" color="#ef4444"/> : <Trash2 size={24} color="#ef4444" />}
-                    </Button>
+                      <Button
+                        size="$5"
+                        circular
+                        backgroundColor="rgba(239, 68, 68, 0.15)"
+                        onPress={() => handleDelete(doc.document_id)}
+                        disabled={isDeleting}
+                        pressStyle={{ backgroundColor: "rgba(239, 68, 68, 0.3)" }}
+                      >
+                        {isDeleting ? <Spinner size="small" color="#ef4444" /> : <Trash2 size={24} color="#ef4444" />}
+                      </Button>
+                    </GlassCard>
                   </Animated.View>
                 );
               })}

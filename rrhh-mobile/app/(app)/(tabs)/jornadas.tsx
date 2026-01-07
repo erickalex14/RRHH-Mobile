@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Screen } from "@/components/ui/Screen";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { employeeService } from "@/services/employeeService";
 import { formatDateLabel, formatHour } from "@/utils/datetime";
 import { useQuery } from "@tanstack/react-query";
@@ -247,26 +248,18 @@ interface PressableCardProps {
 }
 
 const AnimatedPressableCard = ({ children, index, expanded, onPress }: PressableCardProps): JSX.Element => (
-  <Animated.View
-    entering={FadeInDown.delay(index * 100).springify()}
-    layout={Layout.springify()}
-    style={{ 
-      backgroundColor: "#1e293b", // Gris azulado oscuro (Slate 800)
-      borderRadius: 16, 
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: expanded ? "#2563EB" : "rgba(255,255,255,0.05)",
-      marginHorizontal: 4
-    }}
-  >
-    <Pressable 
-      onPress={onPress} 
-      style={({ pressed }) => ({ 
-        padding: 16,
-        backgroundColor: pressed ? "rgba(255,255,255,0.02)" : "transparent"
-      })}
-    >
-      {children}
-    </Pressable>
+  <Animated.View entering={FadeInDown.delay(index * 100).springify()} layout={Layout.springify()} style={{ marginHorizontal: 4 }}>
+    <GlassCard glow={false} px="$4" py="$4" borderRadius="$5" borderColor={expanded ? "#2563EB" : undefined}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => ({
+          paddingVertical: 0,
+          paddingHorizontal: 0,
+          opacity: pressed ? 0.92 : 1
+        })}
+      >
+        {children}
+      </Pressable>
+    </GlassCard>
   </Animated.View>
 );

@@ -6,23 +6,27 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
+import { HybridSelect } from "@/components/ui/HybridSelect";
 import { adminService, BranchPayload } from "@/services/adminService";
 import { Branch, Company } from "@/types/api";
+import { LinearGradient } from "expo-linear-gradient";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Building2, MapPin, Phone, Mail, Edit3, Trash2, Users } from "@tamagui/lucide-icons";
 import {
-  Adapt,
   AnimatePresence,
   Paragraph,
   ScrollView,
-  Select,
   Separator,
-  Sheet,
   Switch,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Button,
+  Input
 } from "tamagui";
 
 type BranchFormState = Omit<BranchPayload, "company_id"> & { company_id: number | null };
@@ -71,6 +75,10 @@ export default function AdminBranchesScreen(): JSX.Element {
 
   const branches: Branch[] = branchesData?.data ?? [];
   const companies: Company[] = companiesData?.data ?? [];
+  const companyOptions = useMemo(
+    () => companies.map((company) => ({ label: company.name ?? "Sin nombre", value: String(company.company_id) })),
+    [companies]
+  );
 
   useEffect(() => {
     if (companies.length > 0 && form.company_id === null) {
@@ -211,22 +219,21 @@ export default function AdminBranchesScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 64 }}>
-        <YStack gap="$5">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Sucursales
-            </Text>
-            <Paragraph color="$muted">Controla aperturas, actualiza datos y asigna la compañía matriz.</Paragraph>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+          <YStack gap="$1" mb="$2">
+                <H2 fontWeight="800" fontSize={26} color="$color">Sucursales</H2>
+                <Paragraph color="$color" opacity={0.6}>Controla aperturas y asigna la compañía matriz.</Paragraph>
           </YStack>
 
-          <RoleSwitcher target="employee" />
-
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
+          {/* Form Block */}
+          <GlassCard gap="$3" p="$4" borderRadius="$6">
+            <Text fontFamily="$heading" fontSize="$5" color="$color">
               {editingBranch ? `Editar ${editingBranch.name}` : "Nueva sucursal"}
             </Text>
-            <Paragraph color="$muted">{helperText}</Paragraph>
+            <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
 
             {isCompaniesError ? (
               <AnimatedNotice
@@ -245,105 +252,94 @@ export default function AdminBranchesScreen(): JSX.Element {
               />
             ) : (
               <YStack gap="$3" mt="$2">
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                <YStack gap="$2">
+                  <Text fontWeight="600" color="white">
                     Compañía
                   </Text>
-                  <Select
-                    value={form.company_id ? String(form.company_id) : undefined}
-                    onValueChange={(value) =>
-                      setForm((prev) => ({ ...prev, company_id: Number(value) }))
-                    }
+                  <HybridSelect
+                    options={companyOptions}
+                    value={form.company_id ? String(form.company_id) : ""}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, company_id: Number(value) }))}
+                    placeholder={isCompaniesLoading ? "Cargando..." : "Selecciona"}
                     disabled={isCompaniesLoading || companies.length === 0}
-                  >
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder={isCompaniesLoading ? "Cargando..." : "Selecciona"} />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {companies.map((company) => (
-                          <Select.Item key={company.company_id} value={String(company.company_id)}>
-                            <Select.ItemText>{company.name}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  />
                 </YStack>
 
                 <AnimatedInput
-                  label="Nombre"
-                  placeholder="Sucursal Centro"
+                  label="Nombre de la sucursal"
+                  placeholder="Ej. Sede Central"
                   value={form.name}
                   onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
                 />
-                <AnimatedInput
-                  label="Código"
-                  placeholder="CENTRO-01"
-                  autoCapitalize="characters"
-                  value={form.code}
-                  onChangeText={(value) => setForm((prev) => ({ ...prev, code: value }))}
-                />
+                <XStack gap="$3">
+                    <YStack flex={1}>
+                        <AnimatedInput
+                            label="Código"
+                            placeholder="Ej. CEN-01"
+                            autoCapitalize="characters"
+                            value={form.code}
+                            onChangeText={(value) => setForm((prev) => ({ ...prev, code: value }))}
+                        />
+                    </YStack>
+                    <YStack flex={1}>
+                        <AnimatedInput
+                            label="Teléfono"
+                            placeholder="0999999999"
+                            keyboardType="phone-pad"
+                            maxLength={10}
+                            value={form.phone}
+                            onChangeText={(value) =>
+                                setForm((prev) => ({ ...prev, phone: value.replace(/[^0-9]/g, "") }))
+                            }
+                        />
+                    </YStack>
+                </XStack>
+                
                 <AnimatedInput
                   label="Dirección"
-                  placeholder="Av. Principal 123"
+                  placeholder="Calle Principal 123"
                   value={form.address}
                   onChangeText={(value) => setForm((prev) => ({ ...prev, address: value }))}
                 />
-                <AnimatedInput
-                  label="Ciudad"
-                  placeholder="Quito"
-                  value={form.city}
-                  onChangeText={(value) => setForm((prev) => ({ ...prev, city: value }))}
-                />
-                <AnimatedInput
-                  label="Provincia/Estado"
-                  placeholder="Pichincha"
-                  value={form.state}
-                  onChangeText={(value) => setForm((prev) => ({ ...prev, state: value }))}
-                />
+                
+                <XStack gap="$3">
+                     <YStack flex={1}>
+                        <AnimatedInput
+                            label="Ciudad"
+                            placeholder="Ej. Quito"
+                            value={form.city}
+                            onChangeText={(value) => setForm((prev) => ({ ...prev, city: value }))}
+                        />
+                     </YStack>
+                    <YStack flex={1}>
+                        <AnimatedInput
+                            label="Provincia"
+                            placeholder="Ej. Pichincha"
+                            value={form.state}
+                            onChangeText={(value) => setForm((prev) => ({ ...prev, state: value }))}
+                        />
+                    </YStack>
+                </XStack>
                 <AnimatedInput
                   label="País"
-                  placeholder="Ecuador"
+                  placeholder="Ej. Ecuador"
                   value={form.country}
                   onChangeText={(value) => setForm((prev) => ({ ...prev, country: value }))}
                 />
                 <AnimatedInput
-                  label="Teléfono"
-                  placeholder="0999999999"
-                  keyboardType="phone-pad"
-                  maxLength={10}
-                  value={form.phone}
-                  onChangeText={(value) =>
-                    setForm((prev) => ({ ...prev, phone: value.replace(/[^0-9]/g, "") }))
-                  }
-                />
-                <AnimatedInput
-                  label="Correo"
-                  placeholder="sucursal@empresa.com"
+                  label="Correo de contacto"
+                  placeholder="sukursal@empresa.com"
                   autoCapitalize="none"
                   keyboardType="email-address"
                   value={form.email}
                   onChangeText={(value) => setForm((prev) => ({ ...prev, email: value }))}
                 />
                 <XStack alignItems="center" justifyContent="space-between" mt="$1">
-                  <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                  <YStack gap="$1" flex={1}>
+                    <Text fontWeight="600" color="white">
                       ¿Es matriz?
                     </Text>
-                    <Paragraph color="$muted" fontSize="$2">
+                    <Paragraph color="$gray10" fontSize="$2">
                       Marca si esta sucursal centraliza operaciones.
                     </Paragraph>
                   </YStack>
@@ -354,7 +350,7 @@ export default function AdminBranchesScreen(): JSX.Element {
                       setForm((prev) => ({ ...prev, matrix: Boolean(value) }))
                     }
                   >
-                    <Switch.Thumb animation="quick" />
+                    <Switch.Thumb animation="quick" backgroundColor="white" />
                   </Switch>
                 </XStack>
               </YStack>
@@ -364,36 +360,25 @@ export default function AdminBranchesScreen(): JSX.Element {
               {editingBranch ? (
                 <AnimatedButton
                   flex={1}
-                  backgroundColor="$color4"
-                  color="$text"
+                  backgroundColor="rgba(239, 68, 68, 0.2)"
                   disabled={isMutating}
                   onPress={resetForm}
                 >
                   Cancelar
                 </AnimatedButton>
               ) : null}
-              <AnimatedButton flex={1} disabled={!formIsValid || isMutating} onPress={handleSubmit}>
-                {editingBranch ? "Guardar cambios" : "Crear"}
+              <AnimatedButton
+                flex={1}
+                disabled={!formIsValid || isMutating}
+                onPress={handleSubmit}
+              >
+                {editingBranch ? "Guardar cambios" : "Crear sucursal"}
               </AnimatedButton>
             </XStack>
-          </YStack>
-
-          <XStack gap="$3">
-            <AnimatedButton
-              flex={1}
-              backgroundColor="$color4"
-              color="$text"
-              disabled={isBranchesLoading || isBranchesFetching}
-              onPress={() => refetchBranches()}
-            >
-              {isBranchesFetching ? "Sincronizando..." : "Actualizar"}
-            </AnimatedButton>
-          </XStack>
+          </GlassCard>
 
           <YStack gap="$3">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Sucursales registradas
-            </Text>
+             <H2 fontSize={20} color="$color" mt="$4">Sucursales registradas</H2>
             {isBranchesLoading || isBranchesFetching ? (
               <ListSkeleton items={4} height={140} />
             ) : isBranchesError ? (
@@ -407,58 +392,70 @@ export default function AdminBranchesScreen(): JSX.Element {
             ) : branches.length === 0 ? (
               <AnimatedNotice variant="info" message="Todavía no tienes sucursales registradas." />
             ) : (
-              <Animated.FlatList<Branch>
-                data={branches}
-                keyExtractor={(item) => String(item.branch_id)}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-                renderItem={({ item, index }) => (
-                  <Animated.View entering={FadeInDown.delay(index * 90)}>
-                    <InteractiveCard onPress={() => handleSelectBranch(item)}>
-                      <YStack gap="$2">
-                        <XStack justifyContent="space-between" alignItems="center">
-                          <Text fontWeight="600" fontSize="$4" color="$text">
-                            {item.name}
-                          </Text>
-                          <Text color={item.matrix ? "$success" : "$muted"} fontSize="$2">
-                            {item.matrix ? "Matriz" : "Sucursal"}
-                          </Text>
-                        </XStack>
-                        <Paragraph color="$muted">Código: {item.code}</Paragraph>
-                        <Paragraph color="$muted">
-                          Compañía: {item.company?.name ?? "Sin asignar"}
-                        </Paragraph>
-                        <Paragraph color="$muted">
-                          {item.address}, {item.city}, {item.state} - {item.country}
-                        </Paragraph>
-                        <Paragraph color="$muted">Tel: {item.phone} · {item.email}</Paragraph>
-                        <AnimatedButton
-                          mt="$2"
-                          backgroundColor="$color3"
-                          color="$text"
-                          onPress={() => handleNavigateToBranchUsers(item)}
-                        >
-                          Ver usuarios
-                        </AnimatedButton>
-                        <XStack gap="$2" mt="$2">
-                          <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => handleSelectBranch(item)}>
-                            Editar
-                          </AnimatedButton>
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$danger"
-                            color="#fff"
-                            disabled={deleteMutation.isPending}
-                            onPress={() => handleDeleteBranch(item.branch_id)}
-                          >
-                            Borrar
-                          </AnimatedButton>
-                        </XStack>
-                      </YStack>
-                    </InteractiveCard>
-                  </Animated.View>
-                )}
-              />
+                <YStack gap="$3">
+                  {branches.map((item, index) => (
+                    <Animated.View key={item.branch_id} entering={FadeInDown.delay(index * 50).springify()}>
+                        <GlassCard p="$4" gap="$2">
+                            <XStack justifyContent="space-between" alignItems="center">
+                                <XStack gap="$3" alignItems="center">
+                                    <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
+                                        <Building2 size={24} color="$blue10" />
+                                    </GlassCard>
+                                    <YStack>
+                                        <Text fontWeight="700" fontSize="$5" color="$color">
+                                            {item.name}
+                                        </Text>
+                                        <Text color={item.matrix ? "$green10" : "$color"} opacity={item.matrix ? 1 : 0.6} fontSize="$3">
+                                            {item.matrix ? "Matriz Principal" : "Sucursal"}
+                                        </Text>
+                                    </YStack>
+                                </XStack>
+                            </XStack>
+                            
+                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+                            
+                            <YStack gap="$2" px="$1">
+                                 <XStack gap="$2" alignItems="center">
+                                    <MapPin size={14} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>{item.address}, {item.city}</Text>
+                                 </XStack>
+                                 <XStack gap="$2" alignItems="center">
+                                    <Phone size={14} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>{item.phone}</Text>
+                                 </XStack>
+                                 <XStack gap="$2" alignItems="center">
+                                    <Mail size={14} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>{item.email}</Text>
+                                 </XStack>
+                            </YStack>
+
+                            <XStack gap="$3" mt="$3">
+                                <Button 
+                                    flex={1} 
+                                    size="$3" 
+                                    chromeless 
+                                    borderWidth={1} 
+                                    borderColor="$borderColor" 
+                                    icon={Users}
+                                    onPress={() => handleNavigateToBranchUsers(item)}
+                                >
+                                    Usuarios
+                                </Button>
+                                <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => handleSelectBranch(item)} />
+                                <Button
+                                    flex={1}
+                                    size="$3"
+                                    backgroundColor="$red10"
+                                    color="white"
+                                    icon={Trash2}
+                                    disabled={deleteMutation.isPending}
+                                    onPress={() => handleDeleteBranch(item.branch_id)}
+                                />
+                            </XStack>
+                        </GlassCard>
+                    </Animated.View>
+                  ))}
+                </YStack>
             )}
           </YStack>
 
@@ -474,6 +471,7 @@ export default function AdminBranchesScreen(): JSX.Element {
           </AnimatePresence>
         </YStack>
       </ScrollView>
+      <AdminNavbar />
     </Screen>
   );
 }

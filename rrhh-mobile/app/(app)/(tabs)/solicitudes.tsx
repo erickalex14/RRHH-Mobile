@@ -12,11 +12,12 @@ import {
   XStack,
   YStack,
   Button,
-  Separator,
-  Input,
-  Label
+  Separator
 } from "tamagui";
 import { Screen } from "@/components/ui/Screen";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { AnimatedInput } from "@/components/ui/AnimatedInput";
+import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { employeeService, EarlyDeparturePayload } from "@/services/employeeService";
 import { 
   FileText, 
@@ -56,37 +57,27 @@ const RequestCard = ({ item, index }: { item: any, index: number }) => {
   const StatusIcon = status.icon;
 
   return (
-    <Animated.View
-      entering={FadeInDown.delay(index * 100).springify()}
-      layout={Layout.springify()}
-      style={{
-        backgroundColor: "#1e293b", // Gris oscuro profesional
-        borderRadius: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.05)",
-        overflow: "hidden"
-      }}
-    >
-      <YStack padding="$4" gap="$3">
-        {/* Cabecera: Icono y Estado */}
+    <Animated.View entering={FadeInDown.delay(index * 100).springify()} layout={Layout.springify()} style={{ marginBottom: 12 }}>
+      <GlassCard glow={false} px="$4" py="$4" gap="$3" borderRadius="$5">
         <XStack justifyContent="space-between" alignItems="center">
           <XStack gap="$2" alignItems="center">
-            <YStack backgroundColor="#334155" padding="$2" borderRadius="$3">
+            <YStack backgroundColor="rgba(255,255,255,0.06)" padding="$2" borderRadius="$3">
               <FileText size={16} color="#94a3b8" />
             </YStack>
-            <Text color="$text" fontSize="$3" fontWeight="bold" opacity={0.5}>
+            <Text color="$text" fontSize="$3" fontWeight="bold" opacity={0.65}>
               SOLICITUD #{item.request_id || "NEW"}
             </Text>
           </XStack>
-          
-          <XStack 
-            backgroundColor={status.bg} 
-            paddingHorizontal="$2" 
-            paddingVertical="$1.5" 
-            borderRadius="$4" 
-            alignItems="center" 
+
+          <XStack
+            backgroundColor={status.bg}
+            paddingHorizontal="$2"
+            paddingVertical="$1.5"
+            borderRadius="$4"
+            alignItems="center"
             gap="$1.5"
+            borderWidth={1}
+            borderColor="rgba(255,255,255,0.08)"
           >
             <StatusIcon size={12} color={status.color} />
             <Text color={status.color} fontSize={10} fontWeight="800" letterSpacing={1}>
@@ -95,9 +86,8 @@ const RequestCard = ({ item, index }: { item: any, index: number }) => {
           </XStack>
         </XStack>
 
-        <Separator borderColor="rgba(255,255,255,0.1)" />
+        <Separator borderColor="rgba(255,255,255,0.08)" />
 
-        {/* Cuerpo: Descripción */}
         <YStack>
           <Text color="$text" fontSize="$5" fontWeight="bold" numberOfLines={1}>
             {item.description}
@@ -113,7 +103,7 @@ const RequestCard = ({ item, index }: { item: any, index: number }) => {
             </XStack>
           </XStack>
         </YStack>
-      </YStack>
+      </GlassCard>
     </Animated.View>
   );
 };
@@ -185,16 +175,14 @@ export default function SolicitudesScreen(): JSX.Element {
             <Text color="$muted" fontSize="$3">Gestiona tus salidas</Text>
           </YStack>
           
-          <Button 
-            size="$3" 
-            backgroundColor="#2563EB" 
-            borderRadius="$4" 
-            icon={<Plus size={18} color="white"/>}
+          <AnimatedButton
+            size="$3"
+            icon={<Plus size={18} color="white" />}
             onPress={() => handleToggleForm(true)}
-            pressStyle={{ opacity: 0.8, scale: 0.95 }}
+            borderRadius="$5"
           >
             Nuevo
-          </Button>
+          </AnimatedButton>
         </XStack>
 
         {/* ESTADO DE CARGA / LISTA */}
@@ -223,17 +211,17 @@ export default function SolicitudesScreen(): JSX.Element {
           {showForm && (
             <>
               {/* Fondo oscuro backdrop */}
-              <Animated.View 
+              <Animated.View
                 entering={FadeInDown.duration(200)}
                 style={{
                   position: "absolute", top: -50, bottom: -50, left: -20, right: -20,
                   backgroundColor: "rgba(0,0,0,0.7)", zIndex: 10
-                }} 
+                }}
               >
-                <Button 
-                  unstyled 
-                  width="100%" height="100%" 
-                  onPress={() => handleToggleForm(false)} 
+                <Button
+                  unstyled
+                  width="100%" height="100%"
+                  onPress={() => handleToggleForm(false)}
                 />
               </Animated.View>
 
@@ -243,10 +231,14 @@ export default function SolicitudesScreen(): JSX.Element {
                 exiting={SlideOutDown.duration(200)}
                 style={{
                   position: "absolute", bottom: 0, left: 0, right: 0,
-                  backgroundColor: "#0f172a",
-                  borderTopLeftRadius: 24, borderTopRightRadius: 24,
+                  backgroundColor: "#0b1221",
+                  borderTopLeftRadius: 28, borderTopRightRadius: 28,
                   padding: 24, zIndex: 20,
-                  borderTopWidth: 1, borderColor: "#334155"
+                  borderTopWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+                  shadowColor: "#000",
+                  shadowOpacity: 0.35,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: -6 }
                 }}
               >
                 <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
@@ -257,51 +249,38 @@ export default function SolicitudesScreen(): JSX.Element {
                 </XStack>
 
                 <YStack gap="$4">
-                  <YStack gap="$2">
-                    <Label color="$muted" fontSize="$2">MOTIVO</Label>
-                    <Input 
-                      backgroundColor="#1e293b" 
-                      borderColor={formErrors.description ? "$red10" : "transparent"}
-                      color="$text" 
-                      placeholder="Ej. Cita médica" 
-                      value={form.description}
-                      onChangeText={(t) => handleChange("description", t)}
-                    />
-                  </YStack>
+                  <AnimatedInput
+                    label="Motivo"
+                    placeholder="Ej. Cita médica"
+                    value={form.description}
+                    onChangeText={(t) => handleChange("description", t)}
+                    status={formErrors.description ? "error" : undefined}
+                  />
 
                   <XStack gap="$3">
-                    <YStack flex={1} gap="$2">
-                      <Label color="$muted" fontSize="$2">FECHA</Label>
-                      <Input 
-                        backgroundColor="#1e293b" 
-                        borderColor="transparent"
-                        color="$text" 
-                        value={form.request_date}
-                        onChangeText={(t) => handleChange("request_date", t)}
-                      />
-                    </YStack>
-                    <YStack flex={1} gap="$2">
-                      <Label color="$muted" fontSize="$2">HORA</Label>
-                      <Input 
-                        backgroundColor="#1e293b" 
-                        borderColor="transparent"
-                        color="$text" 
-                        value={form.request_time}
-                        onChangeText={(t) => handleChange("request_time", t)}
-                      />
-                    </YStack>
+                    <AnimatedInput
+                      flex={1}
+                      label="Fecha"
+                      value={form.request_date}
+                      onChangeText={(t) => handleChange("request_date", t)}
+                    />
+                    <AnimatedInput
+                      flex={1}
+                      label="Hora"
+                      value={form.request_time}
+                      onChangeText={(t) => handleChange("request_time", t)}
+                    />
                   </XStack>
 
-                  <Button 
-                    backgroundColor="#2563EB" 
-                    height="$5" 
+                  <AnimatedButton
+                    height="$6"
                     marginTop="$2"
-                    icon={createMutation.isPending ? <Spinner color="white"/> : undefined}
+                    icon={createMutation.isPending ? <Spinner color="$text" /> : undefined}
                     onPress={handleSubmit}
                     disabled={createMutation.isPending}
                   >
-                    <Text color="white" fontWeight="bold">Enviar Solicitud</Text>
-                  </Button>
+                    {createMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
+                  </AnimatedButton>
                 </YStack>
               </Animated.View>
             </>

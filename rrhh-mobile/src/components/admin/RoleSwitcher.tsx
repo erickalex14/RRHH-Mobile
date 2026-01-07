@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
 import Animated, { FadeInDown, useReducedMotion } from "react-native-reanimated";
-import { Text, XStack, YStack, Button } from "tamagui"; 
+import { Text, XStack, YStack, Button, useTheme } from "tamagui"; 
 import { useAuthStore } from "@/store/auth";
-import { RefreshCw, Shield, Briefcase } from "@tamagui/lucide-icons";
+import { RefreshCw, Shield, Briefcase, ArrowRight } from "@tamagui/lucide-icons";
 import { isUserAdmin } from "@/utils/auth";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface RoleSwitcherProps {
   target: "employee" | "admin";
@@ -12,6 +13,7 @@ interface RoleSwitcherProps {
 
 export const RoleSwitcher = ({ target }: RoleSwitcherProps): JSX.Element | null => {
   const router = useRouter();
+  const theme = useTheme();
   const user = useAuthStore((state) => state.user);
   const isAdmin = isUserAdmin(user);
   const shouldReduceMotion = useReducedMotion();
@@ -20,18 +22,14 @@ export const RoleSwitcher = ({ target }: RoleSwitcherProps): JSX.Element | null 
     () =>
       target === "employee"
         ? {
-            title: "Panel Administrativo",
-            hint: "¿Necesitas ver tu vista de empleado?",
-            cta: "Ir a modo empleado",
-            href: "/(app)/(tabs)/home",
-            icon: <Briefcase size={16} color="white" />, 
+            title: "Vista administrativa",
+            hint: "Cambiar a modo colaborador",
+            href: "/(app)/(tabs)/home", 
           }
         : {
-            title: "Modo Colaborador",
-            hint: "Accede al panel de gestión.",
-            cta: "Ir a panel Admin",
-            href: "/(app)/(admin)/dashboard",
-            icon: <Shield size={16} color="white" />, 
+            title: "Vista de colaborador",
+            hint: "Volver al panel admin",
+            href: "/(app)/(admin)/dashboard", 
           },
     [target]
   );
@@ -42,49 +40,69 @@ export const RoleSwitcher = ({ target }: RoleSwitcherProps): JSX.Element | null 
 
   return (
     <Animated.View entering={shouldReduceMotion ? undefined : FadeInDown.duration(300)}>
-      <YStack
-        backgroundColor="$surface"
-        borderRadius="$4"
-        px="$4"
-        py="$3"
-        gap="$2"
+      <XStack
+        overflow="hidden"
+        borderRadius="$6"
+        paddingVertical="$3"
+        paddingHorizontal="$4"
+        position="relative"
+        alignItems="center"
+        justifyContent="space-between"
+        backgroundColor="$background"
         borderWidth={1}
-        borderColor="$brandPrimary" // Regresamos al borde original que tenías
+        borderColor="$borderColor"
+        marginTop="$2"
+        elevation={2}
+        shadowColor="$shadowColor"
+        shadowRadius={4}
+        shadowOffset={{ height: 2, width: 0 }}
+        shadowOpacity={0.05}
       >
-        {/* Título e Icono de refrescar */}
-        <XStack alignItems="center" gap="$2">
-          <RefreshCw size={18} color="$brandPrimary" />
-          <Text fontFamily="$heading" fontSize="$4" color="$text">
-            {copy.title}
-          </Text>
+        {/* Decorative Gradient Background */}
+        <LinearGradient
+            colors={['rgba(37,99,235,0.08)', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+            }}
+        />
+
+        <XStack gap="$3" alignItems="center" flex={1}>
+            <YStack 
+                backgroundColor="$blue3" 
+                padding="$2" 
+                borderRadius="$4"
+                alignItems="center"
+                justifyContent="center"
+            >
+                <RefreshCw size={16} color="$blue10" />
+            </YStack>
+            <YStack>
+                <Text fontSize={14} fontWeight="700" color="$color">
+                    {copy.title}
+                </Text>
+                <Text fontSize={11} color="$color" opacity={0.6}>
+                    {copy.hint}
+                </Text>
+            </YStack>
         </XStack>
-
-        {/* Fila Horizontal: Texto a la izquierda | Botón a la derecha */}
-        <XStack alignItems="center" justifyContent="space-between" gap="$3">
-          <Text fontSize="$2" color="$muted" flex={1}>
-            {copy.hint}
-          </Text>
-
-          {/* Botón Mejorado pero del tamaño original ($3) */}
-          <Button
-            size="$3" // Tamaño compacto original
-            backgroundColor="#2563EB" // Azul moderno
-            borderRadius="$4"
-            icon={copy.icon}
+        
+        <Button
+            size="$2.5"
+            circular
+            backgroundColor="$blue10"
+            icon={<ArrowRight size={14} color="white" />}
             onPress={() => router.replace(copy.href as never)}
-            
-            // Animaciones
-            animation="bouncy" 
-            pressStyle={{ scale: 0.9, opacity: 0.8 }} 
-            hoverStyle={{ scale: 1.05 }}
-            
-            color="white"
-            paddingHorizontal="$3" // Ajuste para que el texto quepa bien
-          >
-            {copy.cta}
-          </Button>
-        </XStack>
-      </YStack>
+            chromeless
+            scale={0.9}
+            pressStyle={{ scale: 0.8 }}
+        />
+      </XStack>
     </Animated.View>
   );
 };

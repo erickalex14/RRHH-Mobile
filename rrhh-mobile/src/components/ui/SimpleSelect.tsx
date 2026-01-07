@@ -18,13 +18,15 @@ interface SimpleSelectProps {
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const SimpleSelect = ({
   options,
   value,
   onValueChange,
-  placeholder = "Selecciona"
+  placeholder = "Selecciona",
+  disabled = false
 }: SimpleSelectProps): JSX.Element => {
   const [open, setOpen] = useState(false);
 
@@ -38,7 +40,13 @@ export const SimpleSelect = ({
 
   return (
     <>
-      <Pressable style={styles.trigger} onPress={() => setOpen(true)}>
+      <Pressable
+        style={[styles.trigger, disabled && styles.triggerDisabled]}
+        onPress={() => {
+          if (disabled) return;
+          setOpen(true);
+        }}
+      >
         <Text style={styles.triggerText} numberOfLines={1}>
           {displayText}
         </Text>
@@ -97,6 +105,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     minHeight: 44
+  },
+  triggerDisabled: {
+    opacity: 0.5
   },
   triggerText: {
     color: "#f8fafc",

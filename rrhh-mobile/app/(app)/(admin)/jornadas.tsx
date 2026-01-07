@@ -11,11 +11,15 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { adminService } from "@/services/adminService";
 import { Branch, Department, Role, User, WorkSession } from "@/types/api";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { LinearGradient } from "expo-linear-gradient";
+import { HybridSelect } from "@/components/ui/HybridSelect";
+import { Filter, Calendar, Clock, User as UserIcon, Building2, Layers, Briefcase, RefreshCw, XCircle } from "@tamagui/lucide-icons";
 import {
   Adapt,
   Paragraph,
@@ -25,7 +29,9 @@ import {
   Sheet,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Button
 } from "tamagui";
 import { addDays, format } from "date-fns";
 
@@ -273,18 +279,18 @@ export default function AdminJornadasScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 56 }}>
-        <YStack gap="$4">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Jornadas
-            </Text>
-            <Paragraph color="$muted">
-              Controla las sesiones registradas desde Web y móvil.
-            </Paragraph>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+          <YStack gap="$1" mb="$2">
+                <H2 fontWeight="800" fontSize={26} color="$color">Jornadas</H2>
+                <Paragraph color="$color" opacity={0.6}>
+                     Controla las sesiones registradas desde Web y móvil.
+                </Paragraph>
           </YStack>
 
-          <RoleSwitcher target="employee" />
+          <AdminNavbar />
 
           <AnimatedNotice
             variant="info"
@@ -292,234 +298,149 @@ export default function AdminJornadasScreen(): JSX.Element {
             message="Puedes revisar las jornadas, pero el cierre y edición estarán disponibles cuando el backend lo soporte."
           />
 
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
+          {/* Filter Block */}
+          <GlassCard gap="$3" p="$4" borderRadius="$6">
             <XStack justifyContent="space-between" alignItems="center">
-              <Text fontFamily="$heading" fontSize="$5" color="$text">
-                Filtros avanzados
-              </Text>
-              <AnimatedButton
-                backgroundColor="$color4"
-                color="$text"
+              <XStack gap="$2" alignItems="center">
+                  <Filter size={20} color="$color" />
+                  <Text fontFamily="$heading" fontSize="$5" color="$color">
+                    Filtros avanzados
+                  </Text>
+              </XStack>
+              <Button
+                size="$3"
+                chromeless
+                color="$blue10"
                 onPress={() => setIsFilterBarOpen((prev) => !prev)}
               >
                 {isFilterBarOpen ? "Ocultar" : "Mostrar"}
-              </AnimatedButton>
+              </Button>
             </XStack>
             {isFilterBarOpen ? (
               <YStack gap="$3">
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontWeight="600" color="$color">
                     Sucursal
                   </Text>
-                  <Select value={filters.branchId} onValueChange={handleBranchChange}>
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder="Todas" />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {branchOptions.map((option) => (
-                          <Select.Item key={option.value} value={option.value}>
-                            <Select.ItemText>{option.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  <HybridSelect
+                    options={branchOptions}
+                    value={filters.branchId}
+                    onValueChange={handleBranchChange}
+                    placeholder="Todas"
+                  />
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontWeight="600" color="$color">
                     Departamento
                   </Text>
-                  <Select value={filters.departmentId} onValueChange={handleDepartmentChange}>
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder="Todos" />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {departmentOptions.map((option) => (
-                          <Select.Item key={option.value} value={option.value}>
-                            <Select.ItemText>{option.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  <HybridSelect
+                    options={departmentOptions}
+                    value={filters.departmentId}
+                    onValueChange={handleDepartmentChange}
+                    placeholder="Todos"
+                  />
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontWeight="600" color="$color">
                     Rol
                   </Text>
-                  <Select value={filters.roleId} onValueChange={handleRoleChange}>
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder="Todos" />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {roleOptions.map((option) => (
-                          <Select.Item key={option.value} value={option.value}>
-                            <Select.ItemText>{option.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  <HybridSelect
+                    options={roleOptions}
+                    value={filters.roleId}
+                    onValueChange={handleRoleChange}
+                    placeholder="Todos"
+                  />
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontWeight="600" color="$color">
                     Empleado
                   </Text>
-                  <Select value={filters.employeeId} onValueChange={handleEmployeeChange}>
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder="Todos" />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {employeeOptions.map((option) => (
-                          <Select.Item key={option.value} value={option.value}>
-                            <Select.ItemText>{option.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  <HybridSelect
+                    options={employeeOptions}
+                    value={filters.employeeId}
+                    onValueChange={handleEmployeeChange}
+                    placeholder="Todos"
+                  />
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontWeight="600" color="$color">
                     Estado
                   </Text>
-                  <Select value={filters.status} onValueChange={(value) => handleStatusChange(value as StatusFilter)}>
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder="Todos" />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {statusOptions.map((option) => (
-                          <Select.Item key={option.value} value={option.value}>
-                            <Select.ItemText>{option.label}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  <HybridSelect
+                    options={statusOptions}
+                    value={filters.status}
+                    onValueChange={(value) => handleStatusChange(value as StatusFilter)}
+                    placeholder="Todos"
+                  />
                 </YStack>
 
                 <XStack gap="$3" flexWrap="wrap">
-                  <YStack flex={1} minWidth={180} gap="$1">
-                    <Text fontWeight="600" color="$text">
+                  <YStack flex={1} minWidth={150} gap="$1">
+                    <Text fontWeight="600" color="$color">
                       Desde
                     </Text>
-                    <AnimatedButton
-                      backgroundColor="$color3"
-                      color="$text"
+                    <Button
+                      variant="outlined"
+                      borderColor="$borderColor"
+                      color="$color"
+                      icon={Calendar}
                       onPress={() => openDatePicker("dateFrom")}
                     >
                       {filters.dateFrom}
-                    </AnimatedButton>
+                    </Button>
                   </YStack>
-                  <YStack flex={1} minWidth={180} gap="$1">
-                    <Text fontWeight="600" color="$text">
+                  <YStack flex={1} minWidth={150} gap="$1">
+                    <Text fontWeight="600" color="$color">
                       Hasta
                     </Text>
-                    <AnimatedButton
-                      backgroundColor="$color3"
-                      color="$text"
+                    <Button
+                     variant="outlined"
+                     borderColor="$borderColor"
+                     color="$color"
+                     icon={Calendar}
                       onPress={() => openDatePicker("dateTo")}
                     >
                       {filters.dateTo}
-                    </AnimatedButton>
+                    </Button>
                   </YStack>
                 </XStack>
 
                 {renderIOSPicker()}
 
-                <XStack gap="$3">
-                  <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={resetFilters}>
+                <XStack gap="$3" mt="$2">
+                  <Button flex={1} chromeless color="$color" onPress={resetFilters} icon={XCircle}>
                     Restablecer
-                  </AnimatedButton>
-                  <AnimatedButton
+                  </Button>
+                  <Button
                     flex={1}
+                    backgroundColor="$blue10"
+                    color="white"
                     disabled={isLoading || isRefetching}
                     onPress={() => refetch()}
+                    icon={RefreshCw}
                   >
                     {isRefetching ? "Aplicando..." : "Aplicar filtros"}
-                  </AnimatedButton>
+                  </Button>
                 </XStack>
               </YStack>
             ) : null}
-          </YStack>
+          </GlassCard>
 
-          <AnimatedButton
-            backgroundColor="$color4"
-            color="$text"
+          <Button
+            size="$4"
+            chromeless
+            borderWidth={1}
+            borderColor="$borderColor"
             disabled={isLoading || isRefetching}
             onPress={() => refetch()}
+            icon={RefreshCw}
           >
             {isRefetching ? "Actualizando..." : "Refrescar lista"}
-          </AnimatedButton>
+          </Button>
 
           {isLoading || isRefetching ? (
             <ListSkeleton items={4} height={140} />
@@ -537,66 +458,95 @@ export default function AdminJornadasScreen(): JSX.Element {
               message="No hay jornadas con el filtro seleccionado."
             />
           ) : (
-            <Animated.FlatList<WorkSession>
-              data={sessions}
-              keyExtractor={(item) => String(item.session_id)}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-              renderItem={({ item, index }) => (
-                <Animated.View entering={FadeInDown.delay(index * 75)}>
-                  <InteractiveCard>
-                    <YStack gap="$2">
-                      <XStack justifyContent="space-between" alignItems="center" gap="$2" flexWrap="wrap">
-                        <Text fontWeight="600" fontSize="$4" color="$text">
-                          {[
-                            item.employee_detail?.first_name ??
-                              item.employee_detail?.user?.first_name ??
-                              item.user?.first_name ??
-                              "Colaborador",
-                            item.employee_detail?.last_name ??
-                              item.employee_detail?.user?.last_name ??
-                              item.user?.last_name ??
-                              ""
-                          ]
-                            .join(" ")
-                            .trim()}
-                        </Text>
-                        <StatusBadge
-                          label={item.end_time ? "Cerrada" : "Abierta"}
-                          color={item.end_time ? "#059669" : "#f97316"}
-                        />
-                      </XStack>
-                      <Paragraph color="$muted">
-                        Fecha: {item.work_date}
-                      </Paragraph>
-                      <Paragraph color="$muted">
-                        Inicio: {formatTime(item.start_time)} · Fin: {item.end_time ? formatTime(item.end_time) : "Pendiente"}
-                      </Paragraph>
-                      <Paragraph color="$muted">
-                        Sucursal: {item.employee_detail?.department?.branch?.name ?? "Sin sucursal"}
-                      </Paragraph>
-                      <Paragraph color="$muted">
-                        Departamento: {item.employee_detail?.department?.name ?? "Sin departamento"}
-                      </Paragraph>
-                      <Paragraph color="$muted">
-                        Rol: {item.employee_detail?.role?.name ?? "Sin rol"}
-                      </Paragraph>
-                      <XStack gap="$2" mt="$2">
-                        <AnimatedButton flex={1} backgroundColor="$color4" color="$muted" disabled>
-                          Cerrar jornada
-                        </AnimatedButton>
-                        <AnimatedButton flex={1} backgroundColor="$color4" color="$muted" disabled>
-                          Editar registro
-                        </AnimatedButton>
-                      </XStack>
-                      <Paragraph color="$muted" fontSize="$2">
-                        Estas acciones estarán disponibles cuando tengamos soporte de backend.
-                      </Paragraph>
-                    </YStack>
-                  </InteractiveCard>
-                </Animated.View>
-              )}
-            />
+             <YStack gap="$3">
+              {sessions.map((item, index) => (
+                    <Animated.View key={item.session_id} entering={FadeInDown.delay(index * 75).springify()}>
+                        <GlassCard p="$4" gap="$2">
+                             <XStack justifyContent="space-between" alignItems="center">
+                                <XStack gap="$3" alignItems="center" flex={1}>
+                                    <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
+                                        <Clock size={24} color="$blue10" />
+                                    </GlassCard>
+                                    <YStack flex={1}>
+                                        <Text fontWeight="700" fontSize="$4" numberOfLines={1} color="$color">
+                                          {[
+                                            item.employee_detail?.first_name ??
+                                              item.employee_detail?.user?.first_name ??
+                                              item.user?.first_name ??
+                                              "Colaborador",
+                                            item.employee_detail?.last_name ??
+                                              item.employee_detail?.user?.last_name ??
+                                              item.user?.last_name ??
+                                              ""
+                                          ]
+                                            .join(" ")
+                                            .trim()}
+                                        </Text>
+                                        <Text color="$color" opacity={0.6} fontSize="$3">
+                                            {item.work_date}
+                                        </Text>
+                                    </YStack>
+                                </XStack>
+                                 <StatusBadge
+                                  label={item.end_time ? "Cerrada" : "Abierta"}
+                                  color={item.end_time ? "$green10" : "$orange10"}
+                                />
+                            </XStack>
+                            
+                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+
+                            <XStack gap="$4" px="$1">
+                                <YStack flex={1}>
+                                     <Text fontSize="$2" opacity={0.6} color="$color">INICIO</Text>
+                                     <Text fontSize="$5" fontWeight="700" color="$color">{formatTime(item.start_time)}</Text>
+                                </YStack>
+                                <Separator vertical borderColor="$borderColor" opacity={0.5} />
+                                <YStack flex={1}>
+                                     <Text fontSize="$2" opacity={0.6} color="$color">FIN</Text>
+                                     <Text fontSize="$5" fontWeight="700" color={item.end_time ? "$color" : "$orange10"}>
+                                         {item.end_time ? formatTime(item.end_time) : "En curso"}
+                                     </Text>
+                                </YStack>
+                            </XStack>
+
+                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+
+                             <YStack gap="$1" px="$1">
+                                 <XStack gap="$2" alignItems="center">
+                                    <Building2 size={12} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>
+                                        {item.employee_detail?.department?.branch?.name ?? "Sin sucursal"}
+                                    </Text>
+                                 </XStack>
+                                 <XStack gap="$2" alignItems="center">
+                                    <Layers size={12} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>
+                                        {item.employee_detail?.department?.name ?? "Sin departamento"}
+                                    </Text>
+                                 </XStack>
+                                  <XStack gap="$2" alignItems="center">
+                                    <Briefcase size={12} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>
+                                        {item.employee_detail?.role?.name ?? "Sin rol"}
+                                    </Text>
+                                 </XStack>
+                            </YStack>
+
+                            <XStack gap="$2" mt="$2">
+                                <Button flex={1} size="$3" disabled backgroundColor="$backgroundPress" color="$color" opacity={0.5}>
+                                    Cerrar jornada
+                                </Button>
+                                <Button flex={1} size="$3" disabled backgroundColor="$backgroundPress" color="$color" opacity={0.5}>
+                                    Editar
+                                </Button>
+                            </XStack>
+                             <Paragraph color="$color" opacity={0.4} fontSize="$2" textAlign="center">
+                                Gestión no disponible en esta versión.
+                            </Paragraph>
+                        </GlassCard>
+                    </Animated.View>
+                  ))}
+            </YStack>
           )}
         </YStack>
       </ScrollView>

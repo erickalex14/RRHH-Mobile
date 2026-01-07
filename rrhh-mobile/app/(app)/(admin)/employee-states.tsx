@@ -6,14 +6,17 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { adminService, EmployeeStatePayload } from "@/services/adminService";
 import { useConfirm } from "@/hooks/useConfirm";
 import { EmployeeState } from "@/types/api";
-import { AnimatePresence, Paragraph, ScrollView, Separator, Switch, Text, XStack, YStack } from "tamagui";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { LinearGradient } from "expo-linear-gradient";
+import { Briefcase, Edit3, Trash2 } from "@tamagui/lucide-icons";
+import { AnimatePresence, Paragraph, ScrollView, Separator, Switch, Text, XStack, YStack, H2, Input, Button } from "tamagui";
 
 type FeedbackState = { type: "success" | "error"; message: string } | null;
 
@@ -156,52 +159,55 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 64 }}>
-        <YStack gap="$5">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Estados de empleado
-            </Text>
-            <Paragraph color="$muted">
-              Crea estados claros para controlar la situación de cada colaborador.
-            </Paragraph>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+          <YStack gap="$1" mb="$2">
+                <H2 fontWeight="800" fontSize={26} color="$color">Estados de empleado</H2>
+                <Paragraph color="$color" opacity={0.6}>
+                     Crea estados claros para controlar la situación de cada colaborador.
+                </Paragraph>
           </YStack>
 
-          <RoleSwitcher target="employee" />
 
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
+          {/* Form Block */}
+          <GlassCard gap="$3" p="$4" borderRadius="$6">
+             <Text fontFamily="$heading" fontSize="$5" color="$color">
               {editingState ? "Editar estado" : "Nuevo estado"}
             </Text>
-            <Paragraph color="$muted">{helperText}</Paragraph>
+            <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
 
-            <AnimatedInput
-              label="Nombre"
-              placeholder="Activo"
+            <Input
+              placeholder="Nombre (ej. Activo)"
               value={form.name}
+              backgroundColor="$backgroundPress"
+              borderColor="$borderColor"
               onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
             />
-            <AnimatedInput
-              label="Descripción"
-              placeholder="Colaborador activo con acceso completo"
-              value={form.description}
-              onChangeText={(value) => setForm((prev) => ({ ...prev, description: value }))}
-              multiline
+             <Input
+                placeholder="Descripción (opcional)"
+                value={form.description}
+                backgroundColor="$backgroundPress"
+                borderColor="$borderColor"
+                multiline
+                numberOfLines={3}
+                onChangeText={(value) => setForm((prev) => ({ ...prev, description: value }))}
             />
 
             <XStack alignItems="center" justifyContent="space-between">
               <YStack gap="$1">
-                <Text fontWeight="600" color="$text">
+                <Text fontWeight="600" color="$color">
                   ¿Activo?
                 </Text>
-                <Paragraph color="$muted" fontSize="$2">
-                  Usa el switch para habilitar o suspender el estado.
+                <Paragraph color="$color" opacity={0.6} fontSize="$2">
+                  Usa el switch para habilitar o suspender.
                 </Paragraph>
               </YStack>
               <Switch
                 size="$3"
                 checked={form.active}
-                  onCheckedChange={(value: boolean) => setForm((prev) => ({ ...prev, active: Boolean(value) }))}
+                onCheckedChange={(value: boolean) => setForm((prev) => ({ ...prev, active: Boolean(value) }))}
               >
                 <Switch.Thumb animation="quick" />
               </Switch>
@@ -209,38 +215,30 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
 
             <XStack gap="$3" mt="$2">
               {editingState ? (
-                <AnimatedButton
+                <Button
                   flex={1}
-                  backgroundColor="$color4"
-                  color="$text"
+                  chromeless
+                  color="$color"
                   disabled={isMutating}
                   onPress={resetForm}
                 >
                   Cancelar
-                </AnimatedButton>
+                </Button>
               ) : null}
-              <AnimatedButton flex={1} disabled={!formIsValid || isMutating} onPress={handleSubmit}>
-                {editingState ? "Guardar cambios" : "Crear"}
-              </AnimatedButton>
+              <Button 
+                flex={1} 
+                disabled={!formIsValid || isMutating} 
+                backgroundColor="$blue10" 
+                color="white" 
+                onPress={handleSubmit}
+              >
+                {editingState ? "Guardar cambios" : "Crear estado"}
+              </Button>
             </XStack>
-          </YStack>
-
-          <XStack gap="$3">
-            <AnimatedButton
-              flex={1}
-              backgroundColor="$color4"
-              color="$text"
-              disabled={isLoading || isFetching}
-              onPress={() => refetch()}
-            >
-              {isFetching ? "Actualizando..." : "Actualizar"}
-            </AnimatedButton>
-          </XStack>
+          </GlassCard>
 
           <YStack gap="$3">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Estados registrados
-            </Text>
+            <H2 fontSize={20} color="$color" mt="$4">Estados registrados</H2>
             {isLoading || isFetching ? (
               <ListSkeleton items={4} height={120} />
             ) : isError ? (
@@ -254,51 +252,49 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
             ) : employeeStates.length === 0 ? (
               <AnimatedNotice variant="info" message="Aún no registras estados." />
             ) : (
-              <Animated.FlatList<EmployeeState>
-                data={employeeStates}
-                keyExtractor={(item) => String(item.employee_state_id)}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-                renderItem={({ item, index }) => (
-                  <Animated.View entering={FadeInDown.delay(index * 85)}>
-                    <InteractiveCard onPress={() => handleSelectState(item)}>
-                      <YStack gap="$2">
-                        <XStack justifyContent="space-between" alignItems="center">
-                          <Text fontWeight="600" fontSize="$4" color="$text">
-                            {item.name}
-                          </Text>
-                          <StatusBadge
-                            label={item.active ? "Activo" : "Inactivo"}
-                            color={item.active ? "#059669" : "#9ca3af"}
-                          />
-                        </XStack>
-                        <Paragraph color="$muted">
-                          {item.description ?? "Sin descripción"}
-                        </Paragraph>
-                        <XStack gap="$2" mt="$2">
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$color4"
-                            color="$text"
-                            onPress={() => handleSelectState(item)}
-                          >
-                            Editar
-                          </AnimatedButton>
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$danger"
-                            color="#fff"
-                            disabled={deleteMutation.isPending}
-                            onPress={() => confirmDelete(item)}
-                          >
-                            Eliminar
-                          </AnimatedButton>
-                        </XStack>
-                      </YStack>
-                    </InteractiveCard>
-                  </Animated.View>
-                )}
-              />
+                <YStack gap="$3">
+                  {employeeStates.map((item, index) => (
+                    <Animated.View key={item.employee_state_id} entering={FadeInDown.delay(index * 85).springify()}>
+                        <GlassCard p="$4" gap="$2">
+                            <XStack justifyContent="space-between" alignItems="center">
+                                <XStack gap="$3" alignItems="center">
+                                    <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
+                                        <Briefcase size={24} color="$blue10" />
+                                    </GlassCard>
+                                    <YStack>
+                                        <Text fontWeight="700" fontSize="$5" color="$color">
+                                            {item.name}
+                                        </Text>
+                                        <StatusBadge
+                                            label={item.active ? "Activo" : "Inactivo"}
+                                            color={item.active ? "$green10" : "$gray10"}
+                                        />
+                                    </YStack>
+                                </XStack>
+                            </XStack>
+
+                             <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+                             
+                             <Text color="$color" opacity={0.7} fontSize="$3">
+                                {item.description ?? "Sin descripción"}
+                             </Text>
+                            
+                            <XStack gap="$3" mt="$2">
+                                <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => handleSelectState(item)} />
+                                <Button
+                                    flex={1}
+                                    size="$3"
+                                    backgroundColor="$red10"
+                                    color="white"
+                                    icon={Trash2}
+                                    disabled={deleteMutation.isPending}
+                                    onPress={() => confirmDelete(item)}
+                                />
+                            </XStack>
+                        </GlassCard>
+                    </Animated.View>
+                  ))}
+                </YStack>
             )}
           </YStack>
 
@@ -314,6 +310,7 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
           </AnimatePresence>
         </YStack>
       </ScrollView>
+      <AdminNavbar />
     </Screen>
   );
 }

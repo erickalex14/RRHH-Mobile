@@ -11,13 +11,16 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { adminService, SchedulePayload } from "@/services/adminService";
 import { useConfirm } from "@/hooks/useConfirm";
 import { Schedule } from "@/types/api";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { LinearGradient } from "expo-linear-gradient";
+import { Clock, Sun, Moon, Edit3, Trash2, Utensils } from "@tamagui/lucide-icons";
 import {
   AnimatePresence,
   Paragraph,
@@ -26,7 +29,10 @@ import {
   Switch,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Input,
+  Button
 } from "tamagui";
 
 type TimeField = "start_time" | "end_time" | "lunch_start" | "lunch_end";
@@ -304,25 +310,43 @@ export default function AdminSchedulesScreen(): JSX.Element {
       return null;
     }
     const activeField = pickerState.field;
+    
     return (
-      <YStack gap="$2" backgroundColor="$color2" p="$3" borderRadius="$5">
-        <Text fontWeight="600" color="$text">
-          Selecciona {timeFieldCopy[activeField].label.toLowerCase()}
+      <GlassCard
+        animation="fadeIn"
+        enterStyle={{ opacity: 0, scale: 0.95 }}
+        p="$4"
+        mb="$4"
+        borderColor="$blue8"
+      >
+        <Text color="$blue10" fontSize="$5" fontWeight="600" mb="$2" textAlign="center">
+          {timeFieldCopy[activeField].label}
         </Text>
-        <DateTimePicker
-          value={form[activeField] ? toDateValue(form[activeField]) : toDateValue("09:00")}
-          mode="time"
-          display="spinner"
-          is24Hour
-          onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
-            if (event.type === "dismissed") return;
-            if (selectedDate) {
-              handleTimeSelection(activeField, selectedDate);
-            }
-          }}
-        />
-        <AnimatedButton onPress={closePicker}>Cerrar</AnimatedButton>
-      </YStack>
+        <XStack justifyContent="center" mb="$3">
+          <DateTimePicker
+            testID="ios-time-picker"
+            value={form[activeField] ? toDateValue(form[activeField]) : toDateValue("09:00")}
+            mode="time"
+            display="spinner"
+            themeVariant="dark"
+            is24Hour
+            onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
+              if (event.type === "dismissed") return;
+              if (selectedDate) {
+                handleTimeSelection(activeField, selectedDate);
+              }
+            }}
+            style={{ height: 120, width: "100%" }}
+          />
+        </XStack>
+        <Button
+          backgroundColor="$blue8"
+          color="white"
+          onPress={closePicker}
+        >
+          Confirmar
+        </Button>
+      </GlassCard>
     );
   };
 
@@ -330,195 +354,240 @@ export default function AdminSchedulesScreen(): JSX.Element {
     ? `Editando ${editingSchedule.name}`
     : "Define un nuevo horario laboral";
 
-  const deleteIsPending = deleteMutation.isPending;
-
   return (
     <Screen>
-      <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 64 }}>
-        <YStack gap="$5">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Horarios
-            </Text>
-            <Paragraph color="$muted">
-              Configura turnos reutilizables para asignarlos al personal.
-            </Paragraph>
-          </YStack>
+      <AdminNavbar title="Horarios" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={{ position: 'absolute', width: '100%', height: '100%', zIndex: -1 }}
+      />
+      
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <YStack p="$4" space="$4">
+          <GlassCard p="$5">
+            <YStack space="$2">
+              <H2 color="white" fontSize="$7" fontWeight="bold">
+                 {editingSchedule ? "Editar horario" : "Nuevo horario"}
+              </H2>
+              <Text color="$gray10" fontSize="$3.5">
+                {helperText}
+              </Text>
+            </YStack>
+          </GlassCard>
 
-          <RoleSwitcher target="employee" />
+          <AnimatePresence>
+             {feedback && (
+              <GlassCard
+                animation="fadeIn"
+                borderColor={feedback.type === 'success' ? '$green8' : '$red8'}
+                p="$3"
+              >
+                <XStack space="$3" alignItems="center">
+                  <Text color={feedback.type === 'success' ? '$green8' : '$red8'} fontSize="$3.5">
+                    {feedback.message}
+                  </Text>
+                </XStack>
+              </GlassCard>
+            )}
+            
+            {showValidationHint && validationMessage && (
+               <GlassCard
+                animation="fadeIn"
+                borderColor="$orange8"
+                p="$3"
+              >
+                <XStack space="$3" alignItems="center">
+                  <Text color="$orange10" fontSize="$3.5">
+                    {validationMessage}
+                  </Text>
+                </XStack>
+              </GlassCard>
+            )}
+          </AnimatePresence>
 
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              {editingSchedule ? "Editar horario" : "Nuevo horario"}
-            </Text>
-            <Paragraph color="$muted">{helperText}</Paragraph>
-
+          <GlassCard p="$5" space="$4">
             <AnimatedInput
-              label="Nombre"
-              placeholder="Turno matutino"
+              label="Nombre del Horario"
               value={form.name}
-              onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
+              onChangeText={(text) => setForm((prev) => ({ ...prev, name: text }))}
+              placeholder="Ej. Jornada Completa"
             />
 
-            <YStack gap="$3">
-              {timeFields.map((field) => (
-                <YStack key={field} gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    {timeFieldCopy[field].label}
-                  </Text>
-                  <Paragraph color="$muted" fontSize="$2">
-                    {timeFieldCopy[field].helper}
-                  </Paragraph>
-                  <AnimatedButton
-                    backgroundColor="$color3"
-                    color="$text"
-                    onPress={() => handleTimePicker(field)}
-                  >
-                    {form[field] ? `${form[field]} h` : "Seleccionar hora"}
-                  </AnimatedButton>
-                </YStack>
-              ))}
+             {/* Time Fields Grid */}
+            <YStack space="$4">
+              <XStack space="$2" alignItems="center" mb="$1">
+                <Clock size={16} color="#60a5fa" />
+                <Text color="$blue9" fontWeight="600">Configuración de Tiempos</Text>
+              </XStack>
+              
+              <XStack flexWrap="wrap" gap="$3">
+                {timeFields.map((field) => (
+                  <YStack key={field} width="48%" space="$1">
+                    <Text color="$gray9" fontSize="$3" mb="$1">
+                      {timeFieldCopy[field].label}
+                    </Text>
+                    <Button
+                      onPress={() => handleTimePicker(field)}
+                      backgroundColor="rgba(0,0,0,0.3)"
+                      borderColor="$gray7"
+                      borderWidth={1}
+                      height={50}
+                      justifyContent="flex-start"
+                      icon={<Clock size={16} color="#94a3b8" />}
+                    >
+                      <Text color="white" fontSize="$3.5">
+                        {form[field] ? normalizeIncomingTime(form[field]) : "--:--"}
+                      </Text>
+                    </Button>
+                  </YStack>
+                ))}
+              </XStack>
+              
+              {renderIOSPicker()}
             </YStack>
 
-            <XStack alignItems="center" justifyContent="space-between" mt="$1">
-              <YStack gap="$1">
-                <Text fontWeight="600" color="$text">
-                  Activo
-                </Text>
-                <Paragraph color="$muted" fontSize="$2">
-                  Usa el switch para habilitar o pausar el horario.
-                </Paragraph>
-              </YStack>
-                <Switch
-                  size="$3"
-                  checked={form.active}
-                  onCheckedChange={(value: boolean) =>
-                    setForm((prev) => ({ ...prev, active: Boolean(value) }))
-                  }
-                >
-                <Switch.Thumb animation="quick" />
+            <Separator borderColor="$gray8" my="$2" />
+
+             <XStack space="$4" alignItems="center" justifyContent="space-between" py="$2">
+              <XStack space="$2" alignItems="center">
+                <Sun size={20} color="#94a3b8" />
+                <YStack>
+                  <Text color="white" fontSize="$4" fontWeight="600">Estado Activo</Text>
+                  <Text color="$gray10" fontSize="$2.5">Habilitar este horario</Text>
+                </YStack>
+              </XStack>
+              <Switch
+                size="$3"
+                checked={form.active}
+                onCheckedChange={(checked) => setForm((prev) => ({ ...prev, active: Boolean(checked) }))}
+              >
+                <Switch.Thumb animation="quick" backgroundColor="white" />
               </Switch>
             </XStack>
 
-            {showValidationHint && validationMessage ? (
-              <AnimatedNotice variant="warning" message={validationMessage} />
-            ) : null}
-
-            {renderIOSPicker()}
-
-            <XStack gap="$3" mt="$2">
-              {editingSchedule ? (
+            <XStack space="$3" mt="$4">
+              {editingSchedule && (
                 <AnimatedButton
                   flex={1}
-                  backgroundColor="$color4"
-                  color="$text"
-                  disabled={isMutating}
                   onPress={handleCancelEdit}
+                  backgroundColor="rgba(239, 68, 68, 0.2)"
                 >
                   Cancelar
                 </AnimatedButton>
-              ) : null}
+              )}
               <AnimatedButton
-                flex={1}
-                disabled={!formIsValid || isMutating}
+                flex={2}
                 onPress={handleSubmit}
+                disabled={isMutating || !formIsValid}
               >
-                {editingSchedule ? "Guardar cambios" : "Crear"}
+                {isMutating ? "Guardando..." : editingSchedule ? "Actualizar" : "Crear"}
               </AnimatedButton>
             </XStack>
-          </YStack>
+          </GlassCard>
 
-          <XStack gap="$3">
-            <AnimatedButton
-              flex={1}
-              backgroundColor="$color4"
-              color="$text"
-              disabled={isLoading || isFetching}
-              onPress={() => refetch()}
-            >
-              {isFetching ? "Actualizando..." : "Actualizar"}
-            </AnimatedButton>
-          </XStack>
-
-          <YStack gap="$3">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Horarios registrados
-            </Text>
-            {isLoading || isFetching ? (
-              <ListSkeleton items={4} height={140} />
-            ) : isError ? (
-              <AnimatedNotice
-                variant="error"
-                title="No pudimos cargar los horarios"
-                message={schedulesError instanceof Error ? schedulesError.message : undefined}
-                actionLabel="Reintentar"
-                onAction={() => refetch()}
+          <YStack space="$4" pb="$10">
+            <XStack justifyContent="space-between" alignItems="center">
+              <H2 color="white" fontSize="$6">Horarios Registrados</H2>
+             <Button
+                size="$3"
+                circular
+                backgroundColor="rgba(255,255,255,0.1)" 
+                onPress={() => refetch()}
+                icon={<Edit3 size={16} color="white" />} 
               />
+            </XStack>
+
+            {isLoading || isFetching ? (
+              <YStack space="$3">
+                {[1, 2, 3].map((i) => (
+                  <ListSkeleton key={i} />
+                ))}
+              </YStack>
+            ) : isError ? (
+               <GlassCard p="$4" borderColor="$red8">
+                  <Text color="$red10">Error al cargar horarios</Text>
+               </GlassCard>
             ) : schedules.length === 0 ? (
-              <AnimatedNotice variant="info" message="Aún no registras horarios." />
+               <GlassCard p="$4">
+                  <Text color="white">Aún no registras horarios.</Text>
+               </GlassCard>
             ) : (
-              <Animated.FlatList<Schedule>
-                data={schedules}
-                keyExtractor={(item) => String(item.schedule_id)}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-                renderItem={({ item, index }) => (
-                  <Animated.View entering={FadeInDown.delay(index * 85)}>
-                    <InteractiveCard onPress={() => handleSelectSchedule(item)}>
-                      <YStack gap="$2">
-                        <XStack justifyContent="space-between" alignItems="center">
-                          <Text fontWeight="600" fontSize="$4" color="$text">
-                            {item.name}
-                          </Text>
-                          <StatusBadge
-                            label={item.active ? "Activo" : "Inactivo"}
-                            color={item.active ? "#059669" : "#9ca3af"}
+              <YStack space="$3">
+                {schedules.map((schedule, index) => (
+                  <GlassCard
+                    key={schedule.schedule_id}
+                    animation="lazy"
+                    enterStyle={{ opacity: 0, translateY: 20 }}
+                    p="$0"
+                    overflow="hidden"
+                  >
+                    <YStack p="$4" space="$3">
+                      <XStack justifyContent="space-between" alignItems="center">
+                        <XStack space="$3" alignItems="center">
+                          <LinearGradient
+                            colors={['#3b82f6', '#2563eb']}
+                            style={{ padding: 8, borderRadius: 10 }}
+                          >
+                            <Clock size={20} color="white" />
+                          </LinearGradient>
+                          <YStack>
+                            <Text color="white" fontSize="$4" fontWeight="Bold">
+                              {schedule.name}
+                            </Text>
+                            <StatusBadge status={schedule.active ? "active" : "inactive"} />
+                          </YStack>
+                        </XStack>
+                        
+                        <XStack space="$2">
+                          <Button
+                            size="$3"
+                            circular
+                            backgroundColor="rgba(255,255,255,0.1)"
+                            onPress={() => handleSelectSchedule(schedule)}
+                            icon={<Edit3 size={16} color="white" />}
+                          />
+                          <Button
+                            size="$3"
+                            circular
+                            backgroundColor="rgba(239, 68, 68, 0.2)"
+                            onPress={() => handleDeleteSchedule(schedule)}
+                            icon={<Trash2 size={16} color="$red9" />}
                           />
                         </XStack>
-                        <Paragraph color="$muted">
-                          Jornada: {normalizeIncomingTime(item.start_time)} - {normalizeIncomingTime(item.end_time)}
-                        </Paragraph>
-                        <Paragraph color="$muted">
-                          Almuerzo: {normalizeIncomingTime(item.lunch_start)} - {normalizeIncomingTime(item.lunch_end)}
-                        </Paragraph>
-                        <XStack gap="$2" mt="$2">
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$color4"
-                            color="$text"
-                            onPress={() => handleSelectSchedule(item)}
-                          >
-                            Editar
-                          </AnimatedButton>
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$danger"
-                            color="#fff"
-                            disabled={deleteIsPending}
-                            onPress={() => handleDeleteSchedule(item)}
-                          >
-                            Eliminar
-                          </AnimatedButton>
-                        </XStack>
-                      </YStack>
-                    </InteractiveCard>
-                  </Animated.View>
-                )}
-              />
+                      </XStack>
+
+                      <Separator borderColor="rgba(255,255,255,0.1)" />
+
+                      <XStack justifyContent="space-between" flexWrap="wrap" gap="$2">
+                        <YStack width="48%" bg="rgba(0,0,0,0.2)" p="$2" borderRadius="$3">
+                          <Text color="$gray10" fontSize="$2" mb="$1">Jornada</Text>
+                          <XStack alignItems="center" space="$2">
+                            <Sun size={12} color="#fbbf24" />
+                            <Text color="white" fontSize="$3">
+                              {normalizeIncomingTime(schedule.start_time)} - {normalizeIncomingTime(schedule.end_time)}
+                            </Text>
+                          </XStack>
+                        </YStack>
+                        
+                        <YStack width="48%" bg="rgba(0,0,0,0.2)" p="$2" borderRadius="$3">
+                          <Text color="$gray10" fontSize="$2" mb="$1">Almuerzo</Text>
+                          <XStack alignItems="center" space="$2">
+                            <Utensils size={12} color="#f87171" />
+                            <Text color="white" fontSize="$3">
+                              {normalizeIncomingTime(schedule.lunch_start)} - {normalizeIncomingTime(schedule.lunch_end)}
+                            </Text>
+                          </XStack>
+                        </YStack>
+                      </XStack>
+                    </YStack>
+                  </GlassCard>
+                ))}
+            </YStack>
             )}
           </YStack>
-
-          <AnimatePresence>
-            {feedback ? (
-              <AnimatedNotice
-                variant={feedback.type}
-                message={feedback.message}
-                actionLabel="Cerrar"
-                onAction={() => setFeedback(null)}
-              />
-            ) : null}
-          </AnimatePresence>
         </YStack>
       </ScrollView>
     </Screen>

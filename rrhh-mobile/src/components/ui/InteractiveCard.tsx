@@ -48,12 +48,12 @@ export const InteractiveCard = ({ children, onPress, ...stackProps }: Interactiv
       <YStack
         borderWidth={1}
         borderColor="$borderColor"
-        backgroundColor="$color2"
+        backgroundColor="rgba(255,255,255,0.06)"
         borderRadius="$6"
         padding="$4"
         gap="$2"
-        hoverStyle={{ borderColor: "$color8", translateY: -2 }}
-        pressStyle={{ backgroundColor: "$color3" }}
+        hoverStyle={{ borderColor: "$color8", translateY: -2, backgroundColor: "rgba(255,255,255,0.08)" }}
+        pressStyle={{ backgroundColor: "rgba(255,255,255,0.12)" }}
         {...stackProps}
       >
         {children}

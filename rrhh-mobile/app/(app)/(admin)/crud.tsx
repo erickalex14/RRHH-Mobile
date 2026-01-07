@@ -6,11 +6,14 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { adminService, CompanyPayload } from "@/services/adminService";
 import { Company } from "@/types/api";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { LinearGradient } from "expo-linear-gradient";
+import { Building, MapPin, Phone, Mail, Edit3, Trash2 } from "@tamagui/lucide-icons";
 import {
   AnimatePresence,
   Paragraph,
@@ -18,7 +21,10 @@ import {
   Separator,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Input,
+  Button
 } from "tamagui";
 
 const emptyForm: CompanyPayload = {
@@ -127,64 +133,71 @@ export default function AdminCrudScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 56 }}>
-        <YStack gap="$5">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Catálogos principales
-            </Text>
-            <Paragraph color="$muted">
-              Administra compañías para habilitar ramas y departamentos.
-            </Paragraph>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+           <YStack gap="$1" mb="$2">
+                <H2 fontWeight="800" fontSize={26} color="$color">Compañías</H2>
+                <Paragraph color="$color" opacity={0.6}>
+                 Administra compañías para habilitar ramas y departamentos.
+                </Paragraph>
           </YStack>
 
-          <RoleSwitcher target="employee" />
 
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
+          {/* Form Block */}
+          <GlassCard gap="$3" p="$4" borderRadius="$6">
+            <Text fontFamily="$heading" fontSize="$5" color="$color">
               {editingCompany ? `Editar ${editingCompany.name}` : "Nueva compañía"}
             </Text>
-            <Paragraph color="$muted">{helperText}</Paragraph>
+            <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
             <YStack gap="$3" mt="$2">
               <AnimatedInput
                 label="Nombre"
-                placeholder="RRHH Global"
+                placeholder="Ej. RRHH Global"
                 value={form.name}
                 onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
               />
               <AnimatedInput
-                label="RUC"
-                placeholder="0000000000001"
-                value={form.ruc}
-                maxLength={13}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, ruc: value }))}
-              />
+                 label="RUC"
+                 placeholder="1234567890001"
+                 value={form.ruc}
+                 maxLength={13}
+                 onChangeText={(value) => setForm((prev) => ({ ...prev, ruc: value }))}
+               />
+               
               <AnimatedInput
                 label="Dirección"
-                placeholder="Av. Siempre Viva"
+                placeholder="Calle Principal 123"
                 value={form.address}
                 onChangeText={(value) => setForm((prev) => ({ ...prev, address: value }))}
               />
-              <AnimatedInput
-                label="Teléfono"
-                placeholder="(04) 000 0000"
-                value={form.phone}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, phone: value }))}
-              />
-              <AnimatedInput
-                label="Correo"
-                placeholder="contacto@empresa.com"
-                autoCapitalize="none"
-                value={form.email}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, email: value }))}
-              />
+              
+              <XStack gap="$3">
+                  <YStack flex={1}>
+                    <AnimatedInput
+                        label="Teléfono"
+                        placeholder="0999999999"
+                        value={form.phone}
+                        onChangeText={(value) => setForm((prev) => ({ ...prev, phone: value }))}
+                    />
+                  </YStack>
+                  <YStack flex={1}>
+                    <AnimatedInput
+                        label="Correo"
+                        placeholder="contacto@empresa.com"
+                        autoCapitalize="none"
+                        value={form.email}
+                        onChangeText={(value) => setForm((prev) => ({ ...prev, email: value }))}
+                    />
+                  </YStack>
+              </XStack>
             </YStack>
             <XStack gap="$3" mt="$3">
               {editingCompany ? (
                 <AnimatedButton
                   flex={1}
-                  backgroundColor="$color4"
-                  color="$text"
+                  backgroundColor="rgba(239, 68, 68, 0.2)"
                   disabled={disableSubmit}
                   onPress={() => {
                     setEditingCompany(null);
@@ -199,15 +212,13 @@ export default function AdminCrudScreen(): JSX.Element {
                 disabled={disableSubmit}
                 onPress={handleSubmit}
               >
-                {editingCompany ? "Guardar cambios" : "Crear"}
+                {editingCompany ? "Guardar cambios" : "Crear compañía"}
               </AnimatedButton>
             </XStack>
-          </YStack>
+          </GlassCard>
 
           <YStack gap="$3">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Empresas registradas
-            </Text>
+            <H2 fontSize={20} color="$color" mt="$4">Empresas registradas</H2>
             {isLoading || isFetching ? (
               <ListSkeleton items={3} height={112} />
             ) : isError ? (
@@ -219,45 +230,70 @@ export default function AdminCrudScreen(): JSX.Element {
                 onAction={() => void refetch()}
               />
             ) : (
-              <Animated.FlatList<Company>
-                data={companies}
-                keyExtractor={(item) => String(item.company_id)}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-                renderItem={({ item, index }) => (
-                  <Animated.View entering={FadeInDown.delay(index * 90)}>
-                    <InteractiveCard onPress={() => handleSelectCompany(item)}>
-                      <YStack gap="$2">
-                        <Text fontSize="$4" fontWeight="600" color="$text">
-                          {item.name}
-                        </Text>
-                        <Paragraph color="$muted">RUC: {item.ruc ?? "Sin asignar"}</Paragraph>
-                        <Paragraph color="$muted">
-                          Dirección: {item.address ?? "-"}
-                        </Paragraph>
-                        <XStack gap="$2" mt="$2">
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$color4"
-                            color="$text"
-                            onPress={() => handleSelectCompany(item)}
-                          >
-                            Editar
-                          </AnimatedButton>
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$danger"
-                            color="#fff"
-                            onPress={() => handleDelete(item)}
-                          >
-                            Borrar
-                          </AnimatedButton>
-                        </XStack>
-                      </YStack>
-                    </InteractiveCard>
-                  </Animated.View>
-                )}
-              />
+                <YStack gap="$3">
+                  {companies.map((item, index) => (
+                    <Animated.View key={item.company_id} entering={FadeInDown.delay(index * 90).springify()}>
+                        <GlassCard p="$4" gap="$2">
+                             <XStack justifyContent="space-between" alignItems="center">
+                                <XStack gap="$3" alignItems="center">
+                                    <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
+                                        <Building size={24} color="$blue10" />
+                                    </GlassCard>
+                                    <YStack>
+                                        <Text fontWeight="700" fontSize="$5" color="$color">
+                                            {item.name}
+                                        </Text>
+                                        <Text color="$color" opacity={0.6} fontSize="$3">
+                                            RUC: {item.ruc ?? "Sin asignar"}
+                                        </Text>
+                                    </YStack>
+                                </XStack>
+                            </XStack>
+
+                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+
+                             <YStack gap="$2" px="$1">
+                                 <XStack gap="$2" alignItems="center">
+                                    <MapPin size={14} color="$color" opacity={0.6} />
+                                    <Text fontSize="$3" color="$color" opacity={0.8}>{item.address ?? "Sin dirección"}</Text>
+                                 </XStack>
+                                 {item.phone && (
+                                     <XStack gap="$2" alignItems="center">
+                                        <Phone size={14} color="$color" opacity={0.6} />
+                                        <Text fontSize="$3" color="$color" opacity={0.8}>{item.phone}</Text>
+                                     </XStack>
+                                 )}
+                                  {item.email && (
+                                     <XStack gap="$2" alignItems="center">
+                                        <Mail size={14} color="$color" opacity={0.6} />
+                                        <Text fontSize="$3" color="$color" opacity={0.8}>{item.email}</Text>
+                                     </XStack>
+                                 )}
+                            </YStack>
+                            
+                            <XStack gap="$3" mt="$3">
+                              <Button
+                                flex={1}
+                                size="$3"
+                                chromeless
+                                borderWidth={1}
+                                borderColor="$borderColor"
+                                icon={Edit3}
+                                onPress={() => handleSelectCompany(item)}
+                              />
+                              <Button
+                                flex={1}
+                                size="$3"
+                                backgroundColor="$red10"
+                                color="white"
+                                icon={Trash2}
+                                onPress={() => handleDelete(item)}
+                              />
+                            </XStack>
+                        </GlassCard>
+                    </Animated.View>
+                  ))}
+                </YStack>
             )}
           </YStack>
 
@@ -273,6 +309,7 @@ export default function AdminCrudScreen(): JSX.Element {
           </AnimatePresence>
         </YStack>
       </ScrollView>
+      <AdminNavbar />
     </Screen>
   );
 }

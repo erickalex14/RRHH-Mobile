@@ -6,22 +6,26 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
+import { HybridSelect } from "@/components/ui/HybridSelect";
 import { adminService, DepartmentPayload } from "@/services/adminService";
 import { Branch, Department } from "@/types/api";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { LinearGradient } from "expo-linear-gradient";
+import { Layers, MapPin, Users, Edit3, Trash2 } from "@tamagui/lucide-icons";
 import {
-  Adapt,
   AnimatePresence,
   Paragraph,
   ScrollView,
-  Select,
   Separator,
-  Sheet,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Input,
+  Button
 } from "tamagui";
 
 type DepartmentFormState = Omit<DepartmentPayload, "branch_id"> & { branch_id: number | null };
@@ -61,6 +65,10 @@ export default function AdminDepartmentsScreen(): JSX.Element {
 
   const departments: Department[] = departmentsData?.data ?? [];
   const branches: Branch[] = branchesData?.data ?? [];
+  const branchOptions = useMemo(
+    () => branches.map((branch) => ({ label: branch.name ?? "Sin nombre", value: String(branch.branch_id) })),
+    [branches]
+  );
 
   useEffect(() => {
     if (branches.length > 0 && form.branch_id === null) {
@@ -174,22 +182,24 @@ export default function AdminDepartmentsScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 64 }}>
-        <YStack gap="$5">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Departamentos
-            </Text>
-            <Paragraph color="$muted">Define divisiones y mantenlas alineadas a sus sucursales.</Paragraph>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+          <YStack gap="$1" mb="$2">
+                <H2 fontWeight="800" fontSize={26} color="$color">Departamentos</H2>
+                <Paragraph color="$color" opacity={0.6}>
+                    Define divisiones y mantenlas alineadas a sus sucursales.
+                </Paragraph>
           </YStack>
 
-          <RoleSwitcher target="employee" />
 
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              {editingDepartment ? `Editar ${editingDepartment.name}` : "Nuevo departamento"}
+          {/* Form Block */}
+          <GlassCard gap="$3" p="$4" borderRadius="$6">
+            <Text fontFamily="$heading" fontSize="$5" color="$color">
+               {editingDepartment ? `Editar ${editingDepartment.name}` : "Nuevo departamento"}
             </Text>
-            <Paragraph color="$muted">{helperText}</Paragraph>
+            <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
 
             {isBranchesError ? (
               <AnimatedNotice
@@ -208,47 +218,22 @@ export default function AdminDepartmentsScreen(): JSX.Element {
               />
             ) : (
               <YStack gap="$3" mt="$2">
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Sucursal
+                <YStack gap="$2">
+                  <Text fontWeight="600" color="$color">
+                    Sucursal asignada
                   </Text>
-                  <Select
-                    value={form.branch_id ? String(form.branch_id) : undefined}
-                    onValueChange={(value) =>
-                      setForm((prev) => ({ ...prev, branch_id: Number(value) }))
-                    }
+                  <HybridSelect
+                    options={branchOptions}
+                    value={form.branch_id ? String(form.branch_id) : ""}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, branch_id: Number(value) }))}
+                    placeholder={isBranchesLoading ? "Cargando..." : "Selecciona"}
                     disabled={isBranchesLoading || branches.length === 0}
-                  >
-                    <Select.Trigger borderColor="$borderColor">
-                      <Select.Value placeholder={isBranchesLoading ? "Cargando..." : "Selecciona"} />
-                    </Select.Trigger>
-                    <Adapt when="sm" platform="touch">
-                      <Sheet modal dismissOnSnapToBottom>
-                        <Sheet.Frame>
-                          <Sheet.ScrollView>
-                            <Adapt.Contents />
-                          </Sheet.ScrollView>
-                        </Sheet.Frame>
-                        <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                      </Sheet>
-                    </Adapt>
-                    <Select.Content>
-                      <Select.ScrollUpButton />
-                      <Select.Viewport>
-                        {branches.map((branch) => (
-                          <Select.Item key={branch.branch_id} value={String(branch.branch_id)}>
-                            <Select.ItemText>{branch.name}</Select.ItemText>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton />
-                    </Select.Content>
-                  </Select>
+                  />
                 </YStack>
 
                 <AnimatedInput
-                  label="Nombre"
-                  placeholder="Talento Humano"
+                  label="Nombre del departamento"
+                  placeholder="Ej. Recursos Humanos"
                   value={form.name}
                   onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
                 />
@@ -259,36 +244,25 @@ export default function AdminDepartmentsScreen(): JSX.Element {
               {editingDepartment ? (
                 <AnimatedButton
                   flex={1}
-                  backgroundColor="$color4"
-                  color="$text"
+                  backgroundColor="rgba(239, 68, 68, 0.2)"
                   disabled={isMutating}
                   onPress={resetForm}
                 >
                   Cancelar
                 </AnimatedButton>
               ) : null}
-              <AnimatedButton flex={1} disabled={!formIsValid || isMutating} onPress={handleSubmit}>
-                {editingDepartment ? "Guardar cambios" : "Crear"}
+              <AnimatedButton
+                flex={1}
+                disabled={!formIsValid || isMutating}
+                onPress={handleSubmit}
+              >
+                {editingDepartment ? "Guardar cambios" : "Crear departamento"}
               </AnimatedButton>
             </XStack>
-          </YStack>
-
-          <XStack gap="$3">
-            <AnimatedButton
-              flex={1}
-              backgroundColor="$color4"
-              color="$text"
-              disabled={isDepartmentsLoading || isDepartmentsFetching}
-              onPress={() => refetchDepartments()}
-            >
-              {isDepartmentsFetching ? "Actualizando..." : "Actualizar"}
-            </AnimatedButton>
-          </XStack>
+          </GlassCard>
 
           <YStack gap="$3">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Departamentos registrados
-            </Text>
+            <H2 fontSize={20} color="$color" mt="$4">Departamentos registrados</H2>
             {isDepartmentsLoading || isDepartmentsFetching ? (
               <ListSkeleton items={4} height={120} />
             ) : isDepartmentsError ? (
@@ -302,52 +276,58 @@ export default function AdminDepartmentsScreen(): JSX.Element {
             ) : departments.length === 0 ? (
               <AnimatedNotice variant="info" message="Aún no registras departamentos." />
             ) : (
-              <Animated.FlatList<Department>
-                data={departments}
-                keyExtractor={(item) => String(item.department_id)}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <Separator backgroundColor="$color4" />}
-                renderItem={({ item, index }) => (
-                  <Animated.View entering={FadeInDown.delay(index * 85)}>
-                    <InteractiveCard onPress={() => handleSelectDepartment(item)}>
-                      <YStack gap="$2">
-                        <Text fontWeight="600" fontSize="$4" color="$text">
-                          {item.name}
-                        </Text>
-                        <Paragraph color="$muted">
-                          Sucursal: {item.branch?.name ?? "Sin asignar"}
-                        </Paragraph>
-                        <AnimatedButton
-                          backgroundColor="$color3"
-                          color="$text"
-                          onPress={() => handleNavigateToDepartmentUsers(item)}
-                        >
-                          Ver usuarios
-                        </AnimatedButton>
-                        <XStack gap="$2" mt="$2">
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$color4"
-                            color="$text"
-                            onPress={() => handleSelectDepartment(item)}
-                          >
-                            Editar
-                          </AnimatedButton>
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$danger"
-                            color="#fff"
-                            disabled={deleteMutation.isPending}
-                            onPress={() => handleDeleteDepartment(item.department_id)}
-                          >
-                            Borrar
-                          </AnimatedButton>
-                        </XStack>
-                      </YStack>
-                    </InteractiveCard>
-                  </Animated.View>
-                )}
-              />
+                <YStack gap="$3">
+                  {departments.map((item, index) => (
+                    <Animated.View key={item.department_id} entering={FadeInDown.delay(index * 85).springify()}>
+                        <GlassCard p="$4" gap="$2">
+                            <XStack justifyContent="space-between" alignItems="center">
+                                <XStack gap="$3" alignItems="center">
+                                    <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
+                                        <Layers size={24} color="$blue10" />
+                                    </GlassCard>
+                                    <YStack>
+                                        <Text fontWeight="700" fontSize="$5" color="$color">
+                                            {item.name}
+                                        </Text>
+                                        <XStack gap="$1" alignItems="center">
+                                            <MapPin size={12} color="$color" opacity={0.6} />
+                                            <Text color="$color" opacity={0.6} fontSize="$3">
+                                                 {item.branch?.name ?? "Sin sucursal"}
+                                            </Text>
+                                        </XStack>
+                                    </YStack>
+                                </XStack>
+                            </XStack>
+
+                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+                            
+                            <XStack gap="$3" mt="$1">
+                                <Button 
+                                    flex={1} 
+                                    size="$3" 
+                                    chromeless 
+                                    borderWidth={1} 
+                                    borderColor="$borderColor" 
+                                    icon={Users}
+                                    onPress={() => handleNavigateToDepartmentUsers(item)}
+                                >
+                                    Usuarios
+                                </Button>
+                                <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => handleSelectDepartment(item)} />
+                                <Button
+                                    flex={1}
+                                    size="$3"
+                                    backgroundColor="$red10"
+                                    color="white"
+                                    icon={Trash2}
+                                    disabled={deleteMutation.isPending}
+                                    onPress={() => handleDeleteDepartment(item.department_id)}
+                                />
+                            </XStack>
+                        </GlassCard>
+                    </Animated.View>
+                  ))}
+                </YStack>
             )}
           </YStack>
 
@@ -363,6 +343,7 @@ export default function AdminDepartmentsScreen(): JSX.Element {
           </AnimatePresence>
         </YStack>
       </ScrollView>
+       <AdminNavbar />
     </Screen>
   );
 }

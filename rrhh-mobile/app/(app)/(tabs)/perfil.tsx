@@ -1,6 +1,7 @@
 import { Screen } from "@/components/ui/Screen";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuthStore } from "@/store/auth";
 import { useEffect, useMemo, useState } from "react";
 import { Stack } from "expo-router";
@@ -65,31 +66,37 @@ export default function PerfilScreen(): JSX.Element {
           {companyInfo}
         </Paragraph>
 
-        <YStack gap="$3">
-          <AnimatedInput label="Nombre" value={`${user?.first_name ?? ""} ${user?.last_name ?? ""}`} editable={false} />
-          <AnimatedInput label="Correo" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-          <AnimatedInput label="Teléfono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-          <AnimatedInput label="Dirección" value={address} onChangeText={setAddress} />
-        </YStack>
+        <GlassCard gap="$4">
+          <YStack gap="$3">
+            <AnimatedInput label="Nombre" value={`${user?.first_name ?? ""} ${user?.last_name ?? ""}`} editable={false} />
+            <AnimatedInput label="Correo" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+            <AnimatedInput label="Teléfono" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+            <AnimatedInput label="Dirección" value={address} onChangeText={setAddress} />
+          </YStack>
 
-        <AnimatePresence>
-          {success ? (
-            <Animated.View entering={FadeInDown} exiting={FadeOutUp} style={{ backgroundColor: "rgba(34,197,94,0.2)", padding: 12, borderRadius: 16 }}>
-              <Text color="$success" fontWeight="700">
-                Perfil actualizado correctamente
-              </Text>
-            </Animated.View>
-          ) : null}
-        </AnimatePresence>
+          <AnimatePresence>
+            {success ? (
+              <Animated.View
+                entering={FadeInDown}
+                exiting={FadeOutUp}
+                style={{ backgroundColor: "rgba(34,197,94,0.18)", padding: 12, borderRadius: 16 }}
+              >
+                <Text color="$success" fontWeight="700">
+                  Perfil actualizado correctamente
+                </Text>
+              </Animated.View>
+            ) : null}
+          </AnimatePresence>
 
-        <YStack gap="$3" mt="auto">
-          <AnimatedButton onPress={handleSave} disabled={saving}>
-            {saving ? <Spinner color="$text" /> : "Guardar cambios"}
-          </AnimatedButton>
-          <AnimatedButton backgroundColor="$danger" onPress={handleLogout}>
-            Cerrar sesión
-          </AnimatedButton>
-        </YStack>
+          <YStack gap="$3">
+            <AnimatedButton onPress={handleSave} disabled={saving}>
+              {saving ? <Spinner color="$text" /> : "Guardar cambios"}
+            </AnimatedButton>
+            <AnimatedButton backgroundColor="$danger" onPress={handleLogout}>
+              Cerrar sesión
+            </AnimatedButton>
+          </YStack>
+        </GlassCard>
       </YStack>
     </Screen>
   );

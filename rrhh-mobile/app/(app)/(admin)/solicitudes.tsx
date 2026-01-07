@@ -12,24 +12,28 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { HybridSelect } from "@/components/ui/HybridSelect";
 import { adminService } from "@/services/adminService";
 import { useConfirm } from "@/hooks/useConfirm";
 import { Branch, Department, EarlyDepartureRequest, Role, User } from "@/types/api";
+import { LinearGradient } from "expo-linear-gradient";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Filter, Calendar, Zap, AlertCircle, RefreshCw } from "@tamagui/lucide-icons";
 import {
-  Adapt,
   AnimatePresence,
   Paragraph,
   ScrollView,
-  Select,
   Separator,
   Sheet,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Button
 } from "tamagui";
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
@@ -477,141 +481,117 @@ export default function AdminSolicitudesScreen(): JSX.Element {
     onValueChange: (value: string) => void,
     disabled?: boolean
   ): JSX.Element => (
-    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-      <Select.Trigger borderColor="$borderColor">
-        <Select.Value placeholder={placeholder} />
-      </Select.Trigger>
-      <Adapt when="sm" platform="touch">
-        <Sheet modal dismissOnSnapToBottom>
-          <Sheet.Frame>
-            <Sheet.ScrollView>
-              <Adapt.Contents />
-            </Sheet.ScrollView>
-          </Sheet.Frame>
-          <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-        </Sheet>
-      </Adapt>
-      <Select.Content>
-        <Select.ScrollUpButton />
-        <Select.Viewport>
-          {options.map((option) => (
-            <Select.Item key={option.value} value={option.value}>
-              <Select.ItemText>{option.label}</Select.ItemText>
-            </Select.Item>
-          ))}
-        </Select.Viewport>
-        <Select.ScrollDownButton />
-      </Select.Content>
-    </Select>
+    <HybridSelect
+      options={options}
+      value={value}
+      onValueChange={onValueChange}
+      placeholder={placeholder}
+      disabled={disabled}
+    />
   );
 
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 72 }}>
-        <YStack gap="$4">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Solicitudes anticipadas
-            </Text>
-            <Paragraph color="$muted">
-              Revisa salidas, analiza contexto y aprueba o rechaza con confianza.
-            </Paragraph>
-          </YStack>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+          <XStack justifyContent="space-between" alignItems="center" mb="$2">
+             <YStack>
+                <H2 fontWeight="800" fontSize={26} color="$color">Solicitudes</H2>
+                <Paragraph color="$color" opacity={0.6}>Gestión de salidas anticipadas</Paragraph>
+             </YStack>
+             <Button 
+                size="$3" 
+                circular 
+                icon={RefreshCw} 
+                chromeless 
+                onPress={() => queryClient.invalidateQueries({ queryKey: ["admin", "requests", "listing"] })} 
+             />
+          </XStack>
 
-          <RoleSwitcher target="employee" />
-
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <XStack justifyContent="space-between" alignItems="center">
-              <Text fontFamily="$heading" fontSize="$5" color="$text">
-                Filtros avanzados
-              </Text>
-              <AnimatedButton backgroundColor="$color4" color="$text" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
-                {isFilterBarOpen ? "Ocultar" : "Mostrar"}
-              </AnimatedButton>
+          {/* Stats Cards */}
+           <XStack gap="$3" flexWrap="wrap">
+              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
+                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">TOTAL</Text>
+                <Text fontWeight="800" fontSize="$6" color="$blue10">
+                  {requestsInsights.total}
+                </Text>
+              </GlassCard>
+              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
+                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">PENDIENTES</Text>
+                <Text fontWeight="800" fontSize="$6" color="$orange10">
+                  {requestsInsights.pending}
+                </Text>
+              </GlassCard>
+              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
+                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">24H</Text>
+                <Text fontWeight="800" fontSize="$6" color="$red10">
+                  {requestsInsights.urgent}
+                </Text>
+              </GlassCard>
             </XStack>
+
+          {/* Filters Block */}
+          <GlassCard gap="$3" p="$4" borderRadius="$6">
+            <XStack justifyContent="space-between" alignItems="center" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
+              <XStack gap="$2" alignItems="center">
+                 <Filter size={18} color="$color" />
+                 <Text fontWeight="700" fontSize="$4" color="$text">
+                    Filtros
+                 </Text>
+              </XStack>
+              <Text color="$blue10" fontSize="$3">{isFilterBarOpen ? "Ocultar" : "Mostrar"}</Text>
+            </XStack>
+            
             {isFilterBarOpen ? (
-              <YStack gap="$3">
+              <YStack gap="$3" pt="$3">
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontSize="$3" color="$color" opacity={0.7}>
                     Sucursal
                   </Text>
                   {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
                 </YStack>
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Departamento
-                  </Text>
-                  {renderSelect(filters.departmentId, departmentOptions, "Todos", handleDepartmentChange, isMetaLoading)}
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontSize="$3" color="$color" opacity={0.7}>
                     Rol
                   </Text>
                   {renderSelect(filters.roleId, roleOptions, "Todos", handleRoleChange, isMetaLoading)}
                 </YStack>
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Empleado
-                  </Text>
-                  {renderSelect(filters.employeeId, employeeOptions, "Todos", handleEmployeeChange, isMetaLoading)}
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontSize="$3" color="$color" opacity={0.7}>
                     Estado
                   </Text>
                   {renderSelect(filters.status, STATUS_OPTIONS, "Todos", (value) => handleStatusChange(value as StatusFilter))}
                 </YStack>
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
+                  <Text fontSize="$3" color="$color" opacity={0.7}>
                     Rango de fechas
                   </Text>
                   <XStack gap="$2">
-                    <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => openDatePicker("dateFrom")}>
+                    <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Calendar} onPress={() => openDatePicker("dateFrom")}>
                       {formatDateFilterLabel(filters.dateFrom, "Desde")}
-                    </AnimatedButton>
-                    <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => openDatePicker("dateTo")}>
+                    </Button>
+                    <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Calendar} onPress={() => openDatePicker("dateTo")}>
                       {formatDateFilterLabel(filters.dateTo, "Hasta")}
-                    </AnimatedButton>
+                    </Button>
                   </XStack>
                   {renderIOSPicker()}
-                  <AnimatedButton backgroundColor="$color4" color="$text" onPress={() => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" }))}>
+                  <Button size="$2" chromeless onPress={() => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" }))}>
                     Quitar rango
-                  </AnimatedButton>
+                  </Button>
                 </YStack>
-                <AnimatedButton backgroundColor="$color4" color="$text" onPress={resetFilters}>
+                <Button size="$3" backgroundColor="$blue10" color="white" onPress={resetFilters}>
                   Limpiar filtros
-                </AnimatedButton>
+                </Button>
               </YStack>
             ) : null}
-          </YStack>
+          </GlassCard>
 
+          {/* List Content */}
           <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Estado general
-            </Text>
-            <Paragraph color="$muted">{filterSummary}</Paragraph>
-            <XStack gap="$3" flexWrap="wrap">
-              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
-                <Text fontSize="$3" color="$muted">Solicitudes totales</Text>
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
-                  {requestsInsights.total}
-                </Text>
-                <Paragraph color="$muted">Coinciden con filtros: {requestsInsights.filteredCount}</Paragraph>
-              </InteractiveCard>
-              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
-                <Text fontSize="$3" color="$muted">Pendientes</Text>
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
-                  {requestsInsights.pending}
-                </Text>
-              </InteractiveCard>
-              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
-                <Text fontSize="$3" color="$muted">Urgentes (próx. 24h)</Text>
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
-                  {requestsInsights.urgent}
-                </Text>
-              </InteractiveCard>
-            </XStack>
+             <Text fontSize="$3" color="$color" opacity={0.5} textAlign="right">{filterSummary}</Text>
           </YStack>
 
           {isMetaError ? (
@@ -655,58 +635,85 @@ export default function AdminSolicitudesScreen(): JSX.Element {
               onAction={resetFilters}
             />
           ) : (
-            <Animated.FlatList<EarlyDepartureRequest>
-              data={filteredRequests}
-              keyExtractor={(item) => String(item.request_id)}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <YStack height={16} />}
-              renderItem={({ item, index }) => {
+            <YStack gap="$3">
+              {filteredRequests.map((item, index) => {
                 const { user, branch, department, role } = resolveContext(item);
                 const employeeName = getEmployeeName(item, user);
                 const branchName = branch?.name ?? "Sin sucursal";
                 const departmentName = department?.name ?? "Sin departamento";
                 const roleName = role?.name ?? "Sin rol";
                 return (
-                  <Animated.View entering={FadeInDown.delay(index * 80)}>
-                    <InteractiveCard onPress={() => openDetails(item)}>
-                      <YStack gap="$2">
+                  <Animated.View key={item.request_id} entering={FadeInDown.delay(index * 50).springify()}>
+                    <GlassCard 
+                      p="$0" 
+                      overflow="hidden"
+                      pressStyle={{ scale: 0.98, opacity: 0.9 }}
+                      onPress={() => openDetails(item)}
+                    >
+                      <YStack p="$4" gap="$2">
                         <XStack justifyContent="space-between" alignItems="center">
-                          <Text fontSize="$5" fontWeight="600" color="$text">
-                            {employeeName}
-                          </Text>
+                          <YStack flex={1}>
+                            <Text fontSize="$5" fontWeight="700" color="$color">
+                                {employeeName}
+                            </Text>
+                            <Text fontSize="$3" color="$color" opacity={0.6}>
+                                {roleName}
+                            </Text>
+                          </YStack>
                           <StatusBadge
                             label={STATUS_LABELS[item.status]}
                             color={STATUS_COLORS[item.status]}
                           />
                         </XStack>
-                        <Paragraph color="$muted">Rol: {roleName}</Paragraph>
-                        <Paragraph color="$muted">
-                          Departamento: {departmentName} · Sucursal: {branchName}
-                        </Paragraph>
-                        <Paragraph color="$muted">Solicitada para: {formatRequestDateTime(item)}</Paragraph>
-                        <Paragraph color="$muted">Motivo: {item.description}</Paragraph>
-                        <Separator backgroundColor="$color4" />
-                        <AnimatedButton onPress={() => openDetails(item)}>
-                          Ver detalle
-                        </AnimatedButton>
+
+                        <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+                        
+                        <XStack gap="$4" flexWrap="wrap">
+                             <YStack gap="$1">
+                                <Text fontSize="$2" color="$color" opacity={0.5}>SOLICITADA PARA</Text>
+                                <XStack alignItems="center" gap="$2">
+                                    <Calendar size={14} color="$color" opacity={0.7} />
+                                    <Text fontSize="$3" color="$color">{formatRequestDateTime(item)}</Text>
+                                </XStack>
+                             </YStack>
+                        </XStack>
+
+                        <YStack gap="$1" mt="$2">
+                            <Text fontSize="$2" color="$color" opacity={0.5}>MOTIVO</Text>
+                            <Text fontSize="$3" color="$color" numberOfLines={2}>{item.description}</Text>
+                        </YStack>
+                        
+                        <Stack pt="$2">
+                             <Text fontSize="$3" color="$blue10" fontWeight="600">Ver detalles</Text>
+                        </Stack>
                       </YStack>
-                    </InteractiveCard>
+                       <LinearGradient
+                            colors={["transparent", "$blue2"]}
+                            start={[0.5, 0]}
+                            end={[1, 1]}
+                            style={{ position: 'absolute', right: 0, bottom: 0, width: 150, height: 150, opacity: 0.1, borderRadius: 100 }}
+                        />
+                    </GlassCard>
                   </Animated.View>
                 );
-              }}
-            />
+              })}
+            </YStack>
           )}
+
+          <AdminNavbar />
 
           <Sheet
             modal
             open={detailSheetOpen}
             onOpenChange={(open: boolean) => (open ? setDetailSheetOpen(open) : closeDetails())}
-            snapPoints={[80]}
+            snapPoints={[85]}
+            dismissOnSnapToBottom
           >
-            <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-            <Sheet.Frame padding="$4" backgroundColor="$color2">
-              <Sheet.ScrollView>
-                <YStack gap="$3">
+            <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+            <Sheet.Frame padding="$4" backgroundColor="$background" borderRadius="$6">
+              <Sheet.Handle bg="$borderColor" />
+              <Sheet.ScrollView showsVerticalScrollIndicator={false}>
+                <YStack gap="$4" pb="$8">
                   {selectedRequest ? (
                     (() => {
                       const context = resolveContext(selectedRequest);
@@ -717,90 +724,100 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                       return (
                         <>
                           <XStack justifyContent="space-between" alignItems="center">
-                            <YStack gap="$1">
-                              <Text fontFamily="$heading" fontSize="$5" color="$text">
-                                {employeeName}
-                              </Text>
-                              <Paragraph color="$muted">
-                                {departmentName} · {branchName}
-                              </Paragraph>
+                            <YStack gap="$1" flex={1}>
+                               <H2 fontSize={22}>{employeeName}</H2>
+                               <Paragraph color="$color" opacity={0.6}>{roleName}</Paragraph>
                             </YStack>
                             <StatusBadge
                               label={STATUS_LABELS[selectedRequest.status]}
                               color={STATUS_COLORS[selectedRequest.status]}
                             />
                           </XStack>
-                          <Paragraph color="$muted">Motivo del colaborador:</Paragraph>
-                          <Text color="$text">{selectedRequest.description}</Text>
-                          <Paragraph color="$muted">Salida solicitada para:</Paragraph>
-                          <Text color="$text">{formatRequestDateTime(selectedRequest)}</Text>
-                          <Paragraph color="$muted">Hora solicitada: {selectedRequest.request_time ?? "--:--"}</Paragraph>
+
+                          <YStack gap="$3" p="$4" borderWidth={1} borderColor="$borderColor" borderRadius="$4">
+                              <Text fontWeight="600" color="$color">Detalle de la solicitud</Text>
+                              <YStack gap="$1">
+                                <Text fontSize="$3" color="$color" opacity={0.6}>Motivo:</Text>
+                                <Paragraph color="$color">{selectedRequest.description}</Paragraph>
+                              </YStack>
+                              <XStack gap="$4">
+                                  <YStack gap="$1">
+                                    <Text fontSize="$3" color="$color" opacity={0.6}>Fecha:</Text>
+                                    <Text color="$color" fontWeight="600">{formatRequestDateTime(selectedRequest)}</Text>
+                                  </YStack>
+                                  <YStack gap="$1">
+                                    <Text fontSize="$3" color="$color" opacity={0.6}>Hora:</Text>
+                                    <Text color="$color" fontWeight="600">{selectedRequest.request_time ?? "--:--"}</Text>
+                                  </YStack>
+                              </XStack>
+                          </YStack>
+
                           {selectedRequest.document_path ? (
-                            <AnimatedButton
-                              backgroundColor="$color4"
-                              color="$text"
+                            <Button
+                              icon={Zap}
+                              backgroundColor="$blue10"
+                              color="white"
                               onPress={async () => {
                                 if (selectedRequest.document_path) {
                                   await Linking.openURL(selectedRequest.document_path);
                                 }
                               }}
                             >
-                              Abrir respaldo
-                            </AnimatedButton>
+                              Abrir respaldo adjunto
+                            </Button>
                           ) : null}
-                          <Separator backgroundColor="$color4" />
-                          <YStack gap="$1">
-                            <Text fontWeight="600" color="$text">
-                              Contexto organizacional
-                            </Text>
-                            <Paragraph color="$muted">Rol asignado: {roleName}</Paragraph>
-                            <Paragraph color="$muted">Departamento: {departmentName}</Paragraph>
-                            <Paragraph color="$muted">Sucursal: {branchName}</Paragraph>
+                          
+                          <YStack gap="$2">
+                            <Text fontWeight="600" color="$color">Contexto</Text>
+                             <XStack gap="$2" flexWrap="wrap">
+                                <GlassCard p="$2" px="$3" borderRadius="$10"><Text fontSize="$3">{departmentName}</Text></GlassCard>
+                                <GlassCard p="$2" px="$3" borderRadius="$10"><Text fontSize="$3">{branchName}</Text></GlassCard>
+                             </XStack>
                           </YStack>
-                          <Separator backgroundColor="$color4" />
+
+                          <Separator borderColor="$borderColor" />
+
                           <YStack gap="$1">
-                            <Text fontWeight="600" color="$text">
+                            <Text fontWeight="600" color="$color">
                               Historial
                             </Text>
-                            <Paragraph color="$muted">
+                            <Text fontSize="$3" color="$color" opacity={0.6}>
                               Creada: {formatDateTimeValue(selectedRequest.created_at)}
-                            </Paragraph>
-                            <Paragraph color="$muted">
-                              Última actualización: {formatDateTimeValue(selectedRequest.updated_at)}
-                            </Paragraph>
-                            {selectedRequest.approved_by ? (
-                              <Paragraph color="$muted">
-                                Gestionada por usuario #{selectedRequest.approved_by}
-                              </Paragraph>
-                            ) : null}
+                            </Text>
+                            <Text fontSize="$3" color="$color" opacity={0.6}>
+                              Actualizada: {formatDateTimeValue(selectedRequest.updated_at)}
+                            </Text>
                           </YStack>
+
                           {selectedRequest.status === "pending" ? (
-                            <YStack gap="$3">
-                              <AnimatedInput
-                                label="Motivo del rechazo"
-                                placeholder="Obligatorio si rechazas"
+                            <YStack gap="$4" pt="$4">
+                              <Text fontWeight="600" color="$color">Acciones</Text>
+                              <Input
+                                placeholder="Motivo del rechazo (obligatorio si rechazas)"
                                 value={rejectReason}
                                 onChangeText={setRejectReason}
+                                backgroundColor="$backgroundPress"
+                                borderColor="$borderColor"
                               />
                               <XStack gap="$3">
-                                <AnimatedButton
+                                <Button
                                   flex={1}
-                                  backgroundColor="$success"
-                                  color="#0f172a"
+                                  backgroundColor="$green10"
+                                  color="white"
                                   disabled={isMutating}
                                   onPress={confirmApprove}
                                 >
                                   Aprobar
-                                </AnimatedButton>
-                                <AnimatedButton
+                                </Button>
+                                <Button
                                   flex={1}
-                                  backgroundColor="$danger"
-                                  color="#fff"
+                                  backgroundColor="$red10"
+                                  color="white"
                                   disabled={isMutating}
                                   onPress={handleRejectAction}
                                 >
                                   Rechazar
-                                </AnimatedButton>
+                                </Button>
                               </XStack>
                             </YStack>
                           ) : null}
@@ -810,9 +827,9 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                   ) : (
                     <Paragraph color="$muted">Selecciona una solicitud para ver los detalles.</Paragraph>
                   )}
-                  <AnimatedButton backgroundColor="$color4" color="$text" onPress={closeDetails}>
-                    Cerrar
-                  </AnimatedButton>
+                  <Button chromeless mt="$4" onPress={closeDetails}>
+                    Cerrar panel
+                  </Button>
                 </YStack>
               </Sheet.ScrollView>
             </Sheet.Frame>

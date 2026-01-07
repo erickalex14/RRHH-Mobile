@@ -36,9 +36,9 @@ const tokens = createTokens({
     brandPrimary: "#2563eb",
     brandSecondary: "#f97316",
     surface: "#0f172a",
-    muted: "#1f2937",
-    border: "#1e293b",
-    text: "#f8fafc",
+    muted: "#94a3b8",
+    border: "#24304a",
+    text: "#e7ecff",
     textDark: "#0f172a",
     success: "#22c55e",
     warning: "#facc15",
@@ -81,26 +81,43 @@ const tokens = createTokens({
 
 const headingFont = createInterFont({
   family: "Inter",
+  face: {
+    400: { normal: "Inter" },
+    500: { normal: "InterMedium" },
+    600: { normal: "InterSemiBold" },
+    700: { normal: "InterBold" }
+  },
   weight: {
     4: "600",
     5: "700",
     6: "700",
-    7: "800"
+    7: "700"
   },
   size: {
-    4: 16,
-    5: 20,
-    6: 24,
-    7: 30
+    4: 18,
+    5: 22,
+    6: 26,
+    7: 32
+  },
+  letterSpacing: {
+    4: -0.2,
+    5: -0.2,
+    6: -0.25,
+    7: -0.3
   }
 });
 
 const bodyFont = createInterFont({
   family: "Inter",
+  face: {
+    400: { normal: "Inter" },
+    500: { normal: "InterMedium" },
+    600: { normal: "InterSemiBold" }
+  },
   weight: {
     3: "400",
-    4: "400",
-    5: "500"
+    4: "500",
+    5: "600"
   },
   size: {
     3: 14,

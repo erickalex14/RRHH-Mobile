@@ -48,11 +48,23 @@ export default function TabsLayout(): JSX.Element {
   const color = theme?.color?.val ?? "#f8fafc";
   const tabBarStyle = useMemo(
     () => ({
-      backgroundColor: surface,
-      borderTopColor: border,
+      position: "absolute" as const,
+      left: 16,
+      right: 16,
+      bottom: 12,
+      backgroundColor: `${surface}E6`,
+      borderTopColor: "transparent",
+      borderWidth: 1,
+      borderColor: `${border}80`,
+      borderRadius: 24,
       height: 70,
-      paddingBottom: 10,
-      paddingTop: 8
+      paddingBottom: 12,
+      paddingTop: 8,
+      shadowColor: "#000",
+      shadowOpacity: 0.25,
+      shadowOffset: { width: 0, height: 10 },
+      shadowRadius: 22,
+      elevation: 8
     }),
     [border, surface]
   );

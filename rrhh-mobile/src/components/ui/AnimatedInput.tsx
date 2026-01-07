@@ -8,7 +8,7 @@ import Animated, {
   useSharedValue,
   withTiming
 } from "react-native-reanimated";
-import { TextInput, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
+import { TextInput, type NativeSyntheticEvent, type TextInputFocusEventData, Platform } from "react-native";
 import { motion, timingConfig } from "@/theme/motion";
 
 type BaseInputProps = ComponentProps<typeof Input>;
@@ -59,10 +59,18 @@ export const AnimatedInput = forwardRef<TextInput, AnimatedInputProps>(
       if (shouldReduceMotion) {
         return { borderColor };
       }
+      const webShadow = focusValue.value ? "0 12px 28px rgba(37,99,235,0.25)" : "none";
       return {
         borderColor,
-        shadowOpacity: focusValue.value ? 0.4 : 0,
-        transform: [{ scale: focusValue.value ? 1.01 : 1 }]
+        transform: [{ scale: focusValue.value ? 1.01 : 1 }],
+        ...(Platform.OS === "web"
+          ? { boxShadow: webShadow }
+          : {
+              shadowColor: "rgba(37,99,235,0.45)",
+              shadowOpacity: focusValue.value ? 0.35 : 0,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 12 }
+            })
       };
     }, [shouldReduceMotion, statusColor]);
 

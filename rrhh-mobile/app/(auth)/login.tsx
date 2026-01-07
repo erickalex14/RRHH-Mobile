@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
+import { AnimatedInput } from "@/components/ui/AnimatedInput";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuthStore } from "@/store/auth";
 import { useShallow } from "zustand/react/shallow";
 import { isUserAdmin } from "@/utils/auth";
 import {
   AnimatePresence,
-  Input,
   Paragraph,
-  Separator,
   SizableText,
   Spinner,
   Text,
@@ -139,84 +139,60 @@ export default function LoginScreen(): JSX.Element {
           <SizableText size="$5" color="$text" opacity={0.75} mt="$2">
             Gestiona asistencia, documentos y solicitudes desde un solo lugar.
           </SizableText>
-          <XStack
-            mt="$4"
-            px="$3"
-            py="$2"
-            alignItems="center"
-            gap="$2"
-            borderRadius="$4"
-            backgroundColor="$muted"
-            opacity={0.9}
-          >
+          <GlassCard glow={false} px="$4" py="$3" borderRadius="$4" bg="rgba(255,255,255,0.05)">
             <Text color="$text" fontFamily="$body" fontSize="$3">
               Sesiones seguras vía Sanctum
             </Text>
-          </XStack>
+          </GlassCard>
         </Animated.View>
 
         <AnimatePresence>
           {cardVisible && (
-            <AnimatedCard
-              key="login-card"
-              backgroundColor="$surface"
-              borderRadius="$4"
-              px="$4"
-              py="$5"
-              gap="$4"
-              elevation={4}
-              enterStyle={{ opacity: 0, y: 24 }}
-              exitStyle={{ opacity: 0, y: -12 }}
-              shadowColor="rgba(15,23,42,0.35)"
-              style={cardStyle}
-            >
-              <Text fontFamily="$heading" fontSize="$6" color="$text">
-                Inicia sesión
-              </Text>
-              <Paragraph size="$3" color={activeError ? "$danger" : "$text"}>
-                {helperText}
-              </Paragraph>
-              <YStack gap="$3">
-                <Input
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholder="correo@empresa.com"
-                  backgroundColor="$brandBg"
-                  color="$text"
-                  borderRadius="$3"
-                  size="$5"
-                  value={email}
-                  onChangeText={handleInputChange(setEmail)}
-                />
-                <Input
-                  secureTextEntry
-                  placeholder="••••••••"
-                  backgroundColor="$brandBg"
-                  color="$text"
-                  borderRadius="$3"
-                  size="$5"
-                  value={password}
-                  onChangeText={handleInputChange(setPassword)}
-                />
-              </YStack>
-              <Separator backgroundColor="$border" />
-              <AnimatedButton
-                mt="$1"
-                disabled={isLoading}
-                onPress={handleLogin}
-                opacity={isLoading ? 0.85 : 1}
-              >
-                {isLoading ? (
-                  <XStack gap="$2" alignItems="center" justifyContent="center">
-                    <Spinner color="$text" size="small" />
-                    <Text color="$text" fontWeight="600">
-                      Validando...
-                    </Text>
-                  </XStack>
-                ) : (
-                  "Continuar"
-                )}
-              </AnimatedButton>
+            <AnimatedCard key="login-card" enterStyle={{ opacity: 0, y: 24 }} exitStyle={{ opacity: 0, y: -12 }} style={cardStyle}>
+              <GlassCard gap="$4" borderRadius="$5" px="$5" py="$5">
+                <Text fontFamily="$heading" fontSize="$6" color="$text">
+                  Inicia sesión
+                </Text>
+                <Paragraph size="$3" color={activeError ? "$danger" : "$text"}>
+                  {helperText}
+                </Paragraph>
+                <YStack gap="$3">
+                  <AnimatedInput
+                    label="Correo"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    placeholder="correo@empresa.com"
+                    value={email}
+                    onChangeText={handleInputChange(setEmail)}
+                    status={activeError ? "error" : undefined}
+                  />
+                  <AnimatedInput
+                    label="Contraseña"
+                    secureTextEntry
+                    placeholder="••••••••"
+                    value={password}
+                    onChangeText={handleInputChange(setPassword)}
+                    status={activeError ? "error" : undefined}
+                  />
+                </YStack>
+                <AnimatedButton
+                  mt="$1"
+                  disabled={isLoading}
+                  onPress={handleLogin}
+                  opacity={isLoading ? 0.85 : 1}
+                >
+                  {isLoading ? (
+                    <XStack gap="$2" alignItems="center" justifyContent="center">
+                      <Spinner color="$text" size="small" />
+                      <Text color="$text" fontWeight="600">
+                        Validando...
+                      </Text>
+                    </XStack>
+                  ) : (
+                    "Continuar"
+                  )}
+                </AnimatedButton>
+              </GlassCard>
             </AnimatedCard>
           )}
         </AnimatePresence>

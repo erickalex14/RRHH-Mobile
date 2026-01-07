@@ -3,19 +3,19 @@ import { Stack, useRouter } from "expo-router";
 import { Alert } from "react-native";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Screen } from "@/components/ui/Screen";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { SimpleSelect } from "@/components/ui/SimpleSelect";
 import { adminService } from "@/services/adminService";
 import { EmployeeState } from "@/types/api";
+import { LinearGradient } from "expo-linear-gradient";
 import {
-  Adapt,
   Paragraph,
   ScrollView,
-  Select,
-  Sheet,
   Text,
   XStack,
   YStack
@@ -109,14 +109,18 @@ export default function AdminCreateUserScreen(): JSX.Element {
 
   return (
     <Screen>
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={{ position: 'absolute', width: '100%', height: '100%', zIndex: -1 }}
+      />
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 64 }}>
-        <YStack gap="$5">
+        <YStack gap="$5" p="$4">
           <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
+            <Text fontFamily="$heading" fontSize="$7" color="white">
               Crear usuario
             </Text>
-            <Paragraph color="$muted">
+            <Paragraph color="$gray10">
               Registra la cuenta base del colaborador antes de definir sus detalles laborales.
             </Paragraph>
           </YStack>
@@ -134,7 +138,7 @@ export default function AdminCreateUserScreen(): JSX.Element {
               onAction={() => refetch()}
             />
           ) : (
-            <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
+            <GlassCard gap="$3" borderRadius="$6" p="$5">
               <AnimatedInput
                 label="Nombre"
                 placeholder="Nombre"
@@ -173,55 +177,42 @@ export default function AdminCreateUserScreen(): JSX.Element {
                 status={form.confirm.length > 0 ? (isConfirmValid ? "success" : "error") : undefined}
               />
 
-              <YStack gap="$1">
-                <Text fontWeight="600" color="$text">
+              <YStack gap="$2">
+                <Text fontWeight="600" color="white" ml="$1">
                   Estado del colaborador
                 </Text>
-                <Select
-                  value={form.employee_state_id ? String(form.employee_state_id) : undefined}
+                <SimpleSelect
+                  options={stateOptions}
+                  value={form.employee_state_id ? String(form.employee_state_id) : ""}
                   onValueChange={(value) => handleSetField("employee_state_id", Number(value))}
-                  disabled={stateOptions.length === 0}
-                >
-                  <Select.Trigger borderColor="$borderColor">
-                    <Select.Value placeholder="Selecciona" />
-                  </Select.Trigger>
-                  <Adapt when="sm" platform="touch">
-                    <Sheet modal dismissOnSnapToBottom>
-                      <Sheet.Frame>
-                        <Sheet.ScrollView>
-                          <Adapt.Contents />
-                        </Sheet.ScrollView>
-                      </Sheet.Frame>
-                      <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                    </Sheet>
-                  </Adapt>
-                  <Select.Content>
-                    <Select.ScrollUpButton />
-                    <Select.Viewport>
-                      {stateOptions.map((option) => (
-                        <Select.Item key={option.value} value={option.value}>
-                          <Select.ItemText>{option.label}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                    <Select.ScrollDownButton />
-                  </Select.Content>
-                </Select>
+                  placeholder="Selecciona estado"
+                />
               </YStack>
 
-              <Paragraph color="$muted" fontSize="$2">
+              <Paragraph color="$gray10" fontSize="$2" mt="$2">
                 Asegúrate de que la contraseña tenga mínimo 8 caracteres y selecciona el estado correcto.
               </Paragraph>
 
-              <XStack gap="$3" mt="$3">
-                <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => router.back()}>
-                  Cancelar
+              <XStack gap="$3" mt="$4">
+                <AnimatedButton 
+                    flex={1} 
+                    backgroundColor="rgba(239, 68, 68, 0.2)"
+                    borderColor="$red8"
+                    borderWidth={1}
+                    onPress={() => router.back()}
+                >
+                  <Text color="$red9" fontWeight="600">Cancelar</Text>
                 </AnimatedButton>
-                <AnimatedButton flex={1} disabled={!formIsValid || createMutation.isPending} onPress={handleSubmit}>
+                <AnimatedButton 
+                    flex={1} 
+                    disabled={!formIsValid || createMutation.isPending} 
+                    backgroundColor="$blue10"
+                    onPress={handleSubmit}
+                >
                   {createMutation.isPending ? "Creando..." : "Crear usuario"}
                 </AnimatedButton>
               </XStack>
-            </YStack>
+            </GlassCard>
           )}
 
           {feedback ? (

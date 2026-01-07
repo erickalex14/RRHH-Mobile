@@ -10,9 +10,10 @@ import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
+import { HybridSelect } from "@/components/ui/HybridSelect";
 import {
   adminService,
   CreateDocumentPayload,
@@ -21,18 +22,32 @@ import {
 import { Branch, Department, Document, Role, User } from "@/types/api";
 import { DocumentType, documentTypeLabels } from "@/types/documents";
 import { useConfirm } from "@/hooks/useConfirm";
+import { LinearGradient } from "expo-linear-gradient";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { 
+  FileText, 
+  Search, 
+  Filter, 
+  Trash2, 
+  Download, 
+  Edit3, 
+  Plus, 
+  RefreshCw, 
+  Upload
+} from "@tamagui/lucide-icons";
 import {
-  Adapt,
   AnimatePresence,
   Paragraph,
   Spinner,
   ScrollView,
-  Select,
   Separator,
   Sheet,
   Text,
   XStack,
-  YStack
+  YStack,
+  H2,
+  Button,
+  Input
 } from "tamagui";
 
 type DocumentFilters = {
@@ -521,32 +536,13 @@ export default function AdminDocumentosScreen(): JSX.Element {
     onValueChange: (value: string) => void,
     disabled?: boolean
   ): JSX.Element => (
-    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
-      <Select.Trigger borderColor="$borderColor">
-        <Select.Value placeholder={placeholder} />
-      </Select.Trigger>
-      <Adapt when="sm" platform="touch">
-        <Sheet modal dismissOnSnapToBottom>
-          <Sheet.Frame>
-            <Sheet.ScrollView>
-              <Adapt.Contents />
-            </Sheet.ScrollView>
-          </Sheet.Frame>
-          <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-        </Sheet>
-      </Adapt>
-      <Select.Content>
-        <Select.ScrollUpButton />
-        <Select.Viewport>
-          {options.map((option) => (
-            <Select.Item key={option.value} value={option.value}>
-              <Select.ItemText>{option.label}</Select.ItemText>
-            </Select.Item>
-          ))}
-        </Select.Viewport>
-        <Select.ScrollDownButton />
-      </Select.Content>
-    </Select>
+    <HybridSelect
+      options={options}
+      value={value}
+      onValueChange={onValueChange}
+      placeholder={placeholder}
+      disabled={disabled}
+    />
   );
 
   const employeeSelectOptions = useMemo(
@@ -562,123 +558,120 @@ export default function AdminDocumentosScreen(): JSX.Element {
     onValueChange: (value: DocumentType | "all") => void,
     placeholder: string
   ): JSX.Element => (
-    <Select value={value} onValueChange={(selected) => onValueChange(selected as DocumentType | "all")}>
-      <Select.Trigger borderColor="$borderColor">
-        <Select.Value placeholder={placeholder} />
-      </Select.Trigger>
-      <Select.Content>
-        <Select.ScrollUpButton />
-        <Select.Viewport>
-          {documentTypeOptions.map((option) => (
-            <Select.Item key={option.value} value={option.value}>
-              <Select.ItemText>{option.label}</Select.ItemText>
-            </Select.Item>
-          ))}
-        </Select.Viewport>
-        <Select.ScrollDownButton />
-      </Select.Content>
-    </Select>
+    <HybridSelect
+      options={documentTypeOptions}
+      value={value}
+      onValueChange={(selected) => onValueChange(selected as DocumentType | "all")}
+      placeholder={placeholder}
+    />
   );
 
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 72 }}>
-        <YStack gap="$4">
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
-              Documentos corporativos
-            </Text>
-            <Paragraph color="$muted">
-              Gestiona cargas y descargas de todos los colaboradores.
-            </Paragraph>
-          </YStack>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <YStack gap="$4" pt="$safe" px="$0">
+          
+          {/* Header */}
+          <XStack justifyContent="space-between" alignItems="center" mb="$2">
+             <YStack>
+                <H2 fontWeight="800" fontSize={26} color="$color">Documentos</H2>
+                <Paragraph color="$color" opacity={0.6}>Gestión de archivos firmados</Paragraph>
+             </YStack>
+             
+             <XStack gap="$2">
+                <Button 
+                    size="$3" 
+                    circular 
+                    icon={RefreshCw} 
+                    chromeless 
+                    onPress={() => void refetchDocuments()}
+                 />
+                 <Button 
+                    size="$3" 
+                    circular 
+                    icon={Plus} 
+                    backgroundColor="$green10" 
+                    color="white"
+                    onPress={openCreateForm}
+                 />
+             </XStack>
+          </XStack>
 
-          <RoleSwitcher target="employee" />
-
-          <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-            <XStack justifyContent="space-between" alignItems="center">
-              <Text fontFamily="$heading" fontSize="$5" color="$text">
-                Filtros avanzados
-              </Text>
-              <AnimatedButton backgroundColor="$color4" color="$text" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
-                {isFilterBarOpen ? "Ocultar" : "Mostrar"}
-              </AnimatedButton>
-            </XStack>
-            {isFilterBarOpen ? (
-              <YStack gap="$3">
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Búsqueda
-                  </Text>
-                  <AnimatedInput
-                    placeholder="Nombre de archivo"
-                    value={filters.search}
-                    onChangeText={handleSearchChange}
-                  />
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Sucursal
-                  </Text>
-                  {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Departamento
-                  </Text>
-                  {renderSelect(filters.departmentId, departmentOptions, "Todos", handleDepartmentChange, isMetaLoading)}
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Rol
-                  </Text>
-                  {renderSelect(filters.roleId, roleOptions, "Todos", handleRoleChange, isMetaLoading)}
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Empleado
-                  </Text>
-                  {renderSelect(filters.employeeId, employeeOptions, "Todos", handleEmployeeChange, isMetaLoading)}
-                </YStack>
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="$text">
-                    Tipo de documento
-                  </Text>
-                  {renderDocumentTypeSelect(filters.docType, handleDocTypeChange, "Todos")}
-                </YStack>
-                <AnimatedButton backgroundColor="$color4" color="$text" onPress={resetFilters}>
-                  Limpiar filtros
-                </AnimatedButton>
-              </YStack>
-            ) : null}
-          </YStack>
-
-          <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$5" color="$text">
-              Estado general
-            </Text>
-            <Paragraph color="$muted">{activeFilterSummary}</Paragraph>
-            <XStack gap="$3" flexWrap="wrap">
-              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
-                <Text fontSize="$3" color="$muted">Documentos totales</Text>
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
+          {/* Stats Cards */}
+           <XStack gap="$3" flexWrap="wrap">
+              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
+                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">TOTAL</Text>
+                <Text fontWeight="800" fontSize="$6" color="$green10">
                   {documentInsights.total}
                 </Text>
-              </InteractiveCard>
-              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
-                <Text fontSize="$3" color="$muted">Coinciden con filtros</Text>
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
+              </GlassCard>
+              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
+                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">FILTRADOS</Text>
+                <Text fontWeight="800" fontSize="$6" color="$blue10">
                   {documentInsights.filteredByType}
                 </Text>
-              </InteractiveCard>
-              <InteractiveCard flex={1} minWidth={180} backgroundColor="$color2">
-                <Text fontSize="$3" color="$muted">Última carga registrada</Text>
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
-                  {documentInsights.lastUpload}
-                </Text>
-              </InteractiveCard>
+              </GlassCard>
             </XStack>
+
+          
+          {/* Filters Block */}
+          <YStack gap="$2">
+            
+             {/* Search Bar */}
+            <XStack 
+                bg="$background" 
+                borderRadius="$6" 
+                height={50} 
+                alignItems="center" 
+                px="$4" 
+                borderWidth={1}
+                borderColor="$borderColor"
+            >
+                <Search size={20} color="$color" opacity={0.5} />
+                <Input 
+                    flex={1} 
+                    borderWidth={0} 
+                    backgroundColor="transparent" 
+                    placeholder="Buscar documento..." 
+                    placeholderTextColor="$color"
+                    opacity={0.8}
+                    value={filters.search}
+                    onChangeText={(text) => setFilters((prev) => ({ ...prev, search: text }))}
+                />
+            </XStack>
+
+            <GlassCard gap="$3" p="$4" borderRadius="$6">
+                <XStack justifyContent="space-between" alignItems="center" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
+                <XStack gap="$2" alignItems="center">
+                    <Filter size={18} color="$color" />
+                    <Text fontWeight="700" fontSize="$4" color="$text">
+                        Filtros
+                    </Text>
+                </XStack>
+                <Text color="$blue10" fontSize="$3">{isFilterBarOpen ? "Ocultar" : "Mostrar"}</Text>
+                </XStack>
+                
+                {isFilterBarOpen ? (
+                <YStack gap="$3" pt="$3">
+                     <YStack gap="$1">
+                        <Text fontSize="$3" color="$color" opacity={0.7}>Tipo de documento</Text>
+                        {renderDocumentTypeSelect(filters.docType, handleDocTypeChange, "Todos")}
+                    </YStack>
+                    <YStack gap="$1">
+                         <Text fontSize="$3" color="$color" opacity={0.7}>Sucursal</Text>
+                         {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
+                    </YStack>
+                    <YStack gap="$1">
+                        <Text fontSize="$3" color="$color" opacity={0.7}>Departamento</Text>
+                        {renderSelect(filters.departmentId, departmentOptions, "Todos", handleDepartmentChange, isMetaLoading)}
+                    </YStack>
+                    <Button size="$3" backgroundColor="$blue10" color="white" onPress={resetFilters}>
+                        Limpiar filtros
+                    </Button>
+                </YStack>
+                ) : null}
+            </GlassCard>
           </YStack>
 
           {isMetaError ? (
@@ -690,21 +683,6 @@ export default function AdminDocumentosScreen(): JSX.Element {
               onAction={() => void queryClient.invalidateQueries({ queryKey: ["admin", "documents", "meta"] })}
             />
           ) : null}
-
-          <XStack gap="$3">
-            <AnimatedButton
-              flex={1}
-              backgroundColor="$color4"
-              color="$text"
-              disabled={isLoadingDocuments || isRefetching}
-              onPress={() => void refetchDocuments()}
-            >
-              {isRefetching ? "Sincronizando..." : "Actualizar"}
-            </AnimatedButton>
-            <AnimatedButton flex={1} onPress={openCreateForm}>
-              Nuevo documento
-            </AnimatedButton>
-          </XStack>
 
           {isLoadingDocuments || isRefetching ? (
             <ListSkeleton items={4} height={180} />
@@ -719,12 +697,8 @@ export default function AdminDocumentosScreen(): JSX.Element {
           ) : documents.length === 0 ? (
             <AnimatedNotice variant="info" message="No encontramos documentos con los filtros actuales." />
           ) : (
-            <Animated.FlatList<Document>
-              data={documents}
-              keyExtractor={(item) => String(item.document_id)}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <YStack height={16} />}
-              renderItem={({ item, index }) => {
+             <YStack gap="$3">
+               {documents.map((item, index) => {
                 const employeeName = `${item.user?.first_name ?? ""} ${item.user?.last_name ?? ""}`.trim() || "Sin asignar";
                 const departmentName = item.user?.employeeDetail?.department?.name ?? "Sin departamento";
                 const branchName = item.user?.employeeDetail?.department?.branch?.name ?? "Sin sucursal";
@@ -732,71 +706,87 @@ export default function AdminDocumentosScreen(): JSX.Element {
                 const typeLabel = isDocumentType(item.doc_type)
                   ? documentTypeLabels[item.doc_type]
                   : item.doc_type ?? "Sin tipo";
+
                 return (
-                  <Animated.View entering={FadeInDown.delay(index * 80)}>
-                    <InteractiveCard>
-                      <YStack gap="$2">
-                        <Text fontWeight="600" fontSize="$5" color="$text">
-                          {item.file_name}
-                        </Text>
-                        <Paragraph color="$muted">Tipo: {typeLabel}</Paragraph>
-                        <Paragraph color="$muted">Empleado: {employeeName}</Paragraph>
-                        <Paragraph color="$muted">
-                          Departamento: {departmentName} · Sucursal: {branchName}
-                        </Paragraph>
-                        <Paragraph color="$muted">Rol: {roleName}</Paragraph>
-                        <Paragraph color="$muted">Registrado: {formatDate(item.created_at)}</Paragraph>
-                        {item.description ? (
-                          <Paragraph color="$muted">Observaciones: {item.description}</Paragraph>
-                        ) : null}
-                        <Separator backgroundColor="$color4" />
-                        <XStack gap="$2">
-                          <AnimatedButton flex={1} backgroundColor="$color4" color="$text" onPress={() => handleDownload(item.document_id)}>
-                            Descargar
-                          </AnimatedButton>
-                          <AnimatedButton flex={1} backgroundColor="$brandPrimary" color="$text" onPress={() => openEditForm(item)}>
-                            Editar
-                          </AnimatedButton>
-                          <AnimatedButton
-                            flex={1}
-                            backgroundColor="$danger"
-                            color="#fff"
-                            disabled={removeMutation.isPending && removeMutation.variables === item.document_id}
-                            onPress={() => confirmDelete(item.document_id)}
-                          >
-                            {removeMutation.isPending && removeMutation.variables === item.document_id ? (
-                              <Spinner color="$text" size="small" />
-                            ) : (
-                              "Eliminar"
-                            )}
-                          </AnimatedButton>
+                  <Animated.View key={item.document_id} entering={FadeInDown.delay(index * 50).springify()}>
+                     <GlassCard p="$4" gap="$3">
+                        <XStack gap="$3" alignItems="center">
+                             <GlassCard p="$3" borderRadius="$4" backgroundColor="$backgroundPress">
+                                <FileText size={24} color="$blue10" />
+                             </GlassCard>
+                             <YStack flex={1}>
+                                <Text fontWeight="700" fontSize="$5" color="$color">{item.file_name}</Text>
+                                <Paragraph color="$color" opacity={0.6} numberOfLines={1}>{typeLabel}</Paragraph>
+                             </YStack>
                         </XStack>
-                      </YStack>
-                    </InteractiveCard>
+                        
+                        <Separator borderColor="$borderColor" opacity={0.5} />
+
+                        <YStack gap="$2" px="$1">
+                            <XStack justifyContent="space-between">
+                                <Text fontSize="$3" color="$color" opacity={0.6}>Empleado:</Text>
+                                <Text fontSize="$3" color="$color" fontWeight="600">{employeeName}</Text>
+                            </XStack>
+                             <XStack justifyContent="space-between">
+                                <Text fontSize="$3" color="$color" opacity={0.6}>Fecha:</Text>
+                                <Text fontSize="$3" color="$color" fontWeight="600">{formatDate(item.created_at)}</Text>
+                            </XStack>
+                        </YStack>
+
+                        <XStack gap="$3" mt="$2">
+                          <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Download} onPress={() => handleDownload(item.document_id)}>
+                           
+                          </Button>
+                          <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => openEditForm(item)}>
+                            
+                          </Button>
+                           <Button 
+                              flex={1} 
+                              size="$3" 
+                              backgroundColor="$red10" 
+                              color="white" 
+                              icon={Trash2}
+                              disabled={removeMutation.isPending && removeMutation.variables === item.document_id}
+                              onPress={() => confirmDelete(item.document_id)}
+                           >
+                              {removeMutation.isPending && removeMutation.variables === item.document_id ? (
+                                <Spinner color="white" size="small" />
+                              ) : null}
+                           </Button>
+                        </XStack>
+                        <LinearGradient
+                            colors={["transparent", "$green2"]}
+                            start={[1, 0]}
+                            end={[0, 1]}
+                            style={{ position: 'absolute', right: 0, top: 0, width: 100, height: 100, opacity: 0.1, borderRadius: 50 }}
+                        />
+                     </GlassCard>
                   </Animated.View>
                 );
-              }}
-            />
+               })}
+             </YStack>
           )}
 
           <Sheet
             modal
             open={sheetOpen}
             onOpenChange={(open: boolean) => (open ? setSheetOpen(open) : closeSheet())}
-            snapPoints={[80]}
+            snapPoints={[85]}
+            dismissOnSnapToBottom
           >
-            <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-            <Sheet.Frame padding="$4" backgroundColor="$color2">
-              <Sheet.ScrollView>
-                <YStack gap="$3">
-                  <Text fontFamily="$heading" fontSize="$5" color="$text">
+            <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+            <Sheet.Frame padding="$4" backgroundColor="$background">
+              <Sheet.Handle bg="$borderColor" />
+              <Sheet.ScrollView showsVerticalScrollIndicator={false}>
+                <YStack gap="$4" pb="$8">
+                  <H2 fontSize={22} color="$color">
                     {formMode === "edit" ? "Editar documento" : "Nuevo documento"}
-                  </Text>
-                  <Paragraph color="$muted">{helperText}</Paragraph>
+                  </H2>
+                  <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
 
                   {formMode === "create" ? (
-                    <YStack gap="$1">
-                      <Text fontWeight="600" color="$text">
+                    <YStack gap="$2">
+                      <Text fontWeight="600" color="$color">
                         Empleado
                       </Text>
                       {renderSelect(
@@ -806,58 +796,61 @@ export default function AdminDocumentosScreen(): JSX.Element {
                         (value) => updateFormState("userId", value)
                       )}
                       {formErrors.userId ? (
-                        <Paragraph color="$danger" fontSize={12}>{formErrors.userId}</Paragraph>
+                        <Paragraph color="$red10" fontSize={12}>{formErrors.userId}</Paragraph>
                       ) : null}
                     </YStack>
                   ) : (
-                    <YStack gap="$1">
-                      <Text fontWeight="600" color="$text">
+                    <YStack gap="$2">
+                      <Text fontWeight="600" color="$color">
                         Empleado
                       </Text>
-                      <Paragraph color="$muted">
+                      <Paragraph color="$color" opacity={0.8}>
                         {`${selectedDocument?.user?.first_name ?? ""} ${selectedDocument?.user?.last_name ?? ""}`.trim() || "Sin asignar"}
                       </Paragraph>
                     </YStack>
                   )}
 
-                  <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                  <YStack gap="$2">
+                    <Text fontWeight="600" color="$color">
                       Tipo de documento
                     </Text>
-                    <Select value={formState.docType} onValueChange={(value) => updateFormState("docType", value as DocumentType)}>
-                      <Select.Trigger borderColor="$borderColor">
-                        <Select.Value placeholder="Selecciona" />
-                      </Select.Trigger>
-                      <Select.Content>
-                        <Select.ScrollUpButton />
-                        <Select.Viewport>
-                          {DOCUMENT_TYPE_OPTIONS.map(([value, label]) => (
-                            <Select.Item key={value} value={value}>
-                              <Select.ItemText>{label}</Select.ItemText>
-                            </Select.Item>
-                          ))}
-                        </Select.Viewport>
-                        <Select.ScrollDownButton />
-                      </Select.Content>
-                    </Select>
+                    <HybridSelect
+                      options={DOCUMENT_TYPE_OPTIONS.map(([value, label]) => ({ label, value }))}
+                      value={formState.docType}
+                      onValueChange={(value) => updateFormState("docType", value as DocumentType)}
+                      placeholder="Selecciona"
+                    />
                     {formErrors.docType ? (
-                      <Paragraph color="$danger" fontSize={12}>{formErrors.docType}</Paragraph>
+                      <Paragraph color="$red10" fontSize={12}>{formErrors.docType}</Paragraph>
                     ) : null}
                   </YStack>
 
-                  <AnimatedInput
-                    label="Observaciones"
-                    placeholder="Opcional"
-                    value={formState.description}
-                    onChangeText={(value) => setFormState((prev) => ({ ...prev, description: value }))}
-                  />
+                  <YStack gap="$2">
+                    <Text fontWeight="600" color="$color">Observaciones</Text>
+                    <Input
+                        placeholder="Opcional"
+                        backgroundColor="$backgroundPress"
+                        borderColor="$borderColor"
+                        value={formState.description}
+                        onChangeText={(value) => setFormState((prev) => ({ ...prev, description: value }))}
+                    />
+                  </YStack>
 
                   {formMode === "create" ? (
                     <YStack gap="$2">
-                      <AnimatedButton onPress={handleFilePick} backgroundColor="$color4" color="$text">
+                      <Button 
+                        icon={Upload} 
+                        onPress={handleFilePick} 
+                        backgroundColor="$backgroundPress" 
+                        color="$color"
+                        borderColor="$borderColor"
+                        borderWidth={1}
+                        borderStyle="dashed"
+                        height={60}
+                      >
                         {formState.file ? "Reemplazar archivo" : "Seleccionar PDF"}
-                      </AnimatedButton>
-                      <Paragraph color={formErrors.file ? "$danger" : "$muted"}>
+                      </Button>
+                      <Paragraph color={formErrors.file ? "$red10" : "$muted"}>
                         {formErrors.file
                           ? formErrors.file
                           : formState.file
@@ -867,13 +860,13 @@ export default function AdminDocumentosScreen(): JSX.Element {
                     </YStack>
                   ) : null}
 
-                  <XStack gap="$3" mt="$2">
-                    <AnimatedButton flex={1} backgroundColor="$color4" color="$text" disabled={isMutating} onPress={closeSheet}>
+                  <XStack gap="$3" mt="$4">
+                    <Button flex={1} chromeless color="$color" disabled={isMutating} onPress={closeSheet}>
                       Cancelar
-                    </AnimatedButton>
-                    <AnimatedButton flex={1} disabled={!formIsValid || isMutating} onPress={handleSubmit}>
-                      {formMode === "edit" ? "Guardar" : "Registrar"}
-                    </AnimatedButton>
+                    </Button>
+                    <Button flex={1} backgroundColor="$blue10" color="white" disabled={!formIsValid || isMutating} onPress={handleSubmit}>
+                      {formMode === "edit" ? "Guardar cambios" : "Registrar documento"}
+                    </Button>
                   </XStack>
                 </YStack>
               </Sheet.ScrollView>
@@ -892,6 +885,7 @@ export default function AdminDocumentosScreen(): JSX.Element {
           </AnimatePresence>
         </YStack>
       </ScrollView>
+      <AdminNavbar />
     </Screen>
   );
 }

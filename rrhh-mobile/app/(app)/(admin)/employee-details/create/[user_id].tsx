@@ -12,16 +12,17 @@ import { AnimatedInput } from "@/components/ui/AnimatedInput";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
-import { RoleSwitcher } from "@/components/admin/RoleSwitcher";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { InteractiveCard } from "@/components/ui/InteractiveCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { SimpleSelect } from "@/components/ui/SimpleSelect";
+import { LinearGradient } from "expo-linear-gradient";
 import { adminService, EmployeeDetailPayload } from "@/services/adminService";
 import { Department, Role, Schedule, User } from "@/types/api";
 import {
-  Adapt,
   Paragraph,
   ScrollView,
-  Select,
   Separator,
   Sheet,
   Text,
@@ -250,19 +251,23 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
 
   return (
     <Screen>
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={{ position: 'absolute', width: '100%', height: '100%', zIndex: -1 }}
+      />
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={{ paddingBottom: 72 }}>
-        <YStack gap="$5">
+        <YStack gap="$5" p="$4">
           <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="$text">
+            <Text fontFamily="$heading" fontSize="$7" color="white">
               Detalles del colaborador
             </Text>
-            <Paragraph color="$muted">
+            <Paragraph color="$gray10">
               Completa la información laboral y personal asociada al usuario recién creado.
             </Paragraph>
           </YStack>
 
-          <RoleSwitcher target="employee" />
+          <AdminNavbar />
 
           {isLoading ? (
             <ListSkeleton items={5} height={120} />
@@ -294,137 +299,64 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
             />
           ) : (
             <YStack gap="$4">
-              <InteractiveCard>
+              <GlassCard p="$4">
                 <YStack gap="$2">
-                  <Text fontWeight="600" fontSize="$5" color="$text">
+                  <Text fontWeight="600" fontSize="$5" color="white">
                     {[user.first_name, user.last_name].filter(Boolean).join(" ") || `Usuario #${user.user_id}`}
                   </Text>
-                  <Paragraph color="$muted">{user.email}</Paragraph>
+                  <Paragraph color="$gray10">{user.email}</Paragraph>
                   <StatusBadge label={user.employeeState?.name ?? "Sin estado"} />
                 </YStack>
-              </InteractiveCard>
+              </GlassCard>
 
-              <YStack gap="$3" backgroundColor="$brandBg" p="$4" borderRadius="$6">
-                <Text fontFamily="$heading" fontSize="$5" color="$text">
+              <GlassCard gap="$3" p="$4" borderRadius="$6">
+                <Text fontFamily="$heading" fontSize="$5" color="white">
                   Información laboral
                 </Text>
                 <YStack gap="$3">
                   <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                    <Text fontWeight="600" color="white">
                       Rol
                     </Text>
-                    <Select
-                      value={form.role_id ? String(form.role_id) : undefined}
+                    <SimpleSelect
+                      value={form.role_id ? String(form.role_id) : ""}
                       onValueChange={(value) => handleSetForm("role_id", Number(value))}
-                    >
-                      <Select.Trigger borderColor="$borderColor">
-                        <Select.Value placeholder="Selecciona" />
-                      </Select.Trigger>
-                      <Adapt when="sm" platform="touch">
-                        <Sheet modal dismissOnSnapToBottom>
-                          <Sheet.Frame>
-                            <Sheet.ScrollView>
-                              <Adapt.Contents />
-                            </Sheet.ScrollView>
-                          </Sheet.Frame>
-                          <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                        </Sheet>
-                      </Adapt>
-                      <Select.Content>
-                        <Select.ScrollUpButton />
-                        <Select.Viewport>
-                          {roles.map((role) => (
-                            <Select.Item key={role.role_id} value={String(role.role_id)}>
-                              <Select.ItemText>{role.name}</Select.ItemText>
-                            </Select.Item>
-                          ))}
-                        </Select.Viewport>
-                        <Select.ScrollDownButton />
-                      </Select.Content>
-                    </Select>
+                      options={roles.map(r => ({ label: r.name, value: String(r.role_id) }))}
+                      placeholder="Selecciona"
+                    />
                   </YStack>
 
                   <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                    <Text fontWeight="600" color="white">
                       Departamento
                     </Text>
-                    <Select
-                      value={form.department_id ? String(form.department_id) : undefined}
+                    <SimpleSelect
+                      value={form.department_id ? String(form.department_id) : ""}
                       onValueChange={(value) => handleSetForm("department_id", Number(value))}
-                    >
-                      <Select.Trigger borderColor="$borderColor">
-                        <Select.Value placeholder="Selecciona" />
-                      </Select.Trigger>
-                      <Adapt when="sm" platform="touch">
-                        <Sheet modal dismissOnSnapToBottom>
-                          <Sheet.Frame>
-                            <Sheet.ScrollView>
-                              <Adapt.Contents />
-                            </Sheet.ScrollView>
-                          </Sheet.Frame>
-                          <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                        </Sheet>
-                      </Adapt>
-                      <Select.Content>
-                        <Select.ScrollUpButton />
-                        <Select.Viewport>
-                          {departments.map((department) => (
-                            <Select.Item key={department.department_id} value={String(department.department_id)}>
-                              <Select.ItemText>
-                                {department.name}
-                              </Select.ItemText>
-                            </Select.Item>
-                          ))}
-                        </Select.Viewport>
-                        <Select.ScrollDownButton />
-                      </Select.Content>
-                    </Select>
-                    <Paragraph color="$muted" fontSize="$2">
+                      options={departments.map(d => ({ label: d.name, value: String(d.department_id) }))}
+                      placeholder="Selecciona"
+                    />
+                    <Paragraph color="$gray10" fontSize="$2" mt="$1">
                       Sucursal asignada: {branchInfo}
                     </Paragraph>
                   </YStack>
 
                   <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                    <Text fontWeight="600" color="white">
                       Horario
                     </Text>
-                    <Select
-                      value={form.schedule_id ? String(form.schedule_id) : undefined}
+                    <SimpleSelect
+                      value={form.schedule_id ? String(form.schedule_id) : ""}
                       onValueChange={(value) => handleSetForm("schedule_id", Number(value))}
-                    >
-                      <Select.Trigger borderColor="$borderColor">
-                        <Select.Value placeholder="Selecciona" />
-                      </Select.Trigger>
-                      <Adapt when="sm" platform="touch">
-                        <Sheet modal dismissOnSnapToBottom>
-                          <Sheet.Frame>
-                            <Sheet.ScrollView>
-                              <Adapt.Contents />
-                            </Sheet.ScrollView>
-                          </Sheet.Frame>
-                          <Sheet.Overlay enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
-                        </Sheet>
-                      </Adapt>
-                      <Select.Content>
-                        <Select.ScrollUpButton />
-                        <Select.Viewport>
-                          {schedules.map((schedule) => (
-                            <Select.Item key={schedule.schedule_id} value={String(schedule.schedule_id)}>
-                              <Select.ItemText>
-                                {schedule.name}
-                              </Select.ItemText>
-                            </Select.Item>
-                          ))}
-                        </Select.Viewport>
-                        <Select.ScrollDownButton />
-                      </Select.Content>
-                    </Select>
+                      options={schedules.map(s => ({ label: s.name, value: String(s.schedule_id) }))}
+                      placeholder="Selecciona"
+                    />
                   </YStack>
                 </YStack>
 
-                <Separator backgroundColor="$color4" my="$3" />
+                <Separator borderColor="rgba(255,255,255,0.1)" my="$3" />
 
-                <Text fontFamily="$heading" fontSize="$5" color="$text">
+                <Text fontFamily="$heading" fontSize="$5" color="white">
                   Datos personales
                 </Text>
                 <YStack gap="$3">
@@ -455,12 +387,12 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
                   />
 
                   <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                    <Text fontWeight="600" color="white">
                       Fecha de nacimiento
                     </Text>
                     <AnimatedButton
-                      backgroundColor="$color4"
-                      color="$text"
+                      backgroundColor="rgba(255,255,255,0.1)"
+                      color="white"
                       onPress={() => handleOpenPicker("birth")}
                     >
                       {displayDate(birthDate)}
@@ -468,17 +400,17 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
                   </YStack>
 
                   <YStack gap="$1">
-                    <Text fontWeight="600" color="$text">
+                    <Text fontWeight="600" color="white">
                       Fecha de ingreso
                     </Text>
                     <AnimatedButton
-                      backgroundColor="$color4"
-                      color="$text"
+                      backgroundColor="rgba(255,255,255,0.1)"
+                      color="white"
                       onPress={() => handleOpenPicker("hire")}
                     >
                       {displayDate(hireDate)}
                     </AnimatedButton>
-                    <Paragraph color="$muted" fontSize="$2">
+                    <Paragraph color="$gray10" fontSize="$2" mt="$1">
                       Debe ser igual o posterior a la fecha de nacimiento.
                     </Paragraph>
                   </YStack>
@@ -487,8 +419,8 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
                 <XStack gap="$3" mt="$3">
                   <AnimatedButton
                     flex={1}
-                    backgroundColor="$color4"
-                    color="$text"
+                    backgroundColor="rgba(255,255,255,0.1)"
+                    color="white"
                     onPress={() => router.replace("/(app)/(admin)/users")}
                   >
                     Cancelar
@@ -501,7 +433,7 @@ export default function AdminCreateEmployeeDetailScreen(): JSX.Element {
                     {createMutation.isPending ? "Guardando..." : "Guardar detalles"}
                   </AnimatedButton>
                 </XStack>
-              </YStack>
+              </GlassCard>
 
               {feedback ? (
                 <AnimatedNotice
