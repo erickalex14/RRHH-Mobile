@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Linking, Platform } from "react-native"; 
 import axios from "axios";
 import Animated, { FadeInDown, FadeOutUp, Layout } from "react-native-reanimated";
 import * as DocumentPicker from "expo-document-picker";
@@ -26,7 +27,8 @@ import {
   ShieldCheck, 
   FileBadge, 
   UserSquare, 
-  File
+  File,
+  Download
 } from "@tamagui/lucide-icons";
 
 // --- CONFIGURACIÓN VISUAL ---
@@ -156,9 +158,10 @@ export default function DocumentosScreen(): JSX.Element {
 
       uploadMutation.mutate({
         uri: file.uri,
-        name: file.name ?? `doc-${Date.now()}.pdf`,
+        name: file.name,
         mimeType: file.mimeType ?? "application/pdf",
-        type: selectedType
+        type: selectedType,
+        file: file.file 
       });
     } catch (err) {
       setFeedback({ variant: "error", message: "Error al leer archivo." });
@@ -166,6 +169,34 @@ export default function DocumentosScreen(): JSX.Element {
   };
 
   const confirm = useConfirm();
+
+  const handleDownload = useCallback(async (documentId: number, fileName: string) => {
+    try {
+      if (Platform.OS === 'web') {
+        const blob = await employeeService.downloadDocument(documentId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        setFeedback({ variant: "success", message: "Descarga iniciada" });
+        setTimeout(() => setFeedback(null), 3000);
+      } else {
+        const url = employeeService.getDocumentDownloadUrl(documentId);
+        const supported = await Linking.canOpenURL(url);
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          setFeedback({ variant: "error", message: "No se puede abrir el enlace." });
+        }
+      }
+    } catch (err) {
+      setFeedback({ variant: "error", message: "Error al descargar." });
+    }
+  }, []);
 
   const handleDelete = useCallback(
     async (documentId: number) => {
@@ -275,36 +306,50 @@ export default function DocumentosScreen(): JSX.Element {
                     style={{ marginBottom: 12 }}
                   >
                     <GlassCard glow={false} px="$4" py="$4" borderRadius="$5">
-                      <XStack gap="$3" alignItems="center" flex={1}>
-                        <YStack backgroundColor="rgba(255,255,255,0.06)" padding="$3" borderRadius="$4">
-                          <DocIcon size={28} color="#60a5fa" />
-                        </YStack>
-                        <YStack flex={1}>
-                          <Text color="$text" fontWeight="bold" fontSize="$4" numberOfLines={1}>
-                            {doc.file_name}
-                          </Text>
-                          <XStack gap="$2" opacity={0.65} marginTop={4}>
-                            <Text color="$text" fontSize="$3" textTransform="uppercase">
-                              {typeConfig[doc.doc_type as DocumentType]?.label || "DOC"}
+                      <XStack alignItems="center" gap="$3"> 
+                        <XStack gap="$3" alignItems="center" flex={1}>
+                          <YStack backgroundColor="rgba(255,255,255,0.06)" padding="$3" borderRadius="$4">
+                            <DocIcon size={28} color="#60a5fa" />
+                          </YStack>
+                          <YStack flex={1}>
+                            <Text color="$text" fontWeight="bold" fontSize="$4" numberOfLines={1}>
+                              {doc.file_name}
                             </Text>
-                            <Text color="$text" fontSize="$3">•</Text>
-                            <Text color="$text" fontSize="$3">
-                              {(Number(doc.file_size ?? 0) / 1024 / 1024).toFixed(2)} MB
-                            </Text>
-                          </XStack>
-                        </YStack>
-                      </XStack>
+                            <XStack gap="$2" opacity={0.65} marginTop={4}>
+                              <Text color="$text" fontSize="$3" textTransform="uppercase">
+                                {typeConfig[doc.doc_type as DocumentType]?.label || "DOC"}
+                              </Text>
+                              <Text color="$text" fontSize="$3">•</Text>
+                              <Text color="$text" fontSize="$3">
+                                {(Number(doc.file_size ?? 0) / 1024 / 1024).toFixed(2)} MB
+                              </Text>
+                            </XStack>
+                          </YStack>
+                        </XStack>
+                        
+                        <XStack gap="$2">
+                          <Button
+                            size="$4" 
+                            circular
+                            backgroundColor="rgba(37, 99, 235, 0.15)"
+                            onPress={() => handleDownload(doc.document_id, doc.file_name)}
+                            pressStyle={{ backgroundColor: "rgba(37, 99, 235, 0.3)" }}
+                          >
+                            <Download size={20} color="#60a5fa" />
+                          </Button>
 
-                      <Button
-                        size="$5"
-                        circular
-                        backgroundColor="rgba(239, 68, 68, 0.15)"
-                        onPress={() => handleDelete(doc.document_id)}
-                        disabled={isDeleting}
-                        pressStyle={{ backgroundColor: "rgba(239, 68, 68, 0.3)" }}
-                      >
-                        {isDeleting ? <Spinner size="small" color="#ef4444" /> : <Trash2 size={24} color="#ef4444" />}
-                      </Button>
+                          <Button
+                            size="$4"
+                            circular
+                            backgroundColor="rgba(239, 68, 68, 0.15)"
+                            onPress={() => handleDelete(doc.document_id)}
+                            disabled={isDeleting}
+                            pressStyle={{ backgroundColor: "rgba(239, 68, 68, 0.3)" }}
+                          >
+                            {isDeleting ? <Spinner size="small" color="#ef4444" /> : <Trash2 size={20} color="#ef4444" />}
+                          </Button>
+                        </XStack>
+                      </XStack>
                     </GlassCard>
                   </Animated.View>
                 );

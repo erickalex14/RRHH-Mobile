@@ -15,7 +15,8 @@ import {
   Layers, 
   Shield, 
   Briefcase, 
-  Clock 
+  Clock,
+  Calendar
 } from "@tamagui/lucide-icons";
 import { 
   Button, 
@@ -157,6 +158,15 @@ export default function AdminDashboardScreen(): JSX.Element {
         Icon: Clock,
         color: "$cyan10",
         bg: "$cyan2"
+      },
+      {
+        label: "Jornadas",
+        value: 0,
+        hint: "Asistencias",
+        target: "/(app)/(admin)/jornadas",
+        Icon: Calendar,
+        color: "$yellow10",
+        bg: "$yellow2"
       },
     ],
     [data]

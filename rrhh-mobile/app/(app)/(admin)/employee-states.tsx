@@ -97,28 +97,27 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
   const isMutating = createMutation.isPending || updateMutation.isPending;
 
   const formIsValid = useMemo(() => {
-    return form.name.trim().length > 2 && form.description.trim().length > 4;
+    return form.name.trim().length > 1 && form.description.trim().length > 2;
   }, [form.description, form.name]);
 
-  const payload = useMemo<EmployeeStatePayload | null>(() => {
+  const handleSubmit = useCallback(() => {
     if (!formIsValid) {
-      return null;
+        showFeedback("error", "Verifica el nombre y la descripción.");
+        return;
     }
-    return {
+    
+    const payload: EmployeeStatePayload = {
       name: form.name.trim(),
       description: form.description.trim(),
       active: form.active
     };
-  }, [form, formIsValid]);
 
-  const handleSubmit = useCallback(() => {
-    if (!payload) return;
     if (editingState) {
       updateMutation.mutate({ employeeStateId: editingState.employee_state_id, payload });
       return;
     }
     createMutation.mutate(payload);
-  }, [createMutation, editingState, payload, updateMutation]);
+  }, [createMutation, editingState, form, formIsValid, updateMutation, showFeedback]);
 
   const handleSelectState = useCallback((state: EmployeeState) => {
     setEditingState(state);
@@ -227,8 +226,8 @@ export default function AdminEmployeeStatesScreen(): JSX.Element {
               ) : null}
               <Button 
                 flex={1} 
-                disabled={!formIsValid || isMutating} 
-                backgroundColor="$blue10" 
+                disabled={isMutating} 
+                backgroundColor={!formIsValid ? "$gray8" : "$blue10"} 
                 color="white" 
                 onPress={handleSubmit}
               >

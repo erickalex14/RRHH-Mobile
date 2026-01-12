@@ -15,11 +15,11 @@ import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AnimatedNotice } from "@/components/ui/AnimatedNotice";
 import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { adminService } from "@/services/adminService";
-import { Branch, Department, Role, User, WorkSession } from "@/types/api";
+import { Branch, Department, Role, User, WorkSession, Schedule } from "@/types/api";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { LinearGradient } from "expo-linear-gradient";
 import { HybridSelect } from "@/components/ui/HybridSelect";
-import { Filter, Calendar, Clock, User as UserIcon, Building2, Layers, Briefcase, RefreshCw, XCircle } from "@tamagui/lucide-icons";
+import { Filter, Calendar, Clock, User as UserIcon, Building2, Layers, Briefcase, RefreshCw, XCircle, Search } from "@tamagui/lucide-icons";
 import {
   Adapt,
   Paragraph,
@@ -31,7 +31,8 @@ import {
   XStack,
   YStack,
   H2,
-  Button
+  Button,
+  Input
 } from "tamagui";
 import { addDays, format } from "date-fns";
 
@@ -54,6 +55,8 @@ type FilterState = {
   departmentId: string;
   roleId: string;
   employeeId: string;
+  scheduleId: string;
+  searchQuery: string;
   dateFrom: string;
   dateTo: string;
   status: StatusFilter;
@@ -64,6 +67,8 @@ const DEFAULT_FILTERS: FilterState = {
   departmentId: "all",
   roleId: "all",
   employeeId: "all",
+  scheduleId: "all",
+  searchQuery: "",
   dateFrom: format(addDays(new Date(), -7), "yyyy-MM-dd"),
   dateTo: format(new Date(), "yyyy-MM-dd"),
   status: "all"
@@ -80,7 +85,7 @@ export default function AdminJornadasScreen(): JSX.Element {
   const { data, isLoading, refetch, isRefetching, isError, error } = useQuery({
     queryKey: ["admin", "attendance", filters],
     queryFn: async () => {
-      const [response, branches, departments, roles, employees] = await Promise.all([
+      const [response, branches, departments, roles, employees, schedules] = await Promise.all([
         adminService.getAdminAttendanceByFilters({
           branch_id: filters.branchId !== "all" ? filters.branchId : undefined,
           department_id: filters.departmentId !== "all" ? filters.departmentId : undefined,
@@ -93,23 +98,46 @@ export default function AdminJornadasScreen(): JSX.Element {
         adminService.getBranches(),
         adminService.getDepartments(),
         adminService.getRoles(),
-        adminService.getUsers()
+        adminService.getUsers(),
+        adminService.getSchedules()
       ]);
       return {
         sessions: response.data ?? [],
         branches: branches.data ?? [],
         departments: departments.data ?? [],
         roles: roles.data ?? [],
-        employees: employees.data ?? []
+        employees: employees.data ?? [],
+        schedules: schedules.data ?? []
       };
     }
   });
 
-  const sessions = data?.sessions ?? [];
+  const rawSessions = data?.sessions ?? [];
   const branches = data?.branches ?? [];
   const departments = data?.departments ?? [];
   const roles = data?.roles ?? [];
   const employees = data?.employees ?? [];
+  const schedules = data?.schedules ?? [];
+
+  const sessions = useMemo(() => {
+    return rawSessions.filter((session) => {
+      const matchesSchedule = filters.scheduleId === "all"
+        ? true
+        : String(session.employee_detail?.schedule_id ?? "") === filters.scheduleId;
+
+      const query = filters.searchQuery.toLowerCase().trim();
+      const matchesSearch = query === ""
+        ? true
+        : (
+            session.user?.first_name?.toLowerCase().includes(query) ||
+            session.user?.last_name?.toLowerCase().includes(query) ||
+            session.employee_detail?.national_id?.toLowerCase().includes(query) ||
+            String(session.user_id).includes(query)
+          );
+
+      return matchesSchedule && matchesSearch;
+    });
+  }, [rawSessions, filters.scheduleId, filters.searchQuery]);
 
   const filteredDepartments = useMemo(() => {
     if (filters.branchId === "all") return departments;
@@ -161,6 +189,14 @@ export default function AdminJornadasScreen(): JSX.Element {
       value: String(employee.user_id)
     }))],
     [filteredEmployees]
+  );
+
+  const scheduleOptions = useMemo(
+    () => [{ label: "Todos", value: "all" }, ...schedules.map((schedule) => ({
+      label: schedule.name ?? "Sin nombre",
+      value: String(schedule.schedule_id)
+    }))],
+    [schedules]
   );
 
   const statusOptions = useMemo(
@@ -265,6 +301,20 @@ export default function AdminJornadasScreen(): JSX.Element {
     }));
   }, []);
 
+  const handleScheduleChange = useCallback((value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      scheduleId: value
+    }));
+  }, []);
+
+  const handleSearchChange = useCallback((text: string) => {
+     setFilters((prev) => ({
+      ...prev,
+      searchQuery: text
+    }));
+  }, []);
+
   const handleStatusChange = useCallback((value: StatusFilter) => {
     setFilters((prev) => ({
       ...prev,
@@ -320,6 +370,31 @@ export default function AdminJornadasScreen(): JSX.Element {
               <YStack gap="$3">
                 <YStack gap="$1">
                   <Text fontWeight="600" color="$color">
+                     Búsqueda (Nombre o Cédula)
+                  </Text>
+                   <XStack alignItems="center" backgroundColor="$backgroundPress" borderRadius="$4" px="$3" height={44}>
+                      <Search size={18} color="$color" opacity={0.5} />
+                      <Input
+                        flex={1}
+                        unstyled
+                        placeholder="Ej. Juan Pérez o ID"
+                        placeholderTextColor="$colorPress"
+                        color="$color"
+                        value={filters.searchQuery}
+                        onChangeText={handleSearchChange}
+                        height="100%" // Ensure full height
+                        fontSize="$3"
+                        ml="$2"
+                        autoCapitalize="none"
+                      />
+                      {filters.searchQuery ? (
+                         <Button chromeless size="$2" icon={XCircle} onPress={() => handleSearchChange("")} />
+                      ) : null}
+                   </XStack>
+                </YStack>
+
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$color">
                     Sucursal
                   </Text>
                   <HybridSelect
@@ -350,6 +425,18 @@ export default function AdminJornadasScreen(): JSX.Element {
                     options={roleOptions}
                     value={filters.roleId}
                     onValueChange={handleRoleChange}
+                    placeholder="Todos"
+                  />
+                </YStack>
+
+                <YStack gap="$1">
+                  <Text fontWeight="600" color="$color">
+                    Horario
+                  </Text>
+                  <HybridSelect
+                    options={scheduleOptions}
+                    value={filters.scheduleId}
+                    onValueChange={handleScheduleChange}
                     placeholder="Todos"
                   />
                 </YStack>

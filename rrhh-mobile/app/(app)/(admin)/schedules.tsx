@@ -90,7 +90,8 @@ const formatTimeFromDate = (date: Date): string => `${pad(date.getHours())}:${pa
 
 const ensurePayloadTime = (value: string): string => {
   if (!value) return value;
-  return value.length === 5 ? `${value}:00` : value;
+  // Backend expects H:i (e.g. 09:00), so we ensure we don't send seconds
+  return value.length > 5 ? value.substring(0, 5) : value;
 };
 
 const toDateValue = (value: string): Date => {
@@ -305,48 +306,74 @@ export default function AdminSchedulesScreen(): JSX.Element {
     [confirm, deleteMutation]
   );
 
-  const renderIOSPicker = (): JSX.Element | null => {
-    if (Platform.OS !== "ios" || !pickerState.visible || !pickerState.field) {
+  const renderTimePicker = (): JSX.Element | null => {
+    if (!pickerState.visible || !pickerState.field) {
       return null;
     }
     const activeField = pickerState.field;
     
     return (
-      <GlassCard
-        animation="fadeIn"
-        enterStyle={{ opacity: 0, scale: 0.95 }}
-        p="$4"
-        mb="$4"
-        borderColor="$blue8"
-      >
-        <Text color="$blue10" fontSize="$5" fontWeight="600" mb="$2" textAlign="center">
-          {timeFieldCopy[activeField].label}
-        </Text>
-        <XStack justifyContent="center" mb="$3">
-          <DateTimePicker
-            testID="ios-time-picker"
-            value={form[activeField] ? toDateValue(form[activeField]) : toDateValue("09:00")}
-            mode="time"
-            display="spinner"
-            themeVariant="dark"
-            is24Hour
-            onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
-              if (event.type === "dismissed") return;
-              if (selectedDate) {
-                handleTimeSelection(activeField, selectedDate);
-              }
-            }}
-            style={{ height: 120, width: "100%" }}
-          />
-        </XStack>
-        <Button
-          backgroundColor="$blue8"
-          color="white"
-          onPress={closePicker}
+      <Animated.View entering={FadeInDown.duration(250)} style={{ marginBottom: 16 }}>
+        <GlassCard
+          p="$4"
+          borderColor="$blue8"
         >
-          Confirmar
-        </Button>
-      </GlassCard>
+          <Text color="$blue10" fontSize="$5" fontWeight="600" mb="$2" textAlign="center">
+            {timeFieldCopy[activeField].label}
+          </Text>
+          <XStack justifyContent="center" mb="$3" alignItems="center">
+            {Platform.OS === 'web' ? (
+                <input
+                    type="time"
+                    value={form[activeField] || "09:00"}
+                    style={{
+                        padding: '10px',
+                        fontSize: '18px',
+                        borderRadius: '8px',
+                        border: '1px solid #475569',
+                        backgroundColor: '#1e293b',
+                        color: 'white',
+                        width: '100%',
+                        outline: 'none'
+                    }}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                           const [h, m] = val.split(':');
+                           const date = new Date();
+                           date.setHours(Number(h));
+                           date.setMinutes(Number(m));
+                           handleTimeSelection(activeField, date);
+                        }
+                    }}
+                />
+            ) : (
+                <DateTimePicker
+                testID="time-picker"
+                value={form[activeField] ? toDateValue(form[activeField]) : toDateValue("09:00")}
+                mode="time"
+                display={Platform.OS === 'ios' ? "spinner" : "default"}
+                themeVariant="dark"
+                is24Hour
+                onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
+                    if (event.type === "dismissed") return;
+                    if (selectedDate) {
+                    handleTimeSelection(activeField, selectedDate);
+                    }
+                }}
+                style={{ height: Platform.OS === 'ios' ? 120 : 50, width: "100%" }}
+                />
+            )}
+          </XStack>
+          <Button
+            backgroundColor="$blue8"
+            color="white"
+            onPress={closePicker}
+          >
+            Confirmar
+          </Button>
+        </GlassCard>
+      </Animated.View>
     );
   };
 
@@ -380,31 +407,33 @@ export default function AdminSchedulesScreen(): JSX.Element {
 
           <AnimatePresence>
              {feedback && (
-              <GlassCard
-                animation="fadeIn"
-                borderColor={feedback.type === 'success' ? '$green8' : '$red8'}
-                p="$3"
-              >
-                <XStack space="$3" alignItems="center">
-                  <Text color={feedback.type === 'success' ? '$green8' : '$red8'} fontSize="$3.5">
-                    {feedback.message}
-                  </Text>
-                </XStack>
-              </GlassCard>
+              <Animated.View entering={FadeInDown} exiting={FadeInDown} style={{ marginBottom: 8 }}>
+                <GlassCard
+                  borderColor={feedback.type === 'success' ? '$green8' : '$red8'}
+                  p="$3"
+                >
+                  <XStack space="$3" alignItems="center">
+                    <Text color={feedback.type === 'success' ? '$green8' : '$red8'} fontSize="$3.5">
+                      {feedback.message}
+                    </Text>
+                  </XStack>
+                </GlassCard>
+              </Animated.View>
             )}
             
             {showValidationHint && validationMessage && (
-               <GlassCard
-                animation="fadeIn"
-                borderColor="$orange8"
-                p="$3"
-              >
-                <XStack space="$3" alignItems="center">
-                  <Text color="$orange10" fontSize="$3.5">
-                    {validationMessage}
-                  </Text>
-                </XStack>
-              </GlassCard>
+               <Animated.View entering={FadeInDown} exiting={FadeInDown} style={{ marginBottom: 8 }}>
+                 <GlassCard
+                  borderColor="$orange8"
+                  p="$3"
+                >
+                  <XStack space="$3" alignItems="center">
+                    <Text color="$orange10" fontSize="$3.5">
+                      {validationMessage}
+                    </Text>
+                  </XStack>
+                </GlassCard>
+               </Animated.View>
             )}
           </AnimatePresence>
 
@@ -446,7 +475,7 @@ export default function AdminSchedulesScreen(): JSX.Element {
                 ))}
               </XStack>
               
-              {renderIOSPicker()}
+              {renderTimePicker()}
             </YStack>
 
             <Separator borderColor="$gray8" my="$2" />

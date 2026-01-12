@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { api } from "@/services/http";
 import { API_URL } from "@/config/api";
 import {
@@ -136,6 +137,8 @@ export interface DocumentQueryParams {
   employee_id?: string;
   doc_type?: DocumentType | "all";
   search?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 // Payload para crear un documento
@@ -144,6 +147,7 @@ export interface AdminDocumentFile {
   uri: string;
   name: string;
   mimeType?: string;
+  file?: any;
 }
 
 // Payload para crear un documento
@@ -396,7 +400,7 @@ export const adminService = {
     date_to?: string;
     status?: "open" | "closed" | "all";
   }): Promise<ApiResponse<WorkSession[]>> => {
-    const { data } = await api.get<ApiResponse<WorkSession[]>>("/admin/attendance", { params });
+    const { data } = await api.get<ApiResponse<WorkSession[]>>("/admin/attendance/all", { params });
     return data;
   },
 
@@ -422,11 +426,22 @@ export const adminService = {
     if (payload.description?.trim()) {
       form.append("description", payload.description.trim());
     }
-    form.append("document", {
-      uri: payload.file.uri,
-      name: payload.file.name,
-      type: payload.file.mimeType ?? "application/pdf"
-    } as unknown as Blob);
+
+    if (Platform.OS === "web") {
+        if (payload.file.file) {
+            form.append("document", payload.file.file);
+        } else {
+             const response = await fetch(payload.file.uri);
+             const blob = await response.blob();
+             form.append("document", blob, payload.file.name);
+        }
+    } else {
+        form.append("document", {
+          uri: payload.file.uri,
+          name: payload.file.name,
+          type: payload.file.mimeType ?? "application/pdf"
+        } as unknown as Blob);
+    }
 
     const { data } = await api.post<ApiResponse<Document>>("/admin/documents", form, {
       headers: { "Content-Type": "multipart/form-data" }
@@ -457,6 +472,14 @@ export const adminService = {
   // Obtener la URL de descarga de un documento
   getDocumentDownloadUrl: (documentId: number): string =>
     `${sanitizeBaseUrl()}/admin/documents/${documentId}/download`,
+
+  // Función para descargar blob (alternativa segura para Web)
+  downloadDocument: async (documentId: number): Promise<Blob> => {
+     const { data } = await api.get(`/admin/documents/${documentId}/download`, {
+       responseType: 'blob'
+     });
+     return data;
+  },
 
   // Solicitudes de salida anticipada
   getEarlyRequests: async (): Promise<ApiResponse<EarlyDepartureRequest[]>> => {

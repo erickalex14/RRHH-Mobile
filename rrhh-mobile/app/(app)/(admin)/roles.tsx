@@ -110,30 +110,31 @@ export default function AdminRolesScreen(): JSX.Element {
 
   const formIsValid = useMemo(() => {
     return (
-      form.name.trim().length > 2 &&
-      form.description.trim().length > 4 &&
+      form.name.trim().length > 1 &&
+      form.description.trim().length > 2 &&
       form.salary.trim().length > 0
     );
   }, [form]);
 
-  const payload = useMemo<RolePayload | null>(() => {
-    if (!formIsValid) return null;
-    return {
+  const handleSubmit = useCallback(() => {
+    if (!formIsValid) {
+      handleError("Verifica que el nombre, descripción y salario sean válidos.");
+      return;
+    }
+    
+    const payload: RolePayload = {
       name: form.name.trim(),
       description: form.description.trim(),
       salary: form.salary.trim(),
       admin: form.admin
     };
-  }, [form, formIsValid]);
 
-  const handleSubmit = useCallback(() => {
-    if (!payload) return;
     if (editingRole) {
       updateMutation.mutate({ roleId: editingRole.role_id, payload });
       return;
     }
     createMutation.mutate(payload);
-  }, [createMutation, editingRole, payload, updateMutation]);
+  }, [createMutation, editingRole, form, formIsValid, updateMutation, handleError]);
 
   const handleDeleteRole = useCallback((roleId: number) => {
     deleteMutation.mutate(roleId);
@@ -221,8 +222,9 @@ export default function AdminRolesScreen(): JSX.Element {
               ) : null}
               <AnimatedButton
                 flex={1}
-                disabled={!formIsValid || isMutating}
+                disabled={isMutating}
                 onPress={handleSubmit}
+                bg={!formIsValid ? "$gray8" : undefined}
               >
                 {editingRole ? "Guardar cambios" : "Crear rol"}
               </AnimatedButton>

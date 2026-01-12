@@ -1,11 +1,15 @@
 import { useCallback, useMemo, useState } from "react";
-import { Linking } from "react-native";
+import { Linking, Platform } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import DateTimePicker, {
+  DateTimePickerAndroid,
+  DateTimePickerEvent
+} from "@react-native-community/datetimepicker";
 import { Stack } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { AxiosError } from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
@@ -33,7 +37,9 @@ import {
   Edit3, 
   Plus, 
   RefreshCw, 
-  Upload
+  Upload,
+  Calendar,
+  XCircle
 } from "@tamagui/lucide-icons";
 import {
   AnimatePresence,
@@ -57,6 +63,8 @@ type DocumentFilters = {
   employeeId: string;
   docType: DocumentType | "all";
   search: string;
+  dateFrom: string;
+  dateTo: string;
 };
 
 type DocumentFormMode = "create" | "edit";
@@ -88,7 +96,9 @@ const DEFAULT_FILTERS: DocumentFilters = {
   roleId: "all",
   employeeId: "all",
   docType: "all",
-  search: ""
+  search: "",
+  dateFrom: format(addDays(new Date(), -30), "yyyy-MM-dd"),
+  dateTo: format(new Date(), "yyyy-MM-dd")
 };
 
 const EMPTY_FORM: DocumentFormState = {
@@ -140,6 +150,10 @@ export default function AdminDocumentosScreen(): JSX.Element {
   const [formErrors, setFormErrors] = useState<DocumentFormErrors>({});
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [datePicker, setDatePicker] = useState<{ field: "dateFrom" | "dateTo" | null; visible: boolean }>({
+    field: null,
+    visible: false
+  });
 
   const invalidateDocuments = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["admin", "documents", "list"] });
@@ -149,6 +163,67 @@ export default function AdminDocumentosScreen(): JSX.Element {
     setFeedback(entry);
     setTimeout(() => setFeedback(null), 2600);
   }, []);
+
+  const toDateValue = useCallback((value: string): Date => {
+    const [year, month, day] = value.split("-").map(Number);
+    if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
+      return new Date(year, (month as number) - 1, day);
+    }
+    return new Date();
+  }, []);
+
+  const handleDateChange = useCallback((field: "dateFrom" | "dateTo", date: Date) => {
+    setFilters((prev) => ({ ...prev, [field]: format(date, "yyyy-MM-dd") }));
+    if (Platform.OS === "ios") {
+      setDatePicker({ field: null, visible: false });
+    }
+  }, []);
+
+  const openDatePicker = useCallback((field: "dateFrom" | "dateTo") => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        mode: "date",
+        value: toDateValue(filters[field]),
+        onChange: (_event: DateTimePickerEvent, selectedDate?: Date) => {
+          if (selectedDate) {
+            handleDateChange(field, selectedDate);
+          }
+        }
+      });
+      return;
+    }
+    setDatePicker({ field, visible: true });
+  }, [filters, handleDateChange, toDateValue]);
+
+  const closeIOSPicker = useCallback(() => {
+    setDatePicker({ field: null, visible: false });
+  }, []);
+
+  const renderIOSPicker = (): JSX.Element | null => {
+    if (Platform.OS !== "ios" || !datePicker.visible || !datePicker.field) {
+      return null;
+    }
+    const activeField = datePicker.field;
+    return (
+      <YStack gap="$2" backgroundColor="$color2" p="$3" borderRadius="$5">
+        <Text fontWeight="600" color="$text">
+          Selecciona {activeField === "dateFrom" ? "fecha inicial" : "fecha final"}
+        </Text>
+        <DateTimePicker
+          value={toDateValue(filters[activeField])}
+          mode="date"
+          display="spinner"
+          onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
+            if (event.type === "dismissed") return;
+            if (selectedDate) {
+              handleDateChange(activeField, selectedDate);
+            }
+          }}
+        />
+        <AnimatedButton onPress={closeIOSPicker}>Cerrar</AnimatedButton>
+      </YStack>
+    );
+  };
 
   const confirm = useConfirm();
 
@@ -185,7 +260,9 @@ export default function AdminDocumentosScreen(): JSX.Element {
         role_id: filters.roleId !== "all" ? filters.roleId : undefined,
         employee_id: filters.employeeId !== "all" ? filters.employeeId : undefined,
         doc_type: filters.docType !== "all" ? filters.docType : undefined,
-        search: filters.search
+        search: filters.search,
+        date_from: filters.dateFrom,
+        date_to: filters.dateTo
       })
   });
 
@@ -481,9 +558,29 @@ export default function AdminDocumentosScreen(): JSX.Element {
     [confirm, removeMutation]
   );
 
-  const handleDownload = useCallback(async (documentId: number) => {
-    const url = adminService.getDocumentDownloadUrl(documentId);
-    await Linking.openURL(url);
+  const handleDownload = useCallback(async (documentId: number, fileName: string) => { 
+    try {
+      if (Platform.OS === 'web') {
+        // En web usamos blob y createObjectURL para pasar el token de auth
+        const blob = await adminService.downloadDocument(documentId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // En nativo por ahora usamos Linking (requerirá manejo de token en backend o signed URL)
+        // TODO: Implementar expo-file-system para soporte completo en nativo con auth
+        const url = adminService.getDocumentDownloadUrl(documentId);
+        await Linking.openURL(url);
+      }
+    } catch (error) {
+       console.error("Error downloading", error);
+       alert("Error al descargar el archivo");
+    }
   }, []);
 
   const isMutating = createMutation.isPending || updateMutation.isPending;
@@ -507,7 +604,8 @@ export default function AdminDocumentosScreen(): JSX.Element {
         file: {
           uri: formState.file.uri,
           name: formState.file.name ?? `document-${Date.now()}.pdf`,
-          mimeType: formState.file.mimeType ?? "application/pdf"
+          mimeType: formState.file.mimeType ?? "application/pdf",
+          file: formState.file.file
         }
       });
       return;
@@ -658,6 +756,38 @@ export default function AdminDocumentosScreen(): JSX.Element {
                         <Text fontSize="$3" color="$color" opacity={0.7}>Tipo de documento</Text>
                         {renderDocumentTypeSelect(filters.docType, handleDocTypeChange, "Todos")}
                     </YStack>
+                    
+                    <XStack gap="$3" flexWrap="wrap">
+                      <YStack flex={1} minWidth={150} gap="$1">
+                        <Text fontSize="$3" fontWeight="600" color="$color" opacity={0.7}>Desde</Text>
+                        <Button
+                          variant="outlined"
+                          size="$3"
+                          borderColor="$borderColor"
+                          color="$color"
+                          icon={Calendar}
+                          onPress={() => openDatePicker("dateFrom")}
+                        >
+                          {filters.dateFrom}
+                        </Button>
+                      </YStack>
+                      <YStack flex={1} minWidth={150} gap="$1">
+                        <Text fontSize="$3" fontWeight="600" color="$color" opacity={0.7}>Hasta</Text>
+                        <Button
+                          variant="outlined"
+                          size="$3"
+                          borderColor="$borderColor"
+                          color="$color"
+                          icon={Calendar}
+                          onPress={() => openDatePicker("dateTo")}
+                        >
+                          {filters.dateTo}
+                        </Button>
+                      </YStack>
+                    </XStack>
+                    
+                    {renderIOSPicker()}
+
                     <YStack gap="$1">
                          <Text fontSize="$3" color="$color" opacity={0.7}>Sucursal</Text>
                          {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
@@ -666,8 +796,17 @@ export default function AdminDocumentosScreen(): JSX.Element {
                         <Text fontSize="$3" color="$color" opacity={0.7}>Departamento</Text>
                         {renderSelect(filters.departmentId, departmentOptions, "Todos", handleDepartmentChange, isMetaLoading)}
                     </YStack>
-                    <Button size="$3" backgroundColor="$blue10" color="white" onPress={resetFilters}>
-                        Limpiar filtros
+                     <YStack gap="$1">
+                        <Text fontSize="$3" color="$color" opacity={0.7}>Rol</Text>
+                        {renderSelect(filters.roleId, roleOptions, "Todos", handleRoleChange, isMetaLoading)}
+                    </YStack>
+                    <YStack gap="$1">
+                        <Text fontSize="$3" color="$color" opacity={0.7}>Empleado</Text>
+                        {renderSelect(filters.employeeId, employeeSelectOptions, "Todos", handleEmployeeChange, isMetaLoading)}
+                    </YStack>
+                    
+                    <Button size="$3" backgroundColor="$blue10" color="white" onPress={resetFilters} icon={XCircle}>
+                        Restablecer filtros
                     </Button>
                 </YStack>
                 ) : null}
