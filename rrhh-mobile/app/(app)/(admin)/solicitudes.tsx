@@ -33,7 +33,8 @@ import {
   XStack,
   YStack,
   H2,
-  Button
+  Button,
+  Input
 } from "tamagui";
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";

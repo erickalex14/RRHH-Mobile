@@ -13,7 +13,7 @@ import { ListSkeleton } from "@/components/ui/ListSkeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SimpleSelect } from "@/components/ui/SimpleSelect";
 import { adminService } from "@/services/adminService";
-import { Branch, Department, EmployeeState, Role, User } from "@/types/api";
+import { Branch, Department, EmployeeDetail, EmployeeState, Role, User } from "@/types/api";
 import { LinearGradient } from "expo-linear-gradient";
 import { Search, Plus, RefreshCw } from "@tamagui/lucide-icons";
 import {
@@ -95,6 +95,12 @@ export default function AdminUsersScreen(): JSX.Element {
   });
 
   const users = data?.users ?? [];
+    const getEmployeeDetail = (user: User): EmployeeDetail | null => {
+      return (user as any).employeeDetail ?? (user as any).employee_detail ?? null;
+    };
+
+    const normalizedUsers = useMemo(() => users.map((u) => ({ ...u, employeeDetail: getEmployeeDetail(u) })), [users]);
+
   const states = data?.states ?? [];
   const roles = data?.roles ?? [];
   const branches = data?.branches ?? [];
@@ -165,7 +171,7 @@ export default function AdminUsersScreen(): JSX.Element {
 
   const filteredUsers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
-    return users.filter((user) => {
+    return normalizedUsers.filter((user) => {
       const matchesSearch = normalizedSearch.length === 0
         ? true
         : [
@@ -183,7 +189,7 @@ export default function AdminUsersScreen(): JSX.Element {
       const matchesDepartment = departmentFilter === "all" ? true : String(userDepartmentId ?? "") === departmentFilter;
       return matchesSearch && matchesState && matchesRole && matchesBranch && matchesDepartment;
     });
-  }, [branchFilter, departmentFilter, roleFilter, search, stateFilter, users]);
+  }, [branchFilter, departmentFilter, normalizedUsers, roleFilter, search, stateFilter]);
 
   const getStatePresentation = (user: User): { label: string; color: string } => {
     const label = user.employeeState?.name ?? "Sin estado";

@@ -101,6 +101,23 @@ export interface EmployeeDetailPayload {
   birth_date: string;
 }
 
+// Para crear un usuario junto con su detalle requerido por el backend
+export interface CreateUserPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  employee_state_id: number;
+  role_id: number;
+  department_id: number;
+  schedule_id: number;
+  national_id: string;
+  address: string;
+  phone: string;
+  hire_date: string;
+  birth_date: string;
+}
+
 // Para actualizar un usuario
 
 export interface UpdateUserPayload {
@@ -199,13 +216,7 @@ export const adminService = {
 
 
   // Crear un nuevo usuario
-  createUser: async (payload: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-    employee_state_id: number;
-  }): Promise<ApiResponse<User>> => {
+  createUser: async (payload: CreateUserPayload): Promise<ApiResponse<User>> => {
     const { data } = await api.post<ApiResponse<User>>("/admin/users", payload);
     return data;
   },

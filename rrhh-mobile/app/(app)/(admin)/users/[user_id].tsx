@@ -25,6 +25,7 @@ import {
 } from "@/services/adminService";
 import {
   Department,
+  EmployeeDetail,
   EmployeeState,
   Role,
   Schedule,
@@ -131,7 +132,7 @@ export default function AdminEditUserScreen(): JSX.Element {
   });
 
   const user: User | undefined = userResponse?.data;
-  const employeeDetail = user?.employeeDetail;
+  const employeeDetail: EmployeeDetail | null | undefined = (user as any)?.employeeDetail ?? (user as any)?.employee_detail ?? null;
   const employeeDetailId = employeeDetail?.employee_detail_id;
 
   const states = catalogResponse?.states ?? [];

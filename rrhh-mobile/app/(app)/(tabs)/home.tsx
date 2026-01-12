@@ -8,6 +8,7 @@ import { formatDateLabel, formatHour } from "@/utils/datetime";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { useMemo } from "react";
+import { format } from "date-fns";
 import {
   AnimatePresence,
   Paragraph,
@@ -37,18 +38,35 @@ export default function HomeScreen(): JSX.Element {
     queryFn: employeeService.getAttendance
   });
 
-  const currentSession = attendanceQuery.data?.data?.[0];
+  const sortedSessions = useMemo(() => {
+    const sessions = attendanceQuery.data?.data ?? [];
+    return [...sessions].sort((a, b) => {
+      const dA = a.work_date ?? "";
+      const dB = b.work_date ?? "";
+      if (dA !== dB) return dB.localeCompare(dA);
+      return (b.start_time ?? "").localeCompare(a.start_time ?? "");
+    });
+  }, [attendanceQuery.data?.data]);
+
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const activeToday = sortedSessions.find((s) => s.work_date === todayStr && !s.end_time);
+  const currentSession = activeToday ?? sortedSessions[0];
+
+  const activeOpenSession = useMemo(() => sortedSessions.find((s) => !s.end_time), [sortedSessions]);
+  const sessionForActions = activeOpenSession ?? currentSession ?? null;
+
+  const invalidateAttendance = () =>
+    queryClient.invalidateQueries({ queryKey: ["attendance"] });
 
   const stage = useMemo(() => {
-    if (!currentSession) return "idle";
-    if (currentSession?.end_time) return "finished";
-    if (currentSession?.lunch_end) return "resumed";
-    if (currentSession?.lunch_start) return "lunch";
-    if (currentSession?.start_time) return "started";
+    const session = sessionForActions;
+    if (!session) return "idle";
+    if (session.end_time) return "finished";
+    if (session.lunch_end) return "resumed";
+    if (session.lunch_start) return "lunch";
+    if (session.start_time) return "started";
     return "idle";
-  }, [currentSession]);
-
-  const invalidateAttendance = () => queryClient.invalidateQueries({ queryKey: ["attendance"] });
+  }, [sessionForActions]);
 
   const startMutation = useMutation({
     mutationFn: employeeService.startWork,
@@ -69,14 +87,10 @@ export default function HomeScreen(): JSX.Element {
 
   const anyLoading = attendanceQuery.isFetching;
 
-  // Condiciones lógicas (Booleanos simples)
-  const isEntradaDisabled = Boolean(currentSession?.start_time) || startMutation.isPending;
-  const isAlmuerzoDisabled = !currentSession?.start_time || Boolean(currentSession?.lunch_start) || Boolean(currentSession?.end_time) || lunchStartMutation.isPending;
-  const isFinAlmuerzoDisabled = !currentSession?.lunch_start || Boolean(currentSession?.lunch_end) || Boolean(currentSession?.end_time) || lunchEndMutation.isPending;
-  const isSalidaDisabled = !currentSession?.start_time || Boolean(currentSession?.end_time) || endMutation.isPending;
-
-  // ESTA ES LA MAGIA:
-  // Función que decide si ejecutar la acción o no.
+  const isEntradaDisabled = Boolean(sessionForActions?.start_time) || startMutation.isPending;
+  const isAlmuerzoDisabled = !sessionForActions?.start_time || Boolean(sessionForActions?.lunch_start) || Boolean(sessionForActions?.end_time) || lunchStartMutation.isPending;
+  const isFinAlmuerzoDisabled = !sessionForActions?.lunch_start || Boolean(sessionForActions?.lunch_end) || Boolean(sessionForActions?.end_time) || lunchEndMutation.isPending;
+  const isSalidaDisabled = !sessionForActions?.start_time || Boolean(sessionForActions?.end_time) || endMutation.isPending;
   // Si está "bloqueado", simplemente no hace nada (return), pero el botón sigue viéndose azul.
   const handlePress = (action: () => void, isDisabled: boolean) => {
     if (isDisabled) return; 
@@ -129,28 +143,27 @@ export default function HomeScreen(): JSX.Element {
                 {stageLabel[stage]}
               </Text>
               <StatusBadge
-                label={formatDateLabel(currentSession?.work_date ?? new Date().toISOString())}
+                label={formatDateLabel((sessionForActions ?? currentSession)?.work_date ?? new Date().toISOString())}
                 color="#2563eb"
               />
             </XStack>
-
             <XStack justifyContent="space-between" mt="$2">
               <YStack>
                 <Text color="$text" opacity={0.6}>Entrada</Text>
                 <Text color="$text" fontSize="$6">
-                  {formatHour(currentSession?.start_time)}
+                  {formatHour((sessionForActions ?? currentSession)?.start_time)}
                 </Text>
               </YStack>
               <YStack alignItems="center">
                 <Text color="$text" opacity={0.6}>Almuerzo</Text>
                 <Text color="$text" fontSize="$6">
-                  {formatHour(currentSession?.lunch_start)} / {formatHour(currentSession?.lunch_end)}
+                  {formatHour((sessionForActions ?? currentSession)?.lunch_start)} / {formatHour((sessionForActions ?? currentSession)?.lunch_end)}
                 </Text>
               </YStack>
               <YStack alignItems="flex-end">
                 <Text color="$text" opacity={0.6}>Salida</Text>
                 <Text color="$text" fontSize="$6">
-                  {formatHour(currentSession?.end_time)}
+                  {formatHour((sessionForActions ?? currentSession)?.end_time)}
                 </Text>
               </YStack>
             </XStack>
