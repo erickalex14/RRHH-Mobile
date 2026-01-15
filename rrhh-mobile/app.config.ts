@@ -30,7 +30,7 @@ const defineConfig = (): ExpoConfig => ({
     typedRoutes: true
   },
   extra: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api",
+    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.100.107:8000/api",
     eas: {
       projectId: "00000000-0000-0000-0000-000000000000"
     }

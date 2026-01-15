@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Stack, useRouter } from "expo-router";
+import { KeyboardAvoidingView, Platform } from "react-native"; // <--- IMPORTACIÓN NUEVA
 import { Screen } from "@/components/ui/Screen";
 import { AnimatedButton } from "@/components/ui/AnimatedButton";
 import { AnimatedInput } from "@/components/ui/AnimatedInput";
@@ -131,73 +132,79 @@ export default function LoginScreen(): JSX.Element {
   return (
     <Screen>
       <Stack.Screen options={{ headerShown: false }} />
-      <YStack flex={1} justifyContent="center" gap="$6">
-        <Animated.View style={heroStyle}>
-          <Text fontFamily="$heading" fontSize="$7" color="$text">
-            Bienvenido a RRHH
-          </Text>
-          <SizableText size="$5" color="$text" opacity={0.75} mt="$2">
-            Gestiona asistencia, documentos y solicitudes desde un solo lugar.
-          </SizableText>
-          <GlassCard glow={false} px="$4" py="$3" borderRadius="$4" bg="rgba(255,255,255,0.05)">
-            <Text color="$text" fontFamily="$body" fontSize="$3">
-              Sesiones seguras vía Sanctum
+      
+      {/* --- CORRECCIÓN AQUÍ: KeyboardAvoidingView --- */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <YStack flex={1} justifyContent="center" gap="$6">
+          <Animated.View style={heroStyle}>
+            <Text fontFamily="$heading" fontSize="$7" color="$text">
+              Bienvenido a RRHH
             </Text>
-          </GlassCard>
-        </Animated.View>
+            <SizableText size="$5" color="$text" opacity={0.75} mt="$2">
+              Gestiona asistencia, documentos y solicitudes desde un solo lugar.
+            </SizableText>
+            <GlassCard glow={false} px="$4" py="$3" borderRadius="$4" bg="rgba(255,255,255,0.05)">
+              <Text color="$text" fontFamily="$body" fontSize="$3">
+                Sesiones seguras vía Sanctum
+              </Text>
+            </GlassCard>
+          </Animated.View>
 
-        <AnimatePresence>
-          {cardVisible && (
-            <AnimatedCard key="login-card" enterStyle={{ opacity: 0, y: 24 }} exitStyle={{ opacity: 0, y: -12 }} style={cardStyle}>
-              <GlassCard gap="$4" borderRadius="$5" px="$5" py="$5">
-                <Text fontFamily="$heading" fontSize="$6" color="$text">
-                  Inicia sesión
-                </Text>
-                <Paragraph size="$3" color={activeError ? "$danger" : "$text"}>
-                  {helperText}
-                </Paragraph>
-                <YStack gap="$3">
-                  <AnimatedInput
-                    label="Correo"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    placeholder="correo@empresa.com"
-                    value={email}
-                    onChangeText={handleInputChange(setEmail)}
-                    status={activeError ? "error" : undefined}
-                  />
-                  <AnimatedInput
-                    label="Contraseña"
-                    secureTextEntry
-                    placeholder="••••••••"
-                    value={password}
-                    onChangeText={handleInputChange(setPassword)}
-                    status={activeError ? "error" : undefined}
-                  />
-                </YStack>
-                <AnimatedButton
-                  mt="$1"
-                  disabled={isLoading}
-                  onPress={handleLogin}
-                  opacity={isLoading ? 0.85 : 1}
-                >
-                  {isLoading ? (
-                    <XStack gap="$2" alignItems="center" justifyContent="center">
-                      <Spinner color="$text" size="small" />
-                      <Text color="$text" fontWeight="600">
-                        Validando...
-                      </Text>
-                    </XStack>
-                  ) : (
-                    "Continuar"
-                  )}
-                </AnimatedButton>
-              </GlassCard>
-            </AnimatedCard>
-          )}
-        </AnimatePresence>
-      </YStack>
+          <AnimatePresence>
+            {cardVisible && (
+              <AnimatedCard key="login-card" enterStyle={{ opacity: 0, y: 24 }} exitStyle={{ opacity: 0, y: -12 }} style={cardStyle}>
+                <GlassCard gap="$4" borderRadius="$5" px="$5" py="$5">
+                  <Text fontFamily="$heading" fontSize="$6" color="$text">
+                    Inicia sesión
+                  </Text>
+                  <Paragraph size="$3" color={activeError ? "$danger" : "$text"}>
+                    {helperText}
+                  </Paragraph>
+                  <YStack gap="$3">
+                    <AnimatedInput
+                      label="Correo"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      placeholder="correo@empresa.com"
+                      value={email}
+                      onChangeText={handleInputChange(setEmail)}
+                      status={activeError ? "error" : undefined}
+                    />
+                    <AnimatedInput
+                      label="Contraseña"
+                      secureTextEntry
+                      placeholder="••••••••"
+                      value={password}
+                      onChangeText={handleInputChange(setPassword)}
+                      status={activeError ? "error" : undefined}
+                    />
+                  </YStack>
+                  <AnimatedButton
+                    mt="$1"
+                    disabled={isLoading}
+                    onPress={handleLogin}
+                    opacity={isLoading ? 0.85 : 1}
+                  >
+                    {isLoading ? (
+                      <XStack gap="$2" alignItems="center" justifyContent="center">
+                        <Spinner color="$text" size="small" />
+                        <Text color="$text" fontWeight="600">
+                          Validando...
+                        </Text>
+                      </XStack>
+                    ) : (
+                      "Continuar"
+                    )}
+                  </AnimatedButton>
+                </GlassCard>
+              </AnimatedCard>
+            )}
+          </AnimatePresence>
+        </YStack>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
-
