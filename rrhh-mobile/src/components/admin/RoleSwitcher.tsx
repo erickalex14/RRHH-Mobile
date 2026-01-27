@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import Animated, { FadeInDown, useReducedMotion } from "react-native-reanimated";
 import { Text, XStack, YStack, Button, useTheme } from "tamagui"; 
 import { useAuthStore } from "@/store/auth";
-import { RefreshCw, Shield, Briefcase, ArrowRight } from "@tamagui/lucide-icons";
+import { RefreshCw, ArrowRight } from "@tamagui/lucide-icons";
 import { isUserAdmin } from "@/utils/auth";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -13,7 +13,7 @@ interface RoleSwitcherProps {
 
 export const RoleSwitcher = ({ target }: RoleSwitcherProps): JSX.Element | null => {
   const router = useRouter();
-  const theme = useTheme();
+  // const theme = useTheme(); // No se estaba usando, se puede comentar o quitar
   const user = useAuthStore((state) => state.user);
   const isAdmin = isUserAdmin(user);
   const shouldReduceMotion = useReducedMotion();
@@ -99,8 +99,9 @@ export const RoleSwitcher = ({ target }: RoleSwitcherProps): JSX.Element | null 
             icon={<ArrowRight size={14} color="white" />}
             onPress={() => router.replace(copy.href as never)}
             chromeless
-            scale={0.9}
-            pressStyle={{ scale: 0.8 }}
+            // Corrección aplicada aquí para evitar el freeze del objeto style
+            style={{ transform: [{ scale: 0.9 }] }}
+            pressStyle={{ transform: [{ scale: 0.8 }] }}
         />
       </XStack>
     </Animated.View>
