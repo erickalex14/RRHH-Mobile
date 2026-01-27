@@ -296,13 +296,16 @@ export default function AdminUsersScreen(): JSX.Element {
       return <AnimatedNotice variant="info" message="No hay usuarios con los filtros aplicados." />;
     }
     return (
-      <YStack gap="$3">
+      <YStack gap="$4">
         {filteredUsers.map((item, index) => {
            const statePresentation = getStatePresentation(item);
            return (
               <Animated.View key={item.user_id} entering={FadeInDown.delay(index * 50).springify()}>
                 <GlassCard 
-                  p="$0" 
+                  p="$5" 
+                  borderRadius="$8"
+                  backgroundColor="rgba(30,30,40,0.65)"
+                  style={{ backdropFilter: 'blur(10px)' }}
                   overflow="hidden"
                   pressStyle={{ scale: 0.98, opacity: 0.9 }}
                   onPress={() => {
@@ -311,31 +314,31 @@ export default function AdminUsersScreen(): JSX.Element {
                     }
                   }}
                 >
-                  <YStack p="$4" gap="$2">
+                  <YStack gap="$2">
                     <XStack justifyContent="space-between" alignItems="center">
                       <YStack>
-                          <Text fontWeight="700" fontSize="$5" color="white">
+                          <Text fontFamily="$heading" fontWeight="800" fontSize={20} color="white">
                             {[item.first_name, item.last_name].filter(Boolean).join(" ") || "Sin nombre"}
                           </Text>
-                          <Text fontSize="$3" color="$gray10">{item.email}</Text>
+                          <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$gray10">{item.email}</Text>
                       </YStack>
                       <StatusBadge label={statePresentation.label} color={statePresentation.color} />
                     </XStack>
                     
-                    <Separator borderColor="rgba(255,255,255,0.1)" my="$2" />
+                    <Separator borderColor="rgba(255,255,255,0.1)" my="$3" />
                     
                     <XStack gap="$4" flexWrap="wrap">
                         <YStack gap="$1">
-                            <Text fontSize="$2" color="$gray11">ROL</Text>
-                            <Text fontSize="$3" color="white">{item.employeeDetail?.role?.name ?? "N/A"}</Text>
+                            <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$gray11">ROL</Text>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="white">{item.employeeDetail?.role?.name ?? "N/A"}</Text>
                         </YStack>
                         <YStack gap="$1">
-                            <Text fontSize="$2" color="$gray11">DEPARTAMENTO</Text>
-                            <Text fontSize="$3" color="white">{item.employeeDetail?.department?.name ?? "N/A"}</Text>
+                            <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$gray11">DEPARTAMENTO</Text>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="white">{item.employeeDetail?.department?.name ?? "N/A"}</Text>
                         </YStack>
                         <YStack gap="$1">
-                            <Text fontSize="$2" color="$gray11">SUCURSAL</Text>
-                            <Text fontSize="$3" color="white">{item.employeeDetail?.department?.branch?.name ?? "N/A"}</Text>
+                            <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$gray11">SUCURSAL</Text>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="white">{item.employeeDetail?.department?.branch?.name ?? "N/A"}</Text>
                         </YStack>
                     </XStack>
                   </YStack>
@@ -366,27 +369,36 @@ export default function AdminUsersScreen(): JSX.Element {
            {/* Header */}
           <XStack justifyContent="space-between" alignItems="center" mb="$2">
              <YStack>
-                <H2 fontWeight="800" fontSize={28} color="white">Usuarios</H2>
-                <Paragraph color="$gray10">Gestión de colaboradores</Paragraph>
+                <H2 fontFamily="$heading" fontWeight="800" fontSize={28} color="white">Usuarios</H2>
+                <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={16}>Gestión de colaboradores</Paragraph>
              </YStack>
              
              {!isReadonlyContext && (
-                <XStack gap="$2">
-                     <Button 
-                        size="$3" 
-                        circular 
-                        icon={<RefreshCw color="white" />} 
-                        backgroundColor="rgba(255,255,255,0.1)" 
-                        onPress={() => refetch()} 
-                     />
-                     <Button 
-                        size="$3" 
-                        circular 
-                        icon={Plus} 
-                        backgroundColor="$blue10" 
-                        color="white"
-                        onPress={() => router.push("/(app)/(admin)/users/create")}
-                     />
+                <XStack gap="$4" mt="$2">
+                  <AnimatedButton
+                    fontFamily="$heading"
+                    fontWeight="700"
+                    fontSize={18}
+                    borderRadius={24}
+                    paddingVertical={14}
+                    paddingHorizontal={24}
+                    backgroundColor="rgba(255,255,255,0.15)"
+                    color="$text"
+                    icon={<RefreshCw color="$blue10" />}
+                    onPress={() => refetch()}
+                  />
+                  <AnimatedButton
+                    fontFamily="$heading"
+                    fontWeight="700"
+                    fontSize={18}
+                    borderRadius={24}
+                    paddingVertical={14}
+                    paddingHorizontal={24}
+                    backgroundColor="linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)"
+                    color="white"
+                    icon={<Plus color="white" />}
+                    onPress={() => router.push("/(app)/(admin)/users/create")}
+                  />
                 </XStack>
              )}
           </XStack>

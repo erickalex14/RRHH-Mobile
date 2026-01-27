@@ -437,72 +437,98 @@ export default function AdminSchedulesScreen(): JSX.Element {
             )}
           </AnimatePresence>
 
-          <GlassCard p="$5" space="$4">
+
+          <GlassCard p="$6" space="$5" borderRadius="$6" shadowColor="rgba(0,0,0,0.4)" shadowOffset="0px 4px" shadowRadius={16}>
             <AnimatedInput
-              label="Nombre del Horario"
+              label={<Text fontFamily="HeadingFont" fontSize="$5" color="white">Nombre del Horario</Text>}
               value={form.name}
               onChangeText={(text) => setForm((prev) => ({ ...prev, name: text }))}
               placeholder="Ej. Jornada Completa"
+              inputStyle={{ fontFamily: 'HeadingFont', fontSize: 18, color: 'white' }}
             />
 
-             {/* Time Fields Grid */}
-            <YStack space="$4">
-              <XStack space="$2" alignItems="center" mb="$1">
-                <Clock size={16} color="#60a5fa" />
-                <Text color="$blue9" fontWeight="600">Configuración de Tiempos</Text>
+            {/* Time Fields Grid */}
+            <YStack space="$5">
+              <XStack space="$3" alignItems="center" mb="$2">
+                <Clock size={20} color="#60a5fa" />
+                <Text fontFamily="HeadingFont" color="$blue9" fontSize="$4" fontWeight="700">Configuración de Tiempos</Text>
               </XStack>
-              
-              <XStack flexWrap="wrap" gap="$3">
+
+              <XStack flexWrap="wrap" gap="$4">
                 {timeFields.map((field) => (
-                  <YStack key={field} width="48%" space="$1">
-                    <Text color="$gray9" fontSize="$3" mb="$1">
-                      {timeFieldCopy[field].label}
-                    </Text>
-                    <Button
-                      onPress={() => handleTimePicker(field)}
-                      backgroundColor="rgba(0,0,0,0.3)"
-                      borderColor="$gray7"
-                      borderWidth={1}
-                      height={50}
-                      justifyContent="flex-start"
-                      icon={<Clock size={16} color="#94a3b8" />}
-                    >
-                      <Text color="white" fontSize="$3.5">
-                        {form[field] ? normalizeIncomingTime(form[field]) : "--:--"}
+                  <GlassCard
+                    key={field}
+                    width="48%"
+                    p="$5"
+                    borderRadius="$8"
+                    backgroundColor="rgba(40,50,80,0.55)"
+                    style={{ backdropFilter: 'blur(12px)', borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.08)' }}
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <YStack alignItems="center" justifyContent="center" space="$3" height={120}>
+                      <Text fontFamily="HeadingFont" color="#e0e7ef" fontSize={15} textAlign="center" style={{ lineHeight: 20, paddingHorizontal: 4, fontWeight: '600' }}>
+                        {timeFieldCopy[field].label}
                       </Text>
-                    </Button>
-                  </YStack>
+                      <AnimatedButton
+                        onPress={() => handleTimePicker(field)}
+                        backgroundColor="rgba(59,130,246,0.18)"
+                        borderColor="rgba(255,255,255,0.12)"
+                        borderWidth={1}
+                        height={36}
+                        minWidth={80}
+                        maxWidth={110}
+                        justifyContent="center"
+                        alignItems="center"
+                        icon={<Clock size={16} color="#e0e7ef" />}
+                        borderRadius="$6"
+                        px="$2"
+                        style={{ marginTop: 6 }}
+                      >
+                        <Text fontFamily="HeadingFont" color="#e0e7ef" fontSize={15} textAlign="center" style={{ lineHeight: 20 }}>
+                          {form[field] ? normalizeIncomingTime(form[field]) : "--:--"}
+                        </Text>
+                      </AnimatedButton>
+                    </YStack>
+                  </GlassCard>
                 ))}
               </XStack>
-              
+
               {renderTimePicker()}
             </YStack>
 
-            <Separator borderColor="$gray8" my="$2" />
+            <Separator borderColor="$gray8" my="$3" />
 
-             <XStack space="$4" alignItems="center" justifyContent="space-between" py="$2">
-              <XStack space="$2" alignItems="center">
-                <Sun size={20} color="#94a3b8" />
+            <XStack space="$5" alignItems="center" justifyContent="space-between" py="$3">
+              <XStack space="$3" alignItems="center">
+                <Sun size={24} color="#94a3b8" />
                 <YStack>
-                  <Text color="white" fontSize="$4" fontWeight="600">Estado Activo</Text>
-                  <Text color="$gray10" fontSize="$2.5">Habilitar este horario</Text>
+                  <Text fontFamily="HeadingFont" color="white" fontSize="$4.5" fontWeight="700">Estado Activo</Text>
+                  <Text color="$gray10" fontSize="$3">Habilitar este horario</Text>
                 </YStack>
               </XStack>
-              <Switch
-                size="$3"
-                checked={form.active}
-                onCheckedChange={(checked) => setForm((prev) => ({ ...prev, active: Boolean(checked) }))}
-              >
-                <Switch.Thumb animation="quick" backgroundColor="white" />
-              </Switch>
+              <GlassCard p={0} backgroundColor="rgba(255,255,255,0.08)" borderRadius="$4">
+                <Switch
+                  size="$4"
+                  checked={form.active}
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, active: Boolean(checked) }))}
+                  bg="transparent"
+                >
+                  <Switch.Thumb animation="quick" backgroundColor="white" />
+                </Switch>
+              </GlassCard>
             </XStack>
 
-            <XStack space="$3" mt="$4">
+            <XStack space="$4" mt="$5">
               {editingSchedule && (
                 <AnimatedButton
                   flex={1}
                   onPress={handleCancelEdit}
                   backgroundColor="rgba(239, 68, 68, 0.2)"
+                  borderRadius="$4"
+                  fontFamily="HeadingFont"
+                  fontSize={18}
+                  py="$3"
                 >
                   Cancelar
                 </AnimatedButton>
@@ -511,6 +537,11 @@ export default function AdminSchedulesScreen(): JSX.Element {
                 flex={2}
                 onPress={handleSubmit}
                 disabled={isMutating || !formIsValid}
+                backgroundColor="rgba(59,130,246,0.2)"
+                borderRadius="$4"
+                fontFamily="HeadingFont"
+                fontSize={18}
+                py="$3"
               >
                 {isMutating ? "Guardando..." : editingSchedule ? "Actualizar" : "Crear"}
               </AnimatedButton>
@@ -530,21 +561,21 @@ export default function AdminSchedulesScreen(): JSX.Element {
             </XStack>
 
             {isLoading || isFetching ? (
-              <YStack space="$3">
+              <YStack space="$4">
                 {[1, 2, 3].map((i) => (
                   <ListSkeleton key={i} />
                 ))}
               </YStack>
             ) : isError ? (
-               <GlassCard p="$4" borderColor="$red8">
-                  <Text color="$red10">Error al cargar horarios</Text>
+               <GlassCard p="$5" borderColor="$red8" borderRadius="$5">
+                  <Text fontFamily="HeadingFont" color="$red10" fontSize="$4">Error al cargar horarios</Text>
                </GlassCard>
             ) : schedules.length === 0 ? (
-               <GlassCard p="$4">
-                  <Text color="white">Aún no registras horarios.</Text>
+               <GlassCard p="$5" borderRadius="$5">
+                  <Text fontFamily="HeadingFont" color="white" fontSize="$4">Aún no registras horarios.</Text>
                </GlassCard>
             ) : (
-              <YStack space="$3">
+              <YStack space="$4">
                 {schedules.map((schedule, index) => (
                   <GlassCard
                     key={schedule.schedule_id}
@@ -552,64 +583,75 @@ export default function AdminSchedulesScreen(): JSX.Element {
                     enterStyle={{ opacity: 0, translateY: 20 }}
                     p="$0"
                     overflow="hidden"
+                    borderRadius="$6"
+                    backgroundColor="rgba(30,41,59,0.7)"
+                    shadowColor="rgba(0,0,0,0.4)"
+                    shadowOffset="0px 4px"
+                    shadowRadius={16}
                   >
-                    <YStack p="$4" space="$3">
+                    <YStack p="$5" space="$4">
                       <XStack justifyContent="space-between" alignItems="center">
-                        <XStack space="$3" alignItems="center">
+                        <XStack space="$4" alignItems="center">
                           <LinearGradient
                             colors={['#3b82f6', '#2563eb']}
-                            style={{ padding: 8, borderRadius: 10 }}
+                            style={{ padding: 10, borderRadius: 14 }}
                           >
-                            <Clock size={20} color="white" />
+                            <Clock size={22} color="white" />
                           </LinearGradient>
                           <YStack>
-                            <Text color="white" fontSize="$4" fontWeight="Bold">
+                            <Text fontFamily="HeadingFont" color="white" fontSize="$5" fontWeight="700" style={{ textDecorationLine: 'underline', textUnderlineOffset: 4 }}>
                               {schedule.name}
                             </Text>
                             <StatusBadge status={schedule.active ? "active" : "inactive"} />
                           </YStack>
                         </XStack>
-                        
-                        <XStack space="$2">
-                          <Button
-                            size="$3"
+
+                        <XStack space="$3">
+                          <AnimatedButton
+                            size="$4"
                             circular
-                            backgroundColor="rgba(255,255,255,0.1)"
+                            backgroundColor="rgba(255,255,255,0.12)"
                             onPress={() => handleSelectSchedule(schedule)}
-                            icon={<Edit3 size={16} color="white" />}
+                            icon={<Edit3 size={18} color="white" />}
+                            borderRadius="$4"
                           />
-                          <Button
-                            size="$3"
+                          <AnimatedButton
+                            size="$4"
                             circular
-                            backgroundColor="rgba(239, 68, 68, 0.2)"
+                            backgroundColor="rgba(239, 68, 68, 0.18)"
                             onPress={() => handleDeleteSchedule(schedule)}
-                            icon={<Trash2 size={16} color="$red9" />}
+                            icon={<Trash2 size={18} color="$red9" />}
+                            borderRadius="$4"
                           />
                         </XStack>
                       </XStack>
 
-                      <Separator borderColor="rgba(255,255,255,0.1)" />
+                      <Separator borderColor="rgba(255,255,255,0.12)" />
 
-                      <XStack justifyContent="space-between" flexWrap="wrap" gap="$2">
-                        <YStack width="48%" bg="rgba(0,0,0,0.2)" p="$2" borderRadius="$3">
-                          <Text color="$gray10" fontSize="$2" mb="$1">Jornada</Text>
-                          <XStack alignItems="center" space="$2">
-                            <Sun size={12} color="#fbbf24" />
-                            <Text color="white" fontSize="$3">
-                              {normalizeIncomingTime(schedule.start_time)} - {normalizeIncomingTime(schedule.end_time)}
-                            </Text>
-                          </XStack>
-                        </YStack>
-                        
-                        <YStack width="48%" bg="rgba(0,0,0,0.2)" p="$2" borderRadius="$3">
-                          <Text color="$gray10" fontSize="$2" mb="$1">Almuerzo</Text>
-                          <XStack alignItems="center" space="$2">
-                            <Utensils size={12} color="#f87171" />
-                            <Text color="white" fontSize="$3">
-                              {normalizeIncomingTime(schedule.lunch_start)} - {normalizeIncomingTime(schedule.lunch_end)}
-                            </Text>
-                          </XStack>
-                        </YStack>
+                      <XStack justifyContent="space-between" flexWrap="wrap" gap="$3">
+                        <GlassCard width="48%" p="$4" borderRadius="$4" backgroundColor="rgba(59,130,246,0.12)" justifyContent="center" alignItems="center">
+                          <YStack alignItems="center" justifyContent="center" space="$2" height={90}>
+                            <Text fontFamily="HeadingFont" color="white" fontSize={16} textAlign="center" style={{ lineHeight: 20, paddingHorizontal: 2 }}>Jornada</Text>
+                            <XStack alignItems="center" space="$3">
+                              <Sun size={14} color="#fbbf24" />
+                              <Text fontFamily="HeadingFont" color="white" fontSize={17} textAlign="center" style={{ lineHeight: 22 }}>
+                                {normalizeIncomingTime(schedule.start_time)} - {normalizeIncomingTime(schedule.end_time)}
+                              </Text>
+                            </XStack>
+                          </YStack>
+                        </GlassCard>
+
+                        <GlassCard width="48%" p="$4" borderRadius="$4" backgroundColor="rgba(239,68,68,0.10)" justifyContent="center" alignItems="center">
+                          <YStack alignItems="center" justifyContent="center" space="$2" height={90}>
+                            <Text fontFamily="HeadingFont" color="white" fontSize={16} textAlign="center" style={{ lineHeight: 20, paddingHorizontal: 2 }}>Almuerzo</Text>
+                            <XStack alignItems="center" space="$3">
+                              <Utensils size={14} color="#f87171" />
+                              <Text fontFamily="HeadingFont" color="white" fontSize={17} textAlign="center" style={{ lineHeight: 22 }}>
+                                {normalizeIncomingTime(schedule.lunch_start)} - {normalizeIncomingTime(schedule.lunch_end)}
+                              </Text>
+                            </XStack>
+                          </YStack>
+                        </GlassCard>
                       </XStack>
                     </YStack>
                   </GlassCard>

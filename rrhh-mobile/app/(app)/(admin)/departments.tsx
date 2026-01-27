@@ -194,12 +194,16 @@ export default function AdminDepartmentsScreen(): JSX.Element {
           </YStack>
 
 
-          {/* Form Block */}
-          <GlassCard gap="$3" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$color">
-               {editingDepartment ? `Editar ${editingDepartment.name}` : "Nuevo departamento"}
-            </Text>
-            <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
+          {/* Form Block - Glass Dark Mode Refactor */}
+          <GlassCard gap="$4" p="$6" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(12px)' }}>
+            <YStack gap="$2">
+              <Text fontFamily="$heading" fontSize={22} color="$color" fontWeight="800">
+                {editingDepartment ? `Editar ${editingDepartment.name}` : "Nuevo departamento"}
+              </Text>
+              <Paragraph fontFamily="$heading" color="$color" opacity={0.7} fontSize={16}>
+                {helperText}
+              </Paragraph>
+            </YStack>
 
             {isBranchesError ? (
               <AnimatedNotice
@@ -217,9 +221,9 @@ export default function AdminDepartmentsScreen(): JSX.Element {
                 onAction={() => router.push("/(app)/(admin)/branches")}
               />
             ) : (
-              <YStack gap="$3" mt="$2">
+              <YStack gap="$4" mt="$2">
                 <YStack gap="$2">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" color="$color" fontSize={16}>
                     Sucursal asignada
                   </Text>
                   <HybridSelect
@@ -236,15 +240,21 @@ export default function AdminDepartmentsScreen(): JSX.Element {
                   placeholder="Ej. Recursos Humanos"
                   value={form.name}
                   onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
+                  fontFamily="$heading"
+                  fontSize={16}
                 />
               </YStack>
             )}
 
-            <XStack gap="$3" mt="$3">
+            <XStack gap="$4" mt="$4">
               {editingDepartment ? (
                 <AnimatedButton
                   flex={1}
-                  backgroundColor="rgba(239, 68, 68, 0.2)"
+                  backgroundColor="rgba(239, 68, 68, 0.25)"
+                  borderRadius={24}
+                  fontFamily="$heading"
+                  fontSize={18}
+                  paddingVertical={14}
                   disabled={isMutating}
                   onPress={resetForm}
                 >
@@ -253,6 +263,11 @@ export default function AdminDepartmentsScreen(): JSX.Element {
               ) : null}
               <AnimatedButton
                 flex={1}
+                backgroundColor="linear-gradient(90deg, #2563eb 0%, #1e293b 100%)"
+                borderRadius={24}
+                fontFamily="$heading"
+                fontSize={18}
+                paddingVertical={14}
                 disabled={!formIsValid || isMutating}
                 onPress={handleSubmit}
               >
@@ -261,8 +276,8 @@ export default function AdminDepartmentsScreen(): JSX.Element {
             </XStack>
           </GlassCard>
 
-          <YStack gap="$3">
-            <H2 fontSize={20} color="$color" mt="$4">Departamentos registrados</H2>
+          <YStack gap="$4">
+            <H2 fontFamily="$heading" fontSize={22} color="$color" mt="$6" fontWeight="800">Departamentos registrados</H2>
             {isDepartmentsLoading || isDepartmentsFetching ? (
               <ListSkeleton items={4} height={120} />
             ) : isDepartmentsError ? (
@@ -276,22 +291,22 @@ export default function AdminDepartmentsScreen(): JSX.Element {
             ) : departments.length === 0 ? (
               <AnimatedNotice variant="info" message="Aún no registras departamentos." />
             ) : (
-                <YStack gap="$3">
+                <YStack gap="$4">
                   {departments.map((item, index) => (
                     <Animated.View key={item.department_id} entering={FadeInDown.delay(index * 85).springify()}>
-                        <GlassCard p="$4" gap="$2">
+                        <GlassCard p="$5" gap="$3" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
                             <XStack justifyContent="space-between" alignItems="center">
-                                <XStack gap="$3" alignItems="center">
+                                <XStack gap="$4" alignItems="center">
                                     <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
                                         <Layers size={24} color="$blue10" />
                                     </GlassCard>
                                     <YStack>
-                                        <Text fontWeight="700" fontSize="$5" color="$color">
+                                        <Text fontFamily="$heading" fontWeight="800" fontSize={18} color="$color">
                                             {item.name}
                                         </Text>
-                                        <XStack gap="$1" alignItems="center">
-                                            <MapPin size={12} color="$color" opacity={0.6} />
-                                            <Text color="$color" opacity={0.6} fontSize="$3">
+                                        <XStack gap="$2" alignItems="center">
+                                            <MapPin size={14} color="$color" opacity={0.6} />
+                                            <Text fontFamily="$heading" color="$color" opacity={0.6} fontSize={14}>
                                                  {item.branch?.name ?? "Sin sucursal"}
                                             </Text>
                                         </XStack>
@@ -299,27 +314,40 @@ export default function AdminDepartmentsScreen(): JSX.Element {
                                 </XStack>
                             </XStack>
 
-                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+                            <Separator borderColor="$borderColor" opacity={0.5} my="$3" />
                             
-                            <XStack gap="$3" mt="$1">
-                                <Button 
-                                    flex={1} 
-                                    size="$3" 
-                                    chromeless 
-                                    borderWidth={1} 
-                                    borderColor="$borderColor" 
+                            <XStack gap="$4" mt="$2">
+                                <AnimatedButton
+                                    flex={1}
+                                    backgroundColor="linear-gradient(90deg, #2563eb 0%, #1e293b 100%)"
+                                    borderRadius={24}
+                                    fontFamily="$heading"
+                                    fontSize={16}
                                     icon={Users}
+                                    paddingVertical={12}
                                     onPress={() => handleNavigateToDepartmentUsers(item)}
                                 >
                                     Usuarios
-                                </Button>
-                                <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => handleSelectDepartment(item)} />
-                                <Button
+                                </AnimatedButton>
+                                <AnimatedButton
                                     flex={1}
-                                    size="$3"
-                                    backgroundColor="$red10"
+                                    backgroundColor="rgba(30,30,40,0.25)"
+                                    borderRadius={24}
+                                    fontFamily="$heading"
+                                    fontSize={16}
+                                    icon={Edit3}
+                                    paddingVertical={12}
+                                    onPress={() => handleSelectDepartment(item)}
+                                />
+                                <AnimatedButton
+                                    flex={1}
+                                    backgroundColor="linear-gradient(90deg, #ef4444 0%, #7f1d1d 100%)"
                                     color="white"
+                                    borderRadius={24}
+                                    fontFamily="$heading"
+                                    fontSize={16}
                                     icon={Trash2}
+                                    paddingVertical={12}
                                     disabled={deleteMutation.isPending}
                                     onPress={() => handleDeleteDepartment(item.department_id)}
                                 />

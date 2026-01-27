@@ -497,95 +497,100 @@ export default function AdminSolicitudesScreen(): JSX.Element {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <YStack gap="$4" pt="$safe" px="$0">
           
-          {/* Header */}
-          <XStack justifyContent="space-between" alignItems="center" mb="$2">
+           {/* Header */}
+           <XStack justifyContent="space-between" alignItems="center" mb="$2">
              <YStack>
-                <H2 fontWeight="800" fontSize={26} color="$color">Solicitudes</H2>
-                <Paragraph color="$color" opacity={0.6}>Gestión de salidas anticipadas</Paragraph>
+               <H2 fontFamily="$heading" fontWeight="800" fontSize={28} color="$color">Solicitudes</H2>
+               <Paragraph fontFamily="$heading" fontWeight="500" color="$color" opacity={0.7} fontSize={16}>Gestión de salidas anticipadas</Paragraph>
              </YStack>
-             <Button 
-                size="$3" 
-                circular 
-                icon={RefreshCw} 
-                chromeless 
-                onPress={() => queryClient.invalidateQueries({ queryKey: ["admin", "requests", "listing"] })} 
+             <AnimatedButton
+               fontFamily="$heading"
+               fontWeight="700"
+               fontSize={18}
+               borderRadius={24}
+               paddingVertical={14}
+               paddingHorizontal={24}
+               backgroundColor="rgba(30,30,40,0.65)"
+               color="$color"
+               icon={RefreshCw}
+               onPress={() => queryClient.invalidateQueries({ queryKey: ["admin", "requests", "listing"] })}
              />
-          </XStack>
+           </XStack>
 
           {/* Stats Cards */}
-           <XStack gap="$3" flexWrap="wrap">
-              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
-                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">TOTAL</Text>
-                <Text fontWeight="800" fontSize="$6" color="$blue10">
+           <XStack gap="$4" flexWrap="wrap">
+              <GlassCard flex={1} minWidth={110} p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.7} mb="$1">TOTAL</Text>
+                <Text fontFamily="$heading" fontWeight="800" fontSize={26} color="$blue10">
                   {requestsInsights.total}
                 </Text>
               </GlassCard>
-              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
-                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">PENDIENTES</Text>
-                <Text fontWeight="800" fontSize="$6" color="$orange10">
+              <GlassCard flex={1} minWidth={110} p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.7} mb="$1">PENDIENTES</Text>
+                <Text fontFamily="$heading" fontWeight="800" fontSize={26} color="$orange10">
                   {requestsInsights.pending}
                 </Text>
               </GlassCard>
-              <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
-                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">24H</Text>
-                <Text fontWeight="800" fontSize="$6" color="$red10">
+              <GlassCard flex={1} minWidth={110} p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.7} mb="$1">24H</Text>
+                <Text fontFamily="$heading" fontWeight="800" fontSize={26} color="$red10">
                   {requestsInsights.urgent}
                 </Text>
               </GlassCard>
             </XStack>
 
           {/* Filters Block */}
-          <GlassCard gap="$3" p="$4" borderRadius="$6">
+          <GlassCard gap="$4" p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
             <XStack justifyContent="space-between" alignItems="center" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
               <XStack gap="$2" alignItems="center">
-                 <Filter size={18} color="$color" />
-                 <Text fontWeight="700" fontSize="$4" color="$text">
+                 <Filter size={20} color="$color" />
+                 <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$text">
                     Filtros
                  </Text>
               </XStack>
-              <Text color="$blue10" fontSize="$3">{isFilterBarOpen ? "Ocultar" : "Mostrar"}</Text>
+              <Text fontFamily="$heading" fontWeight="700" color="$blue10" fontSize={16}>{isFilterBarOpen ? "Ocultar" : "Mostrar"}</Text>
             </XStack>
             
             {isFilterBarOpen ? (
-              <YStack gap="$3" pt="$3">
-                <YStack gap="$1">
-                  <Text fontSize="$3" color="$color" opacity={0.7}>
+              <YStack gap="$4" pt="$4">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$color" opacity={0.8}>
                     Sucursal
                   </Text>
                   {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
                 </YStack>
-                <YStack gap="$1">
-                  <Text fontSize="$3" color="$color" opacity={0.7}>
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$color" opacity={0.8}>
                     Rol
                   </Text>
                   {renderSelect(filters.roleId, roleOptions, "Todos", handleRoleChange, isMetaLoading)}
                 </YStack>
-                <YStack gap="$1">
-                  <Text fontSize="$3" color="$color" opacity={0.7}>
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$color" opacity={0.8}>
                     Estado
                   </Text>
                   {renderSelect(filters.status, STATUS_OPTIONS, "Todos", (value) => handleStatusChange(value as StatusFilter))}
                 </YStack>
-                <YStack gap="$1">
-                  <Text fontSize="$3" color="$color" opacity={0.7}>
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$color" opacity={0.8}>
                     Rango de fechas
                   </Text>
-                  <XStack gap="$2">
-                    <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Calendar} onPress={() => openDatePicker("dateFrom")}>
+                  <XStack gap="$3">
+                    <AnimatedButton flex={1} fontFamily="$heading" fontWeight="700" fontSize={16} borderRadius={24} paddingVertical={12} backgroundColor="rgba(255,255,255,0.08)" color="$color" icon={Calendar} onPress={() => openDatePicker("dateFrom")}> 
                       {formatDateFilterLabel(filters.dateFrom, "Desde")}
-                    </Button>
-                    <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Calendar} onPress={() => openDatePicker("dateTo")}>
+                    </AnimatedButton>
+                    <AnimatedButton flex={1} fontFamily="$heading" fontWeight="700" fontSize={16} borderRadius={24} paddingVertical={12} backgroundColor="rgba(255,255,255,0.08)" color="$color" icon={Calendar} onPress={() => openDatePicker("dateTo")}> 
                       {formatDateFilterLabel(filters.dateTo, "Hasta")}
-                    </Button>
+                    </AnimatedButton>
                   </XStack>
                   {renderIOSPicker()}
-                  <Button size="$2" chromeless onPress={() => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" }))}>
+                  <AnimatedButton fontFamily="$heading" fontWeight="700" fontSize={16} borderRadius={24} paddingVertical={12} backgroundColor="rgba(255,255,255,0.08)" color="$color" onPress={() => setFilters((prev) => ({ ...prev, dateFrom: "", dateTo: "" }))}>
                     Quitar rango
-                  </Button>
+                  </AnimatedButton>
                 </YStack>
-                <Button size="$3" backgroundColor="$blue10" color="white" onPress={resetFilters}>
+                <AnimatedButton fontFamily="$heading" fontWeight="700" fontSize={18} borderRadius={24} paddingVertical={14} backgroundColor="$blue10" color="white" onPress={resetFilters}>
                   Limpiar filtros
-                </Button>
+                </AnimatedButton>
               </YStack>
             ) : null}
           </GlassCard>
@@ -636,7 +641,7 @@ export default function AdminSolicitudesScreen(): JSX.Element {
               onAction={resetFilters}
             />
           ) : (
-            <YStack gap="$3">
+            <YStack gap="$4">
               {filteredRequests.map((item, index) => {
                 const { user, branch, department, role } = resolveContext(item);
                 const employeeName = getEmployeeName(item, user);
@@ -646,18 +651,21 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                 return (
                   <Animated.View key={item.request_id} entering={FadeInDown.delay(index * 50).springify()}>
                     <GlassCard 
-                      p="$0" 
+                      p="$5" 
+                      borderRadius="$8"
+                      backgroundColor="rgba(30,30,40,0.65)"
+                      style={{ backdropFilter: 'blur(10px)' }}
                       overflow="hidden"
                       pressStyle={{ scale: 0.98, opacity: 0.9 }}
                       onPress={() => openDetails(item)}
                     >
-                      <YStack p="$4" gap="$2">
+                      <YStack gap="$2">
                         <XStack justifyContent="space-between" alignItems="center">
                           <YStack flex={1}>
-                            <Text fontSize="$5" fontWeight="700" color="$color">
+                            <Text fontFamily="$heading" fontWeight="800" fontSize={20} color="$color">
                                 {employeeName}
                             </Text>
-                            <Text fontSize="$3" color="$color" opacity={0.6}>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color" opacity={0.7}>
                                 {roleName}
                             </Text>
                           </YStack>
@@ -667,25 +675,25 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                           />
                         </XStack>
 
-                        <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
-                        
+                        <Separator borderColor="$borderColor" opacity={0.5} my="$3" />
+
                         <XStack gap="$4" flexWrap="wrap">
                              <YStack gap="$1">
-                                <Text fontSize="$2" color="$color" opacity={0.5}>SOLICITADA PARA</Text>
+                                <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.6}>SOLICITADA PARA</Text>
                                 <XStack alignItems="center" gap="$2">
-                                    <Calendar size={14} color="$color" opacity={0.7} />
-                                    <Text fontSize="$3" color="$color">{formatRequestDateTime(item)}</Text>
+                                    <Calendar size={16} color="$color" opacity={0.7} />
+                                    <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color">{formatRequestDateTime(item)}</Text>
                                 </XStack>
                              </YStack>
                         </XStack>
 
                         <YStack gap="$1" mt="$2">
-                            <Text fontSize="$2" color="$color" opacity={0.5}>MOTIVO</Text>
-                            <Text fontSize="$3" color="$color" numberOfLines={2}>{item.description}</Text>
+                            <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.6}>MOTIVO</Text>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color" numberOfLines={2}>{item.description}</Text>
                         </YStack>
-                        
+
                         <Stack pt="$2">
-                             <Text fontSize="$3" color="$blue10" fontWeight="600">Ver detalles</Text>
+                             <Text fontFamily="$heading" fontWeight="700" fontSize={16} color="$blue10">Ver detalles</Text>
                         </Stack>
                       </YStack>
                        <LinearGradient
@@ -726,8 +734,8 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                         <>
                           <XStack justifyContent="space-between" alignItems="center">
                             <YStack gap="$1" flex={1}>
-                               <H2 fontSize={22}>{employeeName}</H2>
-                               <Paragraph color="$color" opacity={0.6}>{roleName}</Paragraph>
+                               <H2 fontFamily="$heading" fontWeight="800" fontSize={22} color="$color">{employeeName}</H2>
+                               <Paragraph fontFamily="$heading" fontWeight="500" color="$color" opacity={0.7} fontSize={16}>{roleName}</Paragraph>
                             </YStack>
                             <StatusBadge
                               label={STATUS_LABELS[selectedRequest.status]}
@@ -735,26 +743,31 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                             />
                           </XStack>
 
-                          <YStack gap="$3" p="$4" borderWidth={1} borderColor="$borderColor" borderRadius="$4">
-                              <Text fontWeight="600" color="$color">Detalle de la solicitud</Text>
+                          <GlassCard gap="$3" p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                              <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$color">Detalle de la solicitud</Text>
                               <YStack gap="$1">
-                                <Text fontSize="$3" color="$color" opacity={0.6}>Motivo:</Text>
-                                <Paragraph color="$color">{selectedRequest.description}</Paragraph>
+                                <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.7}>Motivo:</Text>
+                                <Paragraph fontFamily="$heading" fontWeight="500" color="$color" fontSize={16}>{selectedRequest.description}</Paragraph>
                               </YStack>
                               <XStack gap="$4">
                                   <YStack gap="$1">
-                                    <Text fontSize="$3" color="$color" opacity={0.6}>Fecha:</Text>
-                                    <Text color="$color" fontWeight="600">{formatRequestDateTime(selectedRequest)}</Text>
+                                    <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.7}>Fecha:</Text>
+                                    <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color">{formatRequestDateTime(selectedRequest)}</Text>
                                   </YStack>
                                   <YStack gap="$1">
-                                    <Text fontSize="$3" color="$color" opacity={0.6}>Hora:</Text>
-                                    <Text color="$color" fontWeight="600">{selectedRequest.request_time ?? "--:--"}</Text>
+                                    <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color" opacity={0.7}>Hora:</Text>
+                                    <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color">{selectedRequest.request_time ?? "--:--"}</Text>
                                   </YStack>
                               </XStack>
-                          </YStack>
+                          </GlassCard>
 
                           {selectedRequest.document_path ? (
-                            <Button
+                            <AnimatedButton
+                              fontFamily="$heading"
+                              fontWeight="700"
+                              fontSize={16}
+                              borderRadius={24}
+                              paddingVertical={12}
                               icon={Zap}
                               backgroundColor="$blue10"
                               color="white"
@@ -765,60 +778,73 @@ export default function AdminSolicitudesScreen(): JSX.Element {
                               }}
                             >
                               Abrir respaldo adjunto
-                            </Button>
+                            </AnimatedButton>
                           ) : null}
                           
                           <YStack gap="$2">
-                            <Text fontWeight="600" color="$color">Contexto</Text>
+                            <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$color">Contexto</Text>
                              <XStack gap="$2" flexWrap="wrap">
-                                <GlassCard p="$2" px="$3" borderRadius="$10"><Text fontSize="$3">{departmentName}</Text></GlassCard>
-                                <GlassCard p="$2" px="$3" borderRadius="$10"><Text fontSize="$3">{branchName}</Text></GlassCard>
+                                <GlassCard p="$2" px="$3" borderRadius="$10" backgroundColor="rgba(30,30,40,0.65)"><Text fontFamily="$heading" fontWeight="500" fontSize={16}>{departmentName}</Text></GlassCard>
+                                <GlassCard p="$2" px="$3" borderRadius="$10" backgroundColor="rgba(30,30,40,0.65)"><Text fontFamily="$heading" fontWeight="500" fontSize={16}>{branchName}</Text></GlassCard>
                              </XStack>
                           </YStack>
 
                           <Separator borderColor="$borderColor" />
 
                           <YStack gap="$1">
-                            <Text fontWeight="600" color="$color">
+                            <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$color">
                               Historial
                             </Text>
-                            <Text fontSize="$3" color="$color" opacity={0.6}>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color" opacity={0.7}>
                               Creada: {formatDateTimeValue(selectedRequest.created_at)}
                             </Text>
-                            <Text fontSize="$3" color="$color" opacity={0.6}>
+                            <Text fontFamily="$heading" fontWeight="500" fontSize={16} color="$color" opacity={0.7}>
                               Actualizada: {formatDateTimeValue(selectedRequest.updated_at)}
                             </Text>
                           </YStack>
 
                           {selectedRequest.status === "pending" ? (
                             <YStack gap="$4" pt="$4">
-                              <Text fontWeight="600" color="$color">Acciones</Text>
-                              <Input
+                              <Text fontFamily="$heading" fontWeight="700" fontSize={18} color="$color">Acciones</Text>
+                              <AnimatedInput
+                                fontFamily="$heading"
+                                fontWeight="500"
+                                fontSize={16}
                                 placeholder="Motivo del rechazo (obligatorio si rechazas)"
                                 value={rejectReason}
                                 onChangeText={setRejectReason}
                                 backgroundColor="$backgroundPress"
                                 borderColor="$borderColor"
                               />
-                              <XStack gap="$3">
-                                <Button
+                              <XStack gap="$4">
+                                <AnimatedButton
                                   flex={1}
+                                  fontFamily="$heading"
+                                  fontWeight="700"
+                                  fontSize={16}
+                                  borderRadius={24}
+                                  paddingVertical={12}
                                   backgroundColor="$green10"
                                   color="white"
                                   disabled={isMutating}
                                   onPress={confirmApprove}
                                 >
                                   Aprobar
-                                </Button>
-                                <Button
+                                </AnimatedButton>
+                                <AnimatedButton
                                   flex={1}
+                                  fontFamily="$heading"
+                                  fontWeight="700"
+                                  fontSize={16}
+                                  borderRadius={24}
+                                  paddingVertical={12}
                                   backgroundColor="$red10"
                                   color="white"
                                   disabled={isMutating}
                                   onPress={handleRejectAction}
                                 >
                                   Rechazar
-                                </Button>
+                                </AnimatedButton>
                               </XStack>
                             </YStack>
                           ) : null}

@@ -25,7 +25,7 @@ const emptyForm: RoleFormState = {
   admin: false
 };
 
-export default function AdminRolesScreen(): JSX.Element {
+export default function AdminRolesScreen() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<RoleFormState>(emptyForm);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -150,62 +150,86 @@ export default function AdminRolesScreen(): JSX.Element {
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <YStack gap="$4" pt="$safe" px="$0">
-          
           {/* Header */}
           <YStack gap="$1" mb="$2">
-                <H2 fontWeight="800" fontSize={26} color="$color">Roles</H2>
-                <Paragraph color="$color" opacity={0.6}>
-                    Centraliza perfiles y salarios para asignarlos luego a colaboradores.
-                </Paragraph>
+            <H2 fontWeight="800" fontSize={26} color="$color">Roles</H2>
+            <Paragraph color="$color" opacity={0.6}>
+              Centraliza perfiles y salarios para asignarlos luego a colaboradores.
+            </Paragraph>
           </YStack>
 
           {/* Form Block */}
           <GlassCard gap="$3" p="$4" borderRadius="$6">
-            <Text fontFamily="$heading" fontSize="$5" color="$color">
+            <Text fontFamily="$heading" fontWeight="800" fontSize={24} color="$color">
               {editingRole ? `Editar ${editingRole.name}` : "Nuevo rol"}
             </Text>
-            <Paragraph color="$color" opacity={0.6}>{helperText}</Paragraph>
+            <Text fontFamily="$heading" fontWeight="600" fontSize={16} color="$color" opacity={0.7}>
+              {helperText}
+            </Text>
 
             <YStack gap="$3" mt="$2">
               <AnimatedInput
-                label="Nombre"
-                placeholder="Ej. Analista"
+                label={<Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">Nombre</Text>}
                 value={form.name}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
+                onChangeText={(value: string) => setForm((prev) => ({ ...prev, name: value }))}
               />
               <AnimatedInput
-                label="Descripción"
-                placeholder="Ej. Responsable de..."
+                label={<Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">Descripción</Text>}
                 value={form.description}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, description: value }))}
+                onChangeText={(value: string) => setForm((prev) => ({ ...prev, description: value }))}
               />
-              
               <AnimatedInput
-                label="Salario Base"
-                placeholder="Ej. 1200"
-                keyboardType="decimal-pad"
+                label={<Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">Salario Base</Text>}
                 value={form.salary}
-                onChangeText={(value) => setForm((prev) => ({ ...prev, salary: value }))}
+                keyboardType="decimal-pad"
+                onChangeText={(value: string) => setForm((prev) => ({ ...prev, salary: value }))}
               />
-              
               <XStack alignItems="center" justifyContent="space-between" mt="$2">
                 <YStack gap="$1" flex={1}>
-                  <Text fontWeight="600" color="white">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="white">
                     ¿Es administrador?
                   </Text>
-                  <Paragraph color="$gray10" fontSize="$2">
+                  <Text fontFamily="$heading" fontWeight="400" fontSize={13} color="$gray10">
                     Habilita privilegios especiales.
-                  </Paragraph>
+                  </Text>
                 </YStack>
-                  <Switch
-                    size="$3"
-                    checked={form.admin}
-                    onCheckedChange={(value: boolean) =>
-                      setForm((prev) => ({ ...prev, admin: Boolean(value) }))
-                    }
+                <YStack ai="center" jc="center" px={6}>
+                  <GlassCard
+                    p={8}
+                    borderRadius={24}
+                    backgroundColor="rgba(37,99,235,0.22)"
+                    style={{
+                      backdropFilter: 'blur(8px)',
+                      border: '1.5px solid rgba(255,255,255,0.12)',
+                      boxShadow: '0 2px 16px rgba(37,99,235,0.12)'
+                    }}
                   >
-                  <Switch.Thumb animation="quick" backgroundColor="white" />
-                </Switch>
+                    <Switch
+                      size="$5"
+                      checked={form.admin}
+                      onCheckedChange={(value: boolean) =>
+                        setForm((prev) => ({ ...prev, admin: Boolean(value) }))
+                      }
+                      backgroundColor={form.admin ? "rgba(37,99,235,0.45)" : "rgba(30,41,59,0.45)"}
+                      borderColor={form.admin ? "$blue8" : "$gray7"}
+                      borderWidth={2}
+                      style={{ minWidth: 64, minHeight: 36, borderRadius: 18, transition: 'all 0.25s', boxShadow: form.admin ? '0 0 12px #2563eb88' : '0 0 6px #fff2' }}
+                    >
+                      <Switch.Thumb
+                        animation="quick"
+                        backgroundColor={form.admin ? "#fff" : "#cbd5e1"}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          boxShadow: form.admin ? '0 0 16px #2563eb' : '0 0 8px #fff',
+                          border: form.admin ? '2px solid #2563eb' : '2px solid #cbd5e1',
+                          transition: 'all 0.25s'
+                        }}
+                      />
+                    </Switch>
+                  </GlassCard>
+                </YStack>
               </XStack>
             </YStack>
 
@@ -216,6 +240,9 @@ export default function AdminRolesScreen(): JSX.Element {
                   backgroundColor="rgba(239, 68, 68, 0.2)"
                   disabled={isMutating}
                   onPress={resetForm}
+                  fontFamily="$heading"
+                  fontWeight="700"
+                  fontSize={17}
                 >
                   Cancelar
                 </AnimatedButton>
@@ -225,6 +252,9 @@ export default function AdminRolesScreen(): JSX.Element {
                 disabled={isMutating}
                 onPress={handleSubmit}
                 bg={!formIsValid ? "$gray8" : undefined}
+                fontFamily="$heading"
+                fontWeight="700"
+                fontSize={17}
               >
                 {editingRole ? "Guardar cambios" : "Crear rol"}
               </AnimatedButton>
@@ -232,7 +262,7 @@ export default function AdminRolesScreen(): JSX.Element {
           </GlassCard>
 
           <YStack gap="$3">
-             <H2 fontSize={20} color="$color" mt="$4">Roles registrados</H2>
+            <H2 fontSize={20} color="$color" mt="$4">Roles registrados</H2>
             {isLoading || isFetching ? (
               <ListSkeleton items={4} height={132} />
             ) : isError ? (
@@ -246,53 +276,57 @@ export default function AdminRolesScreen(): JSX.Element {
             ) : roles.length === 0 ? (
               <AnimatedNotice variant="info" message="Aún no tienes roles registrados." />
             ) : (
-                <YStack gap="$3">
-                  {roles.map((item, index) => (
-                    <Animated.View key={item.role_id} entering={FadeInDown.delay(index * 85).springify()}>
-                        <GlassCard p="$4" gap="$2">
-                             <XStack justifyContent="space-between" alignItems="center">
-                                <XStack gap="$3" alignItems="center">
-                                    <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
-                                        <Briefcase size={24} color="$blue10" />
-                                    </GlassCard>
-                                    <YStack>
-                                        <Text fontWeight="700" fontSize="$5" color="$color">
-                                            {item.name}
-                                        </Text>
-                                        <Text color={item.admin ? "$green10" : "$color"} opacity={item.admin ? 1 : 0.6} fontSize="$3">
-                                            {item.admin ? "Administrador" : "Rol Base"}
-                                        </Text>
-                                    </YStack>
-                                </XStack>
-                            </XStack>
-
-                            <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
-                            
-                             <YStack gap="$1" px="$1">
-                                 <Text color="$color" opacity={0.8} fontStyle="italic">
-                                     {item.description}
-                                 </Text>
-                                 <XStack gap="$2" alignItems="center" mt="$1">
-                                     <Text color="$color" opacity={0.6}>Salario Base:</Text>
-                                     <Text color="$color" fontWeight="700">${item.salary}</Text>
-                                 </XStack>
-                             </YStack>
-
-                            <XStack gap="$3" mt="$3">
-                                <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => handleSelectRole(item)} />
-                                <Button
-                                    flex={1}
-                                    size="$3"
-                                    backgroundColor="$red10"
-                                    color="white"
-                                    icon={Trash2}
-                                    disabled={deleteMutation.isPending}
-                                    onPress={() => handleDeleteRole(item.role_id)}
-                                />
-                            </XStack>
-                        </GlassCard>
-                    </Animated.View>
-                  ))}
+              <YStack gap="$3">
+                {roles.map((item, index) => (
+                  <Animated.View key={item.role_id} entering={FadeInDown.delay(index * 85).springify()}>
+                    <GlassCard p="$4" gap="$2">
+                      <XStack justifyContent="space-between" alignItems="center">
+                        <XStack gap="$3" alignItems="center">
+                          <GlassCard p="$2" borderRadius="$4" backgroundColor="$backgroundPress">
+                            <Briefcase size={24} color="$blue10" />
+                          </GlassCard>
+                          <YStack>
+                            <Text fontFamily="$heading" fontWeight="800" fontSize={22} color="$color">{item.name}</Text>
+                            <Text fontFamily="$heading" fontWeight="700" color={item.admin ? "$green10" : "$color"} opacity={item.admin ? 1 : 0.6} fontSize={16}>
+                              {item.admin ? "Administrador" : "Rol Base"}
+                            </Text>
+                          </YStack>
+                        </XStack>
+                      </XStack>
+                      <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
+                      <YStack gap="$1" px="$1">
+                        <Text fontFamily="$heading" color="$color" opacity={0.8} fontStyle="italic" fontSize={15}>
+                          {item.description}
+                        </Text>
+                        <XStack gap="$2" alignItems="center" mt="$1">
+                          <Text fontFamily="$heading" color="$color" opacity={0.6} fontSize={15}>Salario Base:</Text>
+                          <Text fontFamily="$heading" color="$color" fontWeight="700" fontSize={15}>${item.salary}</Text>
+                        </XStack>
+                      </YStack>
+                      <XStack gap="$3" mt="$3">
+                        <AnimatedButton
+                          flex={1}
+                          icon={Edit3}
+                          size={28}
+                          backgroundColor="rgba(37,99,235,0.18)"
+                          color="$color"
+                          borderRadius={16}
+                          onPress={() => handleSelectRole(item)}
+                        />
+                        <AnimatedButton
+                          flex={1}
+                          icon={Trash2}
+                          size={28}
+                          backgroundColor="rgba(239,68,68,0.22)"
+                          color="white"
+                          borderRadius={16}
+                          disabled={deleteMutation.isPending}
+                          onPress={() => handleDeleteRole(item.role_id)}
+                        />
+                      </XStack>
+                    </GlassCard>
+                  </Animated.View>
+                ))}
               </YStack>
             )}
           </YStack>
@@ -309,7 +343,7 @@ export default function AdminRolesScreen(): JSX.Element {
           </AnimatePresence>
         </YStack>
       </ScrollView>
-       <AdminNavbar />
+      <AdminNavbar />
     </Screen>
   );
 }

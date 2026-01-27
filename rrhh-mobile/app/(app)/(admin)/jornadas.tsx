@@ -369,8 +369,8 @@ export default function AdminJornadasScreen(): JSX.Element {
             {isFilterBarOpen ? (
               <YStack gap="$3">
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
-                     Búsqueda (Nombre o Cédula)
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
+                    Búsqueda (Nombre o Cédula)
                   </Text>
                    <XStack alignItems="center" backgroundColor="$backgroundPress" borderRadius="$4" px="$3" height={44}>
                       <Search size={18} color="$color" opacity={0.5} />
@@ -394,7 +394,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                     Sucursal
                   </Text>
                   <HybridSelect
@@ -406,7 +406,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                     Departamento
                   </Text>
                   <HybridSelect
@@ -418,7 +418,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                     Rol
                   </Text>
                   <HybridSelect
@@ -430,7 +430,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                     Horario
                   </Text>
                   <HybridSelect
@@ -442,7 +442,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                     Empleado
                   </Text>
                   <HybridSelect
@@ -454,7 +454,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                 </YStack>
 
                 <YStack gap="$1">
-                  <Text fontWeight="600" color="$color">
+                  <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                     Estado
                   </Text>
                   <HybridSelect
@@ -467,7 +467,7 @@ export default function AdminJornadasScreen(): JSX.Element {
 
                 <XStack gap="$3" flexWrap="wrap">
                   <YStack flex={1} minWidth={150} gap="$1">
-                    <Text fontWeight="600" color="$color">
+                    <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                       Desde
                     </Text>
                     <Button
@@ -481,7 +481,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                     </Button>
                   </YStack>
                   <YStack flex={1} minWidth={150} gap="$1">
-                    <Text fontWeight="600" color="$color">
+                    <Text fontFamily="$heading" fontWeight="700" fontSize={15} color="$color">
                       Hasta
                     </Text>
                     <Button
@@ -555,8 +555,8 @@ export default function AdminJornadasScreen(): JSX.Element {
                                         <Clock size={24} color="$blue10" />
                                     </GlassCard>
                                     <YStack flex={1}>
-                                        <Text fontWeight="700" fontSize="$4" numberOfLines={1} color="$color">
-                                          {[
+                                        <Text fontFamily="$heading" fontWeight="800" fontSize={20} numberOfLines={1} color="$color">
+                                          {[ 
                                             item.employee_detail?.first_name ??
                                               item.employee_detail?.user?.first_name ??
                                               item.user?.first_name ??
@@ -569,7 +569,7 @@ export default function AdminJornadasScreen(): JSX.Element {
                                             .join(" ")
                                             .trim()}
                                         </Text>
-                                        <Text color="$color" opacity={0.6} fontSize="$3">
+                                        <Text fontFamily="$heading" color="$color" opacity={0.6} fontSize={15}>
                                             {item.work_date}
                                         </Text>
                                     </YStack>
@@ -583,52 +583,54 @@ export default function AdminJornadasScreen(): JSX.Element {
                             <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
 
                             <XStack gap="$4" px="$1">
-                                <YStack flex={1}>
-                                     <Text fontSize="$2" opacity={0.6} color="$color">INICIO</Text>
-                                     <Text fontSize="$5" fontWeight="700" color="$color">{formatTime(item.start_time)}</Text>
-                                </YStack>
-                                <Separator vertical borderColor="$borderColor" opacity={0.5} />
-                                <YStack flex={1}>
-                                     <Text fontSize="$2" opacity={0.6} color="$color">FIN</Text>
-                                     <Text fontSize="$5" fontWeight="700" color={item.end_time ? "$color" : "$orange10"}>
-                                         {item.end_time ? formatTime(item.end_time) : "En curso"}
-                                     </Text>
-                                </YStack>
+                                  <YStack flex={1}>
+                                    <Text fontFamily="$heading" fontSize={13} opacity={0.6} color="$color">INICIO</Text>
+                                    <Text fontFamily="$heading" fontSize={20} fontWeight="700" color="$color">{formatTime(item.start_time)}</Text>
+                                  </YStack>
+                                  <Separator vertical borderColor="$borderColor" opacity={0.5} />
+                                  <YStack flex={1}>
+                                    <Text fontFamily="$heading" fontSize={13} opacity={0.6} color="$color">FIN</Text>
+                                    <Text fontFamily="$heading" fontSize={20} fontWeight="700" color={item.end_time ? "$color" : "$orange10"}>
+                                     {item.end_time ? formatTime(item.end_time) : "En curso"}
+                                    </Text>
+                                  </YStack>
                             </XStack>
 
                             <Separator borderColor="$borderColor" opacity={0.5} my="$2" />
 
                              <YStack gap="$1" px="$1">
                                  <XStack gap="$2" alignItems="center">
-                                    <Building2 size={12} color="$color" opacity={0.6} />
-                                    <Text fontSize="$3" color="$color" opacity={0.8}>
-                                        {item.employee_detail?.department?.branch?.name ?? "Sin sucursal"}
-                                    </Text>
+                                  <Building2 size={12} color="$color" opacity={0.6} />
+                                  <Text fontFamily="$heading" fontSize={15} color="$color" opacity={0.8}>
+                                    {item.employee_detail?.department?.branch?.name ?? "Sin sucursal"}
+                                  </Text>
                                  </XStack>
                                  <XStack gap="$2" alignItems="center">
-                                    <Layers size={12} color="$color" opacity={0.6} />
-                                    <Text fontSize="$3" color="$color" opacity={0.8}>
-                                        {item.employee_detail?.department?.name ?? "Sin departamento"}
-                                    </Text>
+                                  <Layers size={12} color="$color" opacity={0.6} />
+                                  <Text fontFamily="$heading" fontSize={15} color="$color" opacity={0.8}>
+                                    {item.employee_detail?.department?.name ?? "Sin departamento"}
+                                  </Text>
                                  </XStack>
                                   <XStack gap="$2" alignItems="center">
-                                    <Briefcase size={12} color="$color" opacity={0.6} />
-                                    <Text fontSize="$3" color="$color" opacity={0.8}>
-                                        {item.employee_detail?.role?.name ?? "Sin rol"}
-                                    </Text>
+                                  <Briefcase size={12} color="$color" opacity={0.6} />
+                                  <Text fontFamily="$heading" fontSize={15} color="$color" opacity={0.8}>
+                                    {item.employee_detail?.role?.name ?? "Sin rol"}
+                                  </Text>
                                  </XStack>
                             </YStack>
 
                             <XStack gap="$2" mt="$2">
-                                <Button flex={1} size="$3" disabled backgroundColor="$backgroundPress" color="$color" opacity={0.5}>
-                                    Cerrar jornada
-                                </Button>
-                                <Button flex={1} size="$3" disabled backgroundColor="$backgroundPress" color="$color" opacity={0.5}>
-                                    Editar
-                                </Button>
+                                <AnimatedButton flex={1} size={28} backgroundColor="rgba(37,99,235,0.18)" color="$color" borderRadius={16} disabled fontFamily="$heading" fontWeight="700" fontSize={16}>
+                                  Cerrar jornada
+                                </AnimatedButton>
+                                <AnimatedButton flex={1} size={28} backgroundColor="rgba(239,68,68,0.18)" color="$color" borderRadius={16} disabled fontFamily="$heading" fontWeight="700" fontSize={16}>
+                                  Editar
+                                </AnimatedButton>
                             </XStack>
                              <Paragraph color="$color" opacity={0.4} fontSize="$2" textAlign="center">
-                                Gestión no disponible en esta versión.
+                                <Text fontFamily="$heading" color="$color" opacity={0.4} fontSize={13} textAlign="center">
+                                  Gestión no disponible en esta versión.
+                                </Text>
                             </Paragraph>
                         </GlassCard>
                     </Animated.View>

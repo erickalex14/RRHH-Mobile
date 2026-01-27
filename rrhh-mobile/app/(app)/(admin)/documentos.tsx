@@ -206,7 +206,7 @@ export default function AdminDocumentosScreen(): JSX.Element {
     const activeField = datePicker.field;
     return (
       <YStack gap="$2" backgroundColor="$color2" p="$3" borderRadius="$5">
-        <Text fontWeight="600" color="$text">
+        <Text fontFamily="$heading" fontWeight="600" color="$text">
           Selecciona {activeField === "dateFrom" ? "fecha inicial" : "fecha final"}
         </Text>
         <DateTimePicker
@@ -673,7 +673,7 @@ export default function AdminDocumentosScreen(): JSX.Element {
           {/* Header */}
           <XStack justifyContent="space-between" alignItems="center" mb="$2">
              <YStack>
-                <H2 fontWeight="800" fontSize={26} color="$color">Documentos</H2>
+                <H2 fontFamily="$heading" fontWeight="800" fontSize={26} color="$color">Documentos</H2>
                 <Paragraph color="$color" opacity={0.6}>Gestión de archivos firmados</Paragraph>
              </YStack>
              
@@ -699,14 +699,14 @@ export default function AdminDocumentosScreen(): JSX.Element {
           {/* Stats Cards */}
            <XStack gap="$3" flexWrap="wrap">
               <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
-                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">TOTAL</Text>
-                <Text fontWeight="800" fontSize="$6" color="$green10">
+                <Text fontFamily="$heading" fontSize="$2" color="$color" opacity={0.6} mb="$1">TOTAL</Text>
+                <Text fontFamily="$heading" fontWeight="800" fontSize="$6" color="$green10">
                   {documentInsights.total}
                 </Text>
               </GlassCard>
               <GlassCard flex={1} minWidth={100} p="$3" borderRadius="$4">
-                <Text fontSize="$2" color="$color" opacity={0.6} mb="$1">FILTRADOS</Text>
-                <Text fontWeight="800" fontSize="$6" color="$blue10">
+                <Text fontFamily="$heading" fontSize="$2" color="$color" opacity={0.6} mb="$1">FILTRADOS</Text>
+                <Text fontFamily="$heading" fontWeight="800" fontSize="$6" color="$blue10">
                   {documentInsights.filteredByType}
                 </Text>
               </GlassCard>
@@ -743,23 +743,23 @@ export default function AdminDocumentosScreen(): JSX.Element {
                 <XStack justifyContent="space-between" alignItems="center" onPress={() => setIsFilterBarOpen((prev) => !prev)}>
                 <XStack gap="$2" alignItems="center">
                     <Filter size={18} color="$color" />
-                    <Text fontWeight="700" fontSize="$4" color="$text">
+                    <Text fontFamily="$heading" fontWeight="700" fontSize="$4" color="$text">
                         Filtros
                     </Text>
                 </XStack>
-                <Text color="$blue10" fontSize="$3">{isFilterBarOpen ? "Ocultar" : "Mostrar"}</Text>
+                <Text fontFamily="$heading" color="$blue10" fontSize="$3">{isFilterBarOpen ? "Ocultar" : "Mostrar"}</Text>
                 </XStack>
                 
                 {isFilterBarOpen ? (
                 <YStack gap="$3" pt="$3">
                      <YStack gap="$1">
-                        <Text fontSize="$3" color="$color" opacity={0.7}>Tipo de documento</Text>
+                        <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.7}>Tipo de documento</Text>
                         {renderDocumentTypeSelect(filters.docType, handleDocTypeChange, "Todos")}
                     </YStack>
                     
                     <XStack gap="$3" flexWrap="wrap">
                       <YStack flex={1} minWidth={150} gap="$1">
-                        <Text fontSize="$3" fontWeight="600" color="$color" opacity={0.7}>Desde</Text>
+                        <Text fontFamily="$heading" fontSize="$3" fontWeight="600" color="$color" opacity={0.7}>Desde</Text>
                         <Button
                           variant="outlined"
                           size="$3"
@@ -772,7 +772,7 @@ export default function AdminDocumentosScreen(): JSX.Element {
                         </Button>
                       </YStack>
                       <YStack flex={1} minWidth={150} gap="$1">
-                        <Text fontSize="$3" fontWeight="600" color="$color" opacity={0.7}>Hasta</Text>
+                        <Text fontFamily="$heading" fontSize="$3" fontWeight="600" color="$color" opacity={0.7}>Hasta</Text>
                         <Button
                           variant="outlined"
                           size="$3"
@@ -789,25 +789,32 @@ export default function AdminDocumentosScreen(): JSX.Element {
                     {renderIOSPicker()}
 
                     <YStack gap="$1">
-                         <Text fontSize="$3" color="$color" opacity={0.7}>Sucursal</Text>
+                         <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.7}>Sucursal</Text>
                          {renderSelect(filters.branchId, branchOptions, "Todas", handleBranchChange, isMetaLoading)}
                     </YStack>
                     <YStack gap="$1">
-                        <Text fontSize="$3" color="$color" opacity={0.7}>Departamento</Text>
+                        <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.7}>Departamento</Text>
                         {renderSelect(filters.departmentId, departmentOptions, "Todos", handleDepartmentChange, isMetaLoading)}
                     </YStack>
                      <YStack gap="$1">
-                        <Text fontSize="$3" color="$color" opacity={0.7}>Rol</Text>
+                        <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.7}>Rol</Text>
                         {renderSelect(filters.roleId, roleOptions, "Todos", handleRoleChange, isMetaLoading)}
                     </YStack>
                     <YStack gap="$1">
-                        <Text fontSize="$3" color="$color" opacity={0.7}>Empleado</Text>
+                        <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.7}>Empleado</Text>
                         {renderSelect(filters.employeeId, employeeSelectOptions, "Todos", handleEmployeeChange, isMetaLoading)}
                     </YStack>
                     
-                    <Button size="$3" backgroundColor="$blue10" color="white" onPress={resetFilters} icon={XCircle}>
-                        Restablecer filtros
-                    </Button>
+                    <AnimatedButton
+                      size="$6"
+                      paddingVertical="$3"
+                      paddingHorizontal="$5"
+                      backgroundColor="linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)"
+                      color="white"
+                      borderRadius="$8"
+                      icon={<XCircle color="white" />}
+                      onPress={resetFilters}
+                    />
                 </YStack>
                 ) : null}
             </GlassCard>
@@ -854,7 +861,7 @@ export default function AdminDocumentosScreen(): JSX.Element {
                                 <FileText size={24} color="$blue10" />
                              </GlassCard>
                              <YStack flex={1}>
-                                <Text fontWeight="700" fontSize="$5" color="$color">{item.file_name}</Text>
+                                <Text fontFamily="$heading" fontWeight="700" fontSize="$5" color="$color">{item.file_name}</Text>
                                 <Paragraph color="$color" opacity={0.6} numberOfLines={1}>{typeLabel}</Paragraph>
                              </YStack>
                         </XStack>
@@ -863,35 +870,58 @@ export default function AdminDocumentosScreen(): JSX.Element {
 
                         <YStack gap="$2" px="$1">
                             <XStack justifyContent="space-between">
-                                <Text fontSize="$3" color="$color" opacity={0.6}>Empleado:</Text>
-                                <Text fontSize="$3" color="$color" fontWeight="600">{employeeName}</Text>
+                                <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.6}>Empleado:</Text>
+                                <Text fontFamily="$heading" fontSize="$3" color="$color" fontWeight="600">{employeeName}</Text>
                             </XStack>
                              <XStack justifyContent="space-between">
-                                <Text fontSize="$3" color="$color" opacity={0.6}>Fecha:</Text>
-                                <Text fontSize="$3" color="$color" fontWeight="600">{formatDate(item.created_at)}</Text>
+                                <Text fontFamily="$heading" fontSize="$3" color="$color" opacity={0.6}>Fecha:</Text>
+                                <Text fontFamily="$heading" fontSize="$3" color="$color" fontWeight="600">{formatDate(item.created_at)}</Text>
                             </XStack>
                         </YStack>
 
                         <XStack gap="$3" mt="$2">
-                          <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Download} onPress={() => handleDownload(item.document_id)}>
-                           
-                          </Button>
-                          <Button flex={1} size="$3" chromeless borderWidth={1} borderColor="$borderColor" icon={Edit3} onPress={() => openEditForm(item)}>
-                            
-                          </Button>
-                           <Button 
-                              flex={1} 
-                              size="$3" 
-                              backgroundColor="$red10" 
-                              color="white" 
-                              icon={Trash2}
-                              disabled={removeMutation.isPending && removeMutation.variables === item.document_id}
-                              onPress={() => confirmDelete(item.document_id)}
-                           >
-                              {removeMutation.isPending && removeMutation.variables === item.document_id ? (
-                                <Spinner color="white" size="small" />
-                              ) : null}
-                           </Button>
+                          <AnimatedButton
+                            flex={1}
+                            size="$6"
+                            paddingVertical="$3"
+                            paddingHorizontal="$5"
+                            backgroundColor="rgba(255,255,255,0.10)"
+                            color="$text"
+                            borderRadius="$8"
+                            icon={<Download color="$blue10" />}
+                            onPress={() => handleDownload(item.document_id)}
+                          >
+                            Descargar
+                          </AnimatedButton>
+                          <AnimatedButton
+                            flex={1}
+                            size="$6"
+                            paddingVertical="$3"
+                            paddingHorizontal="$5"
+                            backgroundColor="linear-gradient(90deg, #6366f1 0%, #06b6d4 100%)"
+                            color="white"
+                            borderRadius="$8"
+                            icon={<Edit3 color="white" />}
+                            onPress={() => openEditForm(item)}
+                          >
+                            Editar
+                          </AnimatedButton>
+                          <AnimatedButton
+                            flex={1}
+                            size="$6"
+                            paddingVertical="$3"
+                            paddingHorizontal="$5"
+                            backgroundColor="linear-gradient(90deg, #ef4444 0%, #f87171 100%)"
+                            color="white"
+                            borderRadius="$8"
+                            icon={<Trash2 color="white" />}
+                            disabled={removeMutation.isPending && removeMutation.variables === item.document_id}
+                            onPress={() => confirmDelete(item.document_id)}
+                          >
+                            {removeMutation.isPending && removeMutation.variables === item.document_id ? (
+                              <Spinner color="white" size="small" />
+                            ) : "Eliminar"}
+                          </AnimatedButton>
                         </XStack>
                         <LinearGradient
                             colors={["transparent", "$green2"]}

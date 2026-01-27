@@ -28,7 +28,7 @@ const statusPalette: Record<Status, string> = {
   danger: "$danger"
 };
 
-export const AnimatedButton = memo(({ children, status = "default", onPressIn, onPressOut, ...props }: AnimatedButtonProps) => {
+export const AnimatedButton = memo(({ children, status = "default", onPressIn, onPressOut, size = "$5", paddingVertical = "$3", paddingHorizontal = "$4", fontSize = "$5", ...props }: AnimatedButtonProps & { size?: any; paddingVertical?: any; paddingHorizontal?: any; fontSize?: any }) => {
   const shouldReduceMotion = useReducedMotion();
   const pressProgress = useSharedValue(0);
   const pulseProgress = useSharedValue(0);
@@ -90,7 +90,16 @@ export const AnimatedButton = memo(({ children, status = "default", onPressIn, o
   return (
     <AnimatedTamaguiButton
       {...props}
-      style={[props.style, animatedStyle]}
+      style={[
+        {
+          paddingVertical,
+          paddingHorizontal,
+          fontSize,
+        },
+        props.style,
+        animatedStyle,
+      ]}
+      size={size}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       backgroundColor={props.bg ?? statusPalette[status]}

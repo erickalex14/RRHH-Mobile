@@ -384,10 +384,10 @@ export default function AdminEditUserScreen(): JSX.Element {
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
         <YStack gap="$5" p="$4">
           <YStack gap="$2">
-            <Text fontFamily="$heading" fontSize="$7" color="white">
+            <Text fontFamily="$heading" fontWeight="800" fontSize={28} color="white">
               Editar colaborador
             </Text>
-            <Paragraph color="$gray10">
+            <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={16}>
               Actualiza la cuenta, el estado laboral y los datos personales de forma independiente.
             </Paragraph>
           </YStack>
@@ -433,38 +433,44 @@ export default function AdminEditUserScreen(): JSX.Element {
             />
           ) : (
             <YStack gap="$4">
-              <GlassCard p="$4">
+              <GlassCard p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
                 <YStack gap="$2">
-                  <Text fontWeight="600" fontSize="$5" color="white">
+                  <Text fontFamily="$heading" fontWeight="800" fontSize={22} color="white">
                     {[accountForm.first_name, accountForm.last_name].filter(Boolean).join(" ") || `Usuario #${user.user_id}`}
                   </Text>
-                  <Paragraph color="$gray10">{accountForm.email}</Paragraph>
+                  <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={16}>{accountForm.email}</Paragraph>
                   {summaryBadge ? <StatusBadge label={summaryBadge.label} color={summaryBadge.color} /> : null}
                 </YStack>
               </GlassCard>
 
-              <GlassCard gap="$3" p="$4" borderRadius="$6">
-                <Text fontFamily="$heading" fontSize="$5" color="white">
+              <GlassCard gap="$4" p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                <Text fontFamily="$heading" fontWeight="800" fontSize={20} color="white">
                   Cuenta
                 </Text>
-                <Paragraph color="$gray10" fontSize="$3">
+                <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={15}>
                   Modifica la información básica del colaborador.
                 </Paragraph>
                 <AnimatedInput
                   label="Nombre"
                   placeholder="Nombre"
+                  fontFamily="$heading"
+                  fontSize={16}
                   value={accountForm.first_name}
                   onChangeText={(value) => handleSetAccount("first_name", value)}
                 />
                 <AnimatedInput
                   label="Apellido"
                   placeholder="Apellido"
+                  fontFamily="$heading"
+                  fontSize={16}
                   value={accountForm.last_name}
                   onChangeText={(value) => handleSetAccount("last_name", value)}
                 />
                 <AnimatedInput
                   label="Correo"
                   placeholder="correo@empresa.com"
+                  fontFamily="$heading"
+                  fontSize={16}
                   autoCapitalize="none"
                   keyboardType="email-address"
                   value={accountForm.email}
@@ -472,6 +478,11 @@ export default function AdminEditUserScreen(): JSX.Element {
                   status={accountForm.email.length > 0 ? (isEmailValid ? "success" : "error") : undefined}
                 />
                 <AnimatedButton
+                  fontFamily="$heading"
+                  fontWeight="700"
+                  fontSize={18}
+                  borderRadius={24}
+                  paddingVertical={14}
                   disabled={!accountValid || accountMutation.isPending}
                   onPress={() => accountMutation.mutate()}
                 >
@@ -479,16 +490,16 @@ export default function AdminEditUserScreen(): JSX.Element {
                 </AnimatedButton>
               </GlassCard>
 
-              <GlassCard gap="$3" p="$4" borderRadius="$6">
-                <Text fontFamily="$heading" fontSize="$5" color="white">
+              <GlassCard gap="$4" p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                <Text fontFamily="$heading" fontWeight="800" fontSize={20} color="white">
                   Estado laboral
                 </Text>
-                <Paragraph color="$gray10" fontSize="$3">
+                <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={15}>
                   Ajusta el estado, rol, departamento y horario del colaborador.
                 </Paragraph>
 
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="white">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" color="white" fontSize={16}>
                     Estado del empleado
                   </Text>
                   <SimpleSelect
@@ -499,8 +510,8 @@ export default function AdminEditUserScreen(): JSX.Element {
                   />
                 </YStack>
 
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="white">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" color="white" fontSize={16}>
                     Rol
                   </Text>
                   <SimpleSelect
@@ -511,8 +522,8 @@ export default function AdminEditUserScreen(): JSX.Element {
                   />
                 </YStack>
 
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="white">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" color="white" fontSize={16}>
                     Departamento
                   </Text>
                   <SimpleSelect
@@ -521,13 +532,13 @@ export default function AdminEditUserScreen(): JSX.Element {
                     options={departments.map(d => ({ label: d.name, value: String(d.department_id) }))}
                     placeholder="Selecciona"
                   />
-                  <Paragraph color="$gray10" fontSize="$2" mt="$1">
+                  <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={14} mt="$1">
                     Sucursal vinculada: {branchInfo}
                   </Paragraph>
                 </YStack>
 
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="white">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" color="white" fontSize={16}>
                     Horario
                   </Text>
                   <SimpleSelect
@@ -539,6 +550,11 @@ export default function AdminEditUserScreen(): JSX.Element {
                 </YStack>
 
                 <AnimatedButton
+                  fontFamily="$heading"
+                  fontWeight="700"
+                  fontSize={18}
+                  borderRadius={24}
+                  paddingVertical={14}
                   disabled={!employmentValid || employmentMutation.isPending}
                   onPress={() => employmentMutation.mutate()}
                 >
@@ -546,17 +562,19 @@ export default function AdminEditUserScreen(): JSX.Element {
                 </AnimatedButton>
               </GlassCard>
 
-              <GlassCard gap="$3" p="$4" borderRadius="$6">
-                <Text fontFamily="$heading" fontSize="$5" color="white">
+              <GlassCard gap="$4" p="$5" borderRadius="$8" backgroundColor="rgba(30,30,40,0.65)" style={{ backdropFilter: 'blur(10px)' }}>
+                <Text fontFamily="$heading" fontWeight="800" fontSize={20} color="white">
                   Detalles personales
                 </Text>
-                <Paragraph color="$gray10" fontSize="$3">
+                <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={15}>
                   Información para RRHH y cálculos de nómina.
                 </Paragraph>
 
                 <AnimatedInput
                   label="Cédula"
                   placeholder="0000000000"
+                  fontFamily="$heading"
+                  fontSize={16}
                   keyboardType="number-pad"
                   maxLength={10}
                   value={personalForm.national_id}
@@ -566,6 +584,8 @@ export default function AdminEditUserScreen(): JSX.Element {
                 <AnimatedInput
                   label="Dirección"
                   placeholder="Av. Principal 123"
+                  fontFamily="$heading"
+                  fontSize={16}
                   value={personalForm.address}
                   onChangeText={(value) => handleSetPersonal("address", value)}
                   status={personalForm.address.length > 0 ? (isAddressValid ? "success" : "error") : undefined}
@@ -573,6 +593,8 @@ export default function AdminEditUserScreen(): JSX.Element {
                 <AnimatedInput
                   label="Teléfono"
                   placeholder="0999999999"
+                  fontFamily="$heading"
+                  fontSize={16}
                   keyboardType="phone-pad"
                   maxLength={10}
                   value={personalForm.phone}
@@ -580,11 +602,16 @@ export default function AdminEditUserScreen(): JSX.Element {
                   status={personalForm.phone.length > 0 ? (isPhoneValid ? "success" : "error") : undefined}
                 />
 
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="white">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" color="white" fontSize={16}>
                     Fecha de nacimiento
                   </Text>
                   <AnimatedButton
+                    fontFamily="$heading"
+                    fontWeight="700"
+                    fontSize={16}
+                    borderRadius={24}
+                    paddingVertical={12}
                     backgroundColor="rgba(255,255,255,0.1)"
                     color="white"
                     onPress={() => handleOpenPicker("birth")}
@@ -593,23 +620,33 @@ export default function AdminEditUserScreen(): JSX.Element {
                   </AnimatedButton>
                 </YStack>
 
-                <YStack gap="$1">
-                  <Text fontWeight="600" color="white">
+                <YStack gap="$2">
+                  <Text fontFamily="$heading" fontWeight="700" color="white" fontSize={16}>
                     Fecha de ingreso
                   </Text>
                   <AnimatedButton
+                    fontFamily="$heading"
+                    fontWeight="700"
+                    fontSize={16}
+                    borderRadius={24}
+                    paddingVertical={12}
                     backgroundColor="rgba(255,255,255,0.1)"
                     color="white"
                     onPress={() => handleOpenPicker("hire")}
                   >
                     {displayDate(hireDate)}
                   </AnimatedButton>
-                  <Paragraph color="$gray10" fontSize="$2" mt="$1">
+                  <Paragraph fontFamily="$heading" fontWeight="500" color="$gray10" fontSize={14} mt="$1">
                     Debe ser igual o posterior a la fecha de nacimiento y no mayor a hoy.
                   </Paragraph>
                 </YStack>
 
                 <AnimatedButton
+                  fontFamily="$heading"
+                  fontWeight="700"
+                  fontSize={18}
+                  borderRadius={24}
+                  paddingVertical={14}
                   disabled={!personalValid || personalMutation.isPending}
                   onPress={() => personalMutation.mutate()}
                 >
@@ -618,6 +655,11 @@ export default function AdminEditUserScreen(): JSX.Element {
               </GlassCard>
 
               <AnimatedButton
+                fontFamily="$heading"
+                fontWeight="700"
+                fontSize={18}
+                borderRadius={24}
+                paddingVertical={14}
                 backgroundColor="rgba(255,255,255,0.1)"
                 color="white"
                 onPress={() => router.replace("/(app)/(admin)/users")}
